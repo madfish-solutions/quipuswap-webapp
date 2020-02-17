@@ -21,7 +21,7 @@ span {
 }
 
 .form-wrapper {
-  @apply rounded-3px mx-4 text-white text-sm;
+  @apply rounded-3px mx-4 text-text text-sm;
   background: #37415f;
 }
 
