@@ -1,6 +1,7 @@
 <template>
   <div id="app">
-    <AppLayout>
+    <AppLayout class="py-4">
+      <img class="mx-auto mb-6" src="./assets/logo.png" />
       <router-view />
     </AppLayout>
   </div>
