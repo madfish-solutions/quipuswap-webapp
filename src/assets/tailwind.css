@@ -3,3 +3,8 @@
 @tailwind components;
 
 @tailwind utilities;
+
+.form-wrapper {
+  @apply rounded-3px mx-4 text-text text-sm font-light;
+  background: #37415f;
+}

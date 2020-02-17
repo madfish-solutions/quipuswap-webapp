@@ -1,32 +1,23 @@
 <template>
   <div class="form-wrapper">
-    <span>Info ha-ha</span>
-    <div class="input-mock" />
-    <span>Info ha-ha</span>
-    <div class="input-mock" />
-    <span>Info ha-ha</span>
+    <FieldInput label="Ввести" />
+    <div class="text-center py-2">
+      <img class="inline" src="@/assets/arrow-down.png" />
+    </div>
+    <FieldInput label="Вывести" />
+    <div class="py-2 px-6 flex justify-between">
+      <span>Курс обмена</span>
+      <span>-</span>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
+import FieldInput from "@/components/FieldInput.vue";
 
-@Component
+@Component({
+  components: { FieldInput },
+})
 export default class FormExample extends Vue {}
 </script>
-
-<style lang="postcss" scoped>
-span {
-  @apply px-2 py-1 inline-block;
-}
-
-.form-wrapper {
-  @apply rounded-3px mx-4 text-text text-sm;
-  background: #37415f;
-}
-
-.input-mock {
-  @apply rounded-3px h-16 -mx-4;
-  background: #2a3248;
-}
-</style>

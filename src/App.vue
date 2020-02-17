@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <AppLayout class="py-4">
+    <AppLayout class="pt-4 pb-12">
       <img class="mx-auto mb-12" src="./assets/logo.png" />
       <router-view />
     </AppLayout>
@@ -26,7 +26,8 @@ body {
 #app {
   min-height: 100%;
   background: url("assets/lines.png") 100%, url("assets/gradient.png");
-  background-size: cover, cover;
+  background-size: 100%, cover;
+  background-position: 0 0, 50%;
   font-family: "Roboto", sans-serif;
 }
 </style>

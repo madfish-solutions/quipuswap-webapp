@@ -1,7 +1,17 @@
 <template>
   <div class="max-w-xl mx-auto">
     <NavTabs class="mb-6" />
-    <FormExample />
+    <div class="form-wrapper">
+      <FieldInput label="Ввести" />
+      <div class="text-center py-2">
+        <img class="inline" src="@/assets/arrow-down.png" />
+      </div>
+      <FieldInput label="Вывести" />
+      <div class="py-2 px-6 flex justify-between">
+        <span>Курс обмена</span>
+        <span>-</span>
+      </div>
+    </div>
     <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal">
       Введите токен, чтобы продолжить
     </div>
@@ -15,11 +25,11 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import FormExample from "@/components/FormExample.vue";
+import FieldInput from "@/components/FieldInput.vue";
 import NavTabs from "@/components/NavTabs.vue";
 
 @Component({
-  components: { NavTabs, FormExample },
+  components: { NavTabs, FieldInput },
 })
 export default class Swap extends Vue {}
 </script>

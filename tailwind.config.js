@@ -17,6 +17,7 @@ module.exports = {
 
       text: "#EDEDEE",
       primary: "#5B61F6",
+      accent: "#F6CC5B",
 
       gray: {
         100: "#f7fafc",
