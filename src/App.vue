@@ -24,6 +24,7 @@ body {
 
 #app {
   min-height: 100%;
-  background: rgba(0, 0, 0, 0.22);
+  background: url("assets/lines.png") 100%, url("assets/gradient.png");
+  background-size: cover, cover;
 }
 </style>
