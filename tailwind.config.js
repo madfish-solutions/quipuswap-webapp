@@ -170,6 +170,7 @@ module.exports = {
     }),
     borderRadius: {
       none: "0",
+      "3px": "3px",
       sm: "0.125rem",
       default: "0.25rem",
       md: "0.375rem",

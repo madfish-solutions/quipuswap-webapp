@@ -21,16 +21,14 @@ export default class NavTabs extends Vue {}
 
 <style lang="postcss" scoped>
 .nav-wrapper {
-  @apply flex text-white;
+  @apply flex text-white rounded-3px;
   background: #37415f;
   overflow: hidden;
-  border-radius: 3px;
 }
 
 .nav-item {
-  @apply h-full w-1/3 flex items-center justify-center bg-transparent;
+  @apply h-full w-1/3 flex items-center justify-center bg-transparent rounded-3px;
   transition: all ease 0.35s;
-  border-radius: 3px;
 }
 
 .nav-item span {
