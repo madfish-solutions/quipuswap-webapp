@@ -6,8 +6,15 @@
         <input placeholder="Write pls..." :value="value" />
       </div>
       <div class="append">
-        <button @click="toggleSearch" class="bg-accent text-black rounded-3px py-2 px-3">
-          {{ selectedToken ? selectedToken.name : "Change token..." }}
+        <button
+          @click="toggleSearch"
+          class="flex text-white border-accent border-2  rounded-3px py-2 px-3"
+        >
+          <template v-if="selectedToken">
+            <img class="w-5 h-5 mr-2" :src="selectedToken.imgUrl" />
+            {{ selectedToken.name }}
+          </template>
+          <span v-else>Change token...</span>
         </button>
       </div>
     </div>
