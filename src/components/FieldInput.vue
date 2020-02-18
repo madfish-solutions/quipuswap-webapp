@@ -1,30 +1,97 @@
 <template>
-  <div class="field">
-    <div class="flex-1 flex flex-col jutify-center">
-      <div class="label mb-2 text-lg font-light">{{ label }}</div>
-      <input placeholder="Write pls..." :value="value" />
+  <div class="-mx-4 shadow-lg">
+    <div class="field" :class="isSearchOpened ? 'rounded-t-3px' : 'rounded-3px'">
+      <div class="flex-1 flex flex-col jutify-center">
+        <div class="label mb-2 text-lg font-light">{{ label }}</div>
+        <input placeholder="Write pls..." :value="value" />
+      </div>
+      <div class="append">
+        <button @click="toggleSearch" class="bg-accent text-black rounded-3px py-2 px-3">
+          {{ selectedToken ? selectedToken.name : "Change token..." }}
+        </button>
+      </div>
     </div>
-    <div class="append">
-      append
+    <div class="field-search rounded-b-3px" v-if="isSearchOpened">
+      <div class="px-6 py-3">
+        <input v-model="searchValue" ref="searchInput" placeholder="Search..." />
+      </div>
+      <template v-if="filteredTokens.length">
+        <TokenItem
+          v-for="token in filteredTokens"
+          :key="token.id"
+          :symbol="token.symbol"
+          :name="token.name"
+          class="token-item"
+          @click.native="selectToken(token)"
+        />
+      </template>
+      <div v-else class="text-center py-4 text-xl">
+        Not Found...
+      </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop } from "vue-property-decorator";
+import { Vue, Component, Prop, Ref } from "vue-property-decorator";
+import getTokens, { ITokenItem } from "@/api/getTokens";
+import TokenItem from "./TokenItem.vue";
 
-@Component
+@Component({
+  components: { TokenItem },
+})
 export default class FieldInput extends Vue {
   @Prop() label?: string;
+  @Ref("searchInput") readonly searchInput!: HTMLInputElement;
 
   value: string = "0.0";
+
+  searchValue: string = "";
+  isSearchOpened: boolean = false;
+  selectedToken: ITokenItem | null = null;
+  tokens: ITokenItem[] = [];
+
+  get filteredTokens(): ITokenItem[] {
+    return this.tokens.filter(
+      t => t.name.includes(this.searchValue) || t.symbol.includes(this.searchValue)
+    );
+  }
+
+  async mounted() {
+    const tokens = await getTokens();
+    this.tokens = tokens;
+  }
+
+  toggleSearch() {
+    this.isSearchOpened = !this.isSearchOpened;
+    this.$nextTick(() => this.isSearchOpened && this.searchInput.focus());
+  }
+
+  selectToken(token: ITokenItem) {
+    this.searchValue = "";
+    this.selectedToken = token;
+    this.isSearchOpened = false;
+  }
 }
 </script>
 
 <style lang="postcss" scoped>
+.token-item {
+  @apply bg-transparent px-6 py-2 transition duration-300 cursor-pointer;
+}
+
+.token-item:hover {
+  @apply bg-gray-900;
+}
+
 .field {
-  @apply rounded-3px h-24 -mx-4 px-6 flex items-center;
+  @apply h-24 px-6 flex items-center;
   background: #2a3248;
+}
+
+.field-search {
+  @apply w-full overflow-hidden;
+  background: #242b41;
 }
 
 .label {

@@ -14,6 +14,8 @@ module.exports = {
     "no-debugger": process.env.NODE_ENV === "production" ? "error" : "off",
     quotes: ["error", "double"],
     "comma-dangle": ["error", "only-multiline"],
+    "lines-between-class-members": ["error", "always", { exceptAfterSingleLine: true }],
+    "@typescript-eslint/no-unused-vars": [2, { args: "none" }],
   },
 
   extends: [

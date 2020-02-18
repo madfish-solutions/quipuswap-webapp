@@ -1,5 +1,5 @@
 <template>
-  <div class="h-10 nav-wrapper">
+  <div class="h-10 nav-wrapper shadow-lg">
     <router-link class="nav-item" active-class="active" exact to="/">
       <span>Обменять</span></router-link
     >
