@@ -3,11 +3,11 @@
     <NavTabs class="mb-6" />
     <div class="form-wrapper">
       <InvestNav />
-      <FieldInput label="Deposit" />
+      <FieldInput label="Pool tokens" placeholder="0.0" />
       <div class="text-center py-2">
-        <img class="inline" src="@/assets/plus.png" />
+        <img class="inline" src="@/assets/arrow-down.png" />
       </div>
-      <FieldInput label="Deposit" />
+      <FieldInput label="Output" :withSelect="false" />
       <div class="py-2 px-6">
         <div class="flex justify-between mb-1">
           <span>Exchange rate</span>
@@ -29,7 +29,7 @@
     </div>
     <div class="text-center">
       <button class="bg-primary text-text h-12 w-full max-w-xs rounded-3px text-lg">
-        Add Liquidity
+        Remove Liquidity
       </button>
     </div>
   </div>
