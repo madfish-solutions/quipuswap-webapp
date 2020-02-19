@@ -2,11 +2,11 @@
   <div class="max-w-xl mx-auto">
     <NavTabs class="mb-6" />
     <div class="form-wrapper">
-      <FieldInput label="Input" />
+      <FieldInput placeholder="0.0" label="Input" />
       <div class="text-center py-2">
         <img class="inline" src="@/assets/arrow-down.png" />
       </div>
-      <FieldInput label="Output" />
+      <FieldInput placeholder="0.0" label="Output" />
       <div class="py-2 px-6 flex justify-between">
         <span>Exchange rate</span>
         <span>-</span>
