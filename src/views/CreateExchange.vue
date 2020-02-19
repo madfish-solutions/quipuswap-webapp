@@ -1,10 +1,10 @@
 <template>
   <div class="max-w-xl mx-auto">
     <NavTabs class="mb-6" />
-    <div class="form-wrapper">
+    <Form>
       <InvestNav />
-      <FieldInput label="Token address" placeholder="0x1234..." :withSelect="false" />
-      <div class="py-2 px-6">
+      <FormField label="Token address" placeholder="0x1234..." :withSelect="false" />
+      <FormInfo>
         <div class="flex justify-between mb-1">
           <span>Name</span>
           <span>-</span>
@@ -17,8 +17,8 @@
           <span>Decimals</span>
           <span>-</span>
         </div>
-      </div>
-    </div>
+      </FormInfo>
+    </Form>
 
     <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal">
       Select a token to continue
@@ -33,12 +33,13 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import FieldInput from "@/components/FieldInput.vue";
 import NavTabs from "@/components/NavTabs.vue";
-import InvestNav from "@/components/InvestNav.vue";
+import NavInvest from "@/components/NavInvest.vue";
+
+import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
 
 @Component({
-  components: { NavTabs, FieldInput, InvestNav },
+  components: { NavTabs, NavInvest, Form, FormField, FormIcon, FormInfo },
 })
 export default class CreateExchange extends Vue {}
 </script>

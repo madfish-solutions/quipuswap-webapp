@@ -1,14 +1,14 @@
 <template>
   <div class="max-w-xl mx-auto">
     <NavTabs class="mb-6" />
-    <div class="form-wrapper">
+    <Form>
       <InvestNav />
-      <FieldInput placeholder="0.0" label="Deposit" />
-      <div class="text-center py-2">
-        <img class="inline" src="@/assets/plus.png" />
-      </div>
-      <FieldInput placeholder="0.0" label="Deposit" />
-      <div class="py-2 px-6">
+      <FormField placeholder="0.0" label="Deposit" />
+      <FormIcon>
+        <img src="@/assets/plus.png" />
+      </FormIcon>
+      <FormField placeholder="0.0" label="Deposit" />
+      <FormInfo>
         <div class="flex justify-between mb-1">
           <span>Exchange rate</span>
           <span>-</span>
@@ -21,8 +21,8 @@
           <span>Your Pool Share (%)</span>
           <span>-</span>
         </div>
-      </div>
-    </div>
+      </FormInfo>
+    </Form>
 
     <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal">
       Select a token to continue
@@ -37,12 +37,12 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import FieldInput from "@/components/FieldInput.vue";
 import NavTabs from "@/components/NavTabs.vue";
-import InvestNav from "@/components/InvestNav.vue";
+import NavInvest from "@/components/NavInvest.vue";
+import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
 
 @Component({
-  components: { NavTabs, FieldInput, InvestNav },
+  components: { NavTabs, NavInvest, Form, FormField, FormIcon, FormInfo },
 })
 export default class AddLiquidity extends Vue {}
 </script>
