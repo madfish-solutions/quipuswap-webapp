@@ -1,6 +1,11 @@
 <template>
   <div id="app">
-    <AppLayout class="pt-4 pb-12">
+    <AppLayout class="pt-4 pb-12 relative">
+      <button
+        class="text-white w-56 h-12 border-2 border border-accent rounded-3px absolute right-0 top-40px"
+      >
+        Connect to a Wallet
+      </button>
       <img class="mx-auto mb-12" src="./assets/logo.png" />
       <router-view />
     </AppLayout>
