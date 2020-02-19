@@ -1,17 +1,17 @@
 <template>
   <div class="max-w-xl mx-auto">
     <NavTabs class="mb-6" />
-    <div class="form-wrapper">
-      <FieldInput placeholder="0.0" label="Input" />
-      <div class="text-center py-2">
-        <img class="inline" src="@/assets/arrow-down.png" />
-      </div>
-      <FieldInput placeholder="0.0" label="Output" />
-      <div class="py-2 px-6 flex justify-between">
+    <Form>
+      <FormField placeholder="0.0" label="Input" />
+      <FormIcon>
+        <img src="@/assets/arrow-down.png" />
+      </FormIcon>
+      <FormField placeholder="0.0" label="Output" />
+      <FormInfo class="flex justify-between">
         <span>Exchange rate</span>
         <span>-</span>
-      </div>
-    </div>
+      </FormInfo>
+    </Form>
     <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal">
       Select a token to continue
     </div>
@@ -25,11 +25,13 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import FieldInput from "@/components/FieldInput.vue";
+
 import NavTabs from "@/components/NavTabs.vue";
 
+import Form, { FormIcon, FormField, FormInfo } from "@/components/Form";
+
 @Component({
-  components: { NavTabs, FieldInput },
+  components: { NavTabs, Form, FormIcon, FormField, FormInfo },
 })
 export default class Swap extends Vue {}
 </script>

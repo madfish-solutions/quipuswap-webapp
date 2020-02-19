@@ -28,5 +28,3 @@ export default class TokenItem extends Vue {
   imgUrl!: string;
 }
 </script>
-
-<style lang="postcss" scoped></style>

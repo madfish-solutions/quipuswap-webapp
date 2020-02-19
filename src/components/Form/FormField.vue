@@ -43,12 +43,12 @@
 <script lang="ts">
 import { Vue, Component, Prop, Ref } from "vue-property-decorator";
 import getTokens, { ITokenItem } from "@/api/getTokens";
-import TokenItem from "./Form/TokenItem.vue";
+import TokenItem from "./TokenItem.vue";
 
 @Component({
   components: { TokenItem },
 })
-export default class FieldInput extends Vue {
+export default class FormField extends Vue {
   @Prop() label?: string;
   @Prop({ default: true }) withSelect?: boolean;
   @Ref("searchInput") readonly searchInput!: HTMLInputElement;
