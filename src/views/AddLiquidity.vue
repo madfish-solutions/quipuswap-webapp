@@ -28,9 +28,9 @@
       Select a token to continue
     </div>
     <div class="text-center">
-      <button class="bg-primary text-text h-12 w-full max-w-xs rounded-3px text-lg">
+      <SubmitBtn disabled>
         Add Liquidity
-      </button>
+      </SubmitBtn>
     </div>
   </div>
 </template>
@@ -40,9 +40,10 @@ import { Component, Vue } from "vue-property-decorator";
 import NavTabs from "@/components/NavTabs.vue";
 import NavInvest from "@/components/NavInvest.vue";
 import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
+import SubmitBtn from "@/components/SubmitBtn.vue";
 
 @Component({
-  components: { NavTabs, NavInvest, Form, FormField, FormIcon, FormInfo },
+  components: { NavTabs, NavInvest, Form, FormField, FormIcon, FormInfo, SubmitBtn },
 })
 export default class AddLiquidity extends Vue {}
 </script>

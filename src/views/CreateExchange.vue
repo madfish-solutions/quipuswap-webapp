@@ -24,9 +24,9 @@
       Select a token to continue
     </div>
     <div class="text-center">
-      <button class="bg-primary text-text h-12 w-full max-w-xs rounded-3px text-lg">
+      <SubmitBtn disabled>
         Create exchange
-      </button>
+      </SubmitBtn>
     </div>
   </div>
 </template>
@@ -37,9 +37,10 @@ import NavTabs from "@/components/NavTabs.vue";
 import NavInvest from "@/components/NavInvest.vue";
 
 import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
+import SubmitBtn from "@/components/SubmitBtn.vue";
 
 @Component({
-  components: { NavTabs, NavInvest, Form, FormField, FormIcon, FormInfo },
+  components: { NavTabs, NavInvest, Form, FormField, FormIcon, FormInfo, SubmitBtn },
 })
 export default class CreateExchange extends Vue {}
 </script>

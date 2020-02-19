@@ -21,9 +21,9 @@
       Select a token to continue
     </div>
     <div class="text-center">
-      <button class="bg-primary text-text h-12 w-full max-w-xs rounded-3px text-lg">
+      <SubmitBtn disabled>
         Send
-      </button>
+      </SubmitBtn>
     </div>
   </div>
 </template>
@@ -33,9 +33,10 @@ import { Component, Vue } from "vue-property-decorator";
 import NavTabs from "@/components/NavTabs.vue";
 
 import Form, { FormIcon, FormField, FormInfo } from "@/components/Form";
+import SubmitBtn from "@/components/SubmitBtn.vue";
 
 @Component({
-  components: { NavTabs, Form, FormIcon, FormField, FormInfo },
+  components: { NavTabs, Form, FormIcon, FormField, FormInfo, SubmitBtn },
 })
 export default class Send extends Vue {}
 </script>
