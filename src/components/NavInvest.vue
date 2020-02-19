@@ -4,9 +4,9 @@
       <router-link
         to="/invest/add-liquidity"
         active-class="active"
-        class="flex flex-col leading-tight"
+        class="flex flex-col  leading-tight"
       >
-        <span class="text-xl">Add</span>
+        <span class="text-base xs:text-xl">Add</span>
         <span class="text-xs">Liquidity</span>
       </router-link>
     </div>
@@ -16,7 +16,7 @@
         active-class="active"
         class="flex flex-col leading-tight"
       >
-        <span class="text-xl">Remove</span>
+        <span class="text-base xs:text-xl">Remove</span>
         <span class="text-xs">Liquidity</span>
       </router-link>
     </div>
@@ -26,7 +26,7 @@
         active-class="active"
         class="flex flex-col leading-tight"
       >
-        <span class="text-xl">Create</span>
+        <span class="text-base xs:text-xl">Create</span>
         <span class="text-xs">Exchange</span>
       </router-link>
     </div>
