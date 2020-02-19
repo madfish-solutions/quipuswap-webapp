@@ -3,11 +3,11 @@
     <NavTabs class="mb-6" />
     <div class="form-wrapper">
       <InvestNav />
-      <FieldInput label="Deposit" />
+      <FieldInput placeholder="0.0" label="Deposit" />
       <div class="text-center py-2">
         <img class="inline" src="@/assets/plus.png" />
       </div>
-      <FieldInput label="Deposit" />
+      <FieldInput placeholder="0.0" label="Deposit" />
       <div class="py-2 px-6">
         <div class="flex justify-between mb-1">
           <span>Exchange rate</span>
