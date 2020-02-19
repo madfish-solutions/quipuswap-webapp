@@ -117,7 +117,7 @@ input {
   @apply bg-transparent outline-none text-base font-light;
 }
 
-@sceen xs {
+@screen xs {
   .field {
     @apply px-6 h-24;
   }
