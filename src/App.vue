@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <AppLayout class="pt-4 pb-12 relative">
+    <AppLayout class="pt-4 pb-12 relative px-4 xs:px-6">
       <button
         class="text-white w-56 h-12 border-2 border border-accent rounded-3px absolute right-0 top-40px"
       >
