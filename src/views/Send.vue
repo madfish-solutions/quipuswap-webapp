@@ -2,27 +2,27 @@
   <div class="max-w-xl mx-auto">
     <NavTabs class="mb-6" />
     <div class="form-wrapper">
-      <FieldInput label="Ввести" />
+      <FieldInput label="Input" />
       <div class="text-center py-2">
         <img class="inline" src="@/assets/arrow-down.png" />
       </div>
-      <FieldInput label="Вывести" />
+      <FieldInput label="Output" />
       <div class="text-center py-2">
         <img class="inline" src="@/assets/arrow-down.png" />
       </div>
-      <FieldInput label="Адрес получателя" />
+      <FieldInput label="Recipient Address" />
       <div class="py-2 px-6 flex justify-between">
-        <span>Курс обмена</span>
+        <span>Exchange rate</span>
         <span>-</span>
       </div>
     </div>
 
     <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal">
-      Введите токен, чтобы продолжить
+      Select a token to continue
     </div>
     <div class="text-center">
       <button class="bg-primary text-text h-12 w-full max-w-xs rounded-3px text-lg">
-        Connect to a Wallet
+        Send
       </button>
     </div>
   </div>

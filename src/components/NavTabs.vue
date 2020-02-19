@@ -1,13 +1,11 @@
 <template>
   <div class="h-10 nav-wrapper shadow-lg">
     <router-link class="nav-item" active-class="active" exact to="/">
-      <span>Обменять</span></router-link
+      <span>Swap</span></router-link
     >
-    <router-link class="nav-item" active-class="active" to="/send"
-      ><span>Отправить</span></router-link
-    >
-    <router-link class="nav-item" active-class="active" to="/add-liquidity"
-      ><span>Вложить</span></router-link
+    <router-link class="nav-item" active-class="active" to="/send"><span>Send</span></router-link>
+    <router-link class="nav-item" active-class="active" to="/invest"
+      ><span>Invest</span></router-link
     >
   </div>
 </template>
@@ -23,6 +21,7 @@ export default class NavTabs extends Vue {}
 .nav-wrapper {
   @apply flex text-white rounded-3px;
   background: #37415f;
+  /* background: rgba(55, 65, 95, 0.4); */
   overflow: hidden;
 }
 

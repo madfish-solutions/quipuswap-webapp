@@ -3,18 +3,19 @@
     <div class="field" :class="isSearchOpened ? 'rounded-t-3px' : 'rounded-3px'">
       <div class="flex-1 flex flex-col jutify-center">
         <div class="label mb-2 text-lg font-light">{{ label }}</div>
-        <input placeholder="Write pls..." :value="value" />
+        <input placeholder="0.0" :value="value" />
       </div>
       <div class="append">
         <button
           @click="toggleSearch"
-          class="flex text-white border-accent border-2  rounded-3px py-2 px-3"
+          class="flex text-white border-accent border-2 items-center rounded-3px py-2 px-3"
         >
           <template v-if="selectedToken">
             <img class="w-5 h-5 mr-2" :src="selectedToken.imgUrl" />
-            {{ selectedToken.name }}
+            {{ selectedToken.symbol }}
           </template>
-          <span v-else>Change token...</span>
+          <span v-else>Select a token</span>
+          <img class="w-3 ml-2" style="margin-top: -2px" src="@/assets/chevron-white.svg" />
         </button>
       </div>
     </div>
