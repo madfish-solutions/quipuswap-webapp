@@ -2,9 +2,7 @@
   <div class="max-w-xl mx-auto">
     <NavTabs class="mb-6" />
     <div class="form-wrapper">
-      <div class="px-6 py-3 text-accent font-normal text-lg">
-        Add liquidity
-      </div>
+      <InvestNav />
       <FieldInput label="Deposit" />
       <div class="text-center py-2">
         <img class="inline" src="@/assets/plus.png" />
@@ -41,9 +39,10 @@
 import { Component, Vue } from "vue-property-decorator";
 import FieldInput from "@/components/FieldInput.vue";
 import NavTabs from "@/components/NavTabs.vue";
+import InvestNav from "@/components/InvestNav.vue";
 
 @Component({
-  components: { NavTabs, FieldInput },
+  components: { NavTabs, FieldInput, InvestNav },
 })
-export default class Invest extends Vue {}
+export default class CreateExchange extends Vue {}
 </script>
