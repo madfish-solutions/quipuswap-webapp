@@ -3,9 +3,9 @@
     <div class="field" :class="isSearchOpened ? 'rounded-t-3px' : 'rounded-3px'">
       <div class="flex-1 flex flex-col jutify-center">
         <div class="label mb-2 text-lg font-light">{{ label }}</div>
-        <input placeholder="0.0" :value="value" />
+        <input v-bind="$attrs" v-on="$listeners" />
       </div>
-      <div class="append">
+      <div v-if="withSelect" class="append">
         <button
           @click="toggleSearch"
           class="flex text-white border-accent border-2 items-center rounded-3px py-2 px-3"
@@ -50,6 +50,7 @@ import TokenItem from "./TokenItem.vue";
 })
 export default class FieldInput extends Vue {
   @Prop() label?: string;
+  @Prop({ default: true }) withSelect?: boolean;
   @Ref("searchInput") readonly searchInput!: HTMLInputElement;
 
   value: string = "0.0";
@@ -66,6 +67,7 @@ export default class FieldInput extends Vue {
   }
 
   async mounted() {
+    if (!this.withSelect) return;
     const tokens = await getTokens();
     this.tokens = tokens;
   }

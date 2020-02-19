@@ -3,22 +3,18 @@
     <NavTabs class="mb-6" />
     <div class="form-wrapper">
       <InvestNav />
-      <FieldInput label="Deposit" />
-      <div class="text-center py-2">
-        <img class="inline" src="@/assets/plus.png" />
-      </div>
-      <FieldInput label="Deposit" />
+      <FieldInput label="Token address" placeholder="0x1234..." :withSelect="false" />
       <div class="py-2 px-6">
         <div class="flex justify-between mb-1">
-          <span>Exchange rate</span>
+          <span>Name</span>
           <span>-</span>
         </div>
         <div class="flex justify-between mb-1">
-          <span>Current pool size</span>
+          <span>Symbols</span>
           <span>-</span>
         </div>
         <div class="flex justify-between">
-          <span>Your Pool Share (%)</span>
+          <span>Decimals</span>
           <span>-</span>
         </div>
       </div>
