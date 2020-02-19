@@ -2,7 +2,7 @@
   <div class="max-w-xl mx-auto">
     <NavTabs class="mb-6" />
     <Form>
-      <InvestNav />
+      <NavInvest />
       <FormField label="Token address" placeholder="0x1234..." :withSelect="false" />
       <FormInfo>
         <div class="flex justify-between mb-1">

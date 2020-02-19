@@ -2,7 +2,7 @@
   <div class="max-w-xl mx-auto">
     <NavTabs class="mb-6" />
     <Form>
-      <InvestNav />
+      <NavInvest />
       <FormField label="Pool tokens" placeholder="0.0" />
       <FormIcon>
         <img src="@/assets/arrow-down.png" />

@@ -2,7 +2,7 @@
   <div class="max-w-xl mx-auto">
     <NavTabs class="mb-6" />
     <Form>
-      <InvestNav />
+      <NavInvest />
       <FormField placeholder="0.0" label="Deposit" />
       <FormIcon>
         <img src="@/assets/plus.png" />
