@@ -25,7 +25,7 @@
     </div>
     <div class="text-center">
       <button class="bg-primary text-text h-12 w-full max-w-xs rounded-3px text-lg">
-        Add Liquidity
+        Create exchange
       </button>
     </div>
   </div>
