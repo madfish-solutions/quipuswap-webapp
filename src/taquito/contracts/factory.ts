@@ -17,11 +17,7 @@ export async function launchExchange(address1: string, address2: string) {
   return op;
 }
 
-export async function tokenToExchangeLookup(
-  token = "tz1VxS7ff4YnZRs8b4mMP4WaMVpoQjuo1rjf",
-  token2 = "tz1PirboZKFVqkfE45hVLpkpXaZtLk3mqC17",
-  nat = 10
-) {
+export async function tokenToExchangeLookup(token: string, token2: string, nat: number) {
   const contract = await initContract(CONTRACT);
   const op = await contract.methods.tokenToExchangeLookup(token, token2, nat).send();
   return op;

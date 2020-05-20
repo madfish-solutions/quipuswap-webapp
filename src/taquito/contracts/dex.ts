@@ -13,6 +13,12 @@ const CONTRACT = "KT1CVjrhWnYqSxHdMV6qWrfXN6mEsmtejDvX";
 // tokenToTokenPayment: {8: "nat", 9: "nat", 10: "address", 11: "address"}
 // tokenToTokenSwap: {9: "nat", 10: "nat", 11: "address"}
 
+export async function getDexStorage() {
+  const contract = await initContract(CONTRACT);
+  const storage = await contract.storage<any>();
+  return storage;
+}
+
 export async function divestLiquidity(num1: string, num2: string, num3: string) {
   const contract = await initContract(CONTRACT);
   const op = await contract.methods.divestLiquidity(num1, num2, num3).send();
@@ -20,10 +26,7 @@ export async function divestLiquidity(num1: string, num2: string, num3: string) 
   return op;
 }
 
-export async function investLiquidity(
-  amount: number,
-  bakerPkh = "tz1VxS7ff4YnZRs8b4mMP4WaMVpoQjuo1rjf"
-) {
+export async function investLiquidity(amount: number, bakerPkh: string) {
   const contract = await initContract(CONTRACT);
   const op = await contract.methods.investLiquidity(amount, bakerPkh).send({ amount });
   await op.confirmation();
@@ -44,9 +47,19 @@ export async function tezToTokenPayment(num: number, address: string) {
   return op;
 }
 
-export async function tezToTokenSwap(num: number) {
+export async function tezToTokenSwap(num: number, num2: number) {
   const contract = await initContract(CONTRACT);
-  const op = await contract.methods.tezToTokenSwap(num).send();
+  const op = await contract.methods.tezToTokenSwap(num).send({ amount: num2 });
   op.confirmation();
+  return op;
+}
+
+export async function tokenToTezSwap(num1: number, num2: number) {
+  console.log("RUN");
+  const contract = await initContract(CONTRACT);
+  const op = await contract.methods.tokenToTezSwap(num1, num2).send();
+  await op.confirmation();
+  console.log("DONE");
+
   return op;
 }

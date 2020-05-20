@@ -2,7 +2,9 @@
   <div class="-mx-3 xs:-mx-4 shadow-lg">
     <div class="field" :class="isSearchOpened ? 'rounded-t-3px' : 'rounded-3px'">
       <div class="flex-1 flex flex-col jutify-center">
-        <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">{{ label }}</div>
+        <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">
+          {{ label }}
+        </div>
         <input class="w-full" v-bind="$attrs" v-on="$listeners" />
       </div>
       <div v-if="withSelect" class="append flex">
@@ -49,7 +51,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Ref } from "vue-property-decorator";
-import getTokens, { ITokenItem } from "@/api/getTokens";
+import { ITokenItem } from "@/api/getTokens";
 import TokenItem from "./TokenItem.vue";
 
 @Component({
@@ -65,21 +67,36 @@ export default class FormField extends Vue {
   searchValue: string = "";
   isSearchOpened: boolean = false;
   selectedToken: ITokenItem | null = null;
-  tokens: ITokenItem[] = [];
+  tokens: ITokenItem[] = [
+    {
+      id: "xtz",
+      name: "Tezos",
+      symbol: "XTZ",
+      imgUrl:
+        "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xB6eD7644C69416d67B522e20bC294A9a9B405B31/logo.png",
+    },
+    {
+      id: "KT1R299cg7K94e3rFCGzpacTXJshQ43meffR",
+      name: "Token",
+      symbol: "KT1R299cg7K94e3rFCGzpacTXJshQ43meffR",
+      imgUrl:
+        "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xB6eD7644C69416d67B522e20bC294A9a9B405B31/logo.png",
+    },
+  ];
 
   get filteredTokens(): ITokenItem[] {
-    return this.tokens.filter(
+    return this.tokens!.filter(
       t =>
         t.name.toLowerCase().includes(this.searchValue.toLowerCase()) ||
         t.symbol.toLowerCase().includes(this.searchValue.toLowerCase())
     );
   }
 
-  async mounted() {
-    if (!this.withSelect) return;
-    const tokens = await getTokens();
-    this.tokens = tokens;
-  }
+  // async mounted() {
+  //   // if (!this.withSelect) return;
+  //   // const tokens = await getTokens();
+  //   // this.tokens = tokens;
+  // }
 
   toggleSearch() {
     this.isSearchOpened = !this.isSearchOpened;
@@ -90,6 +107,7 @@ export default class FormField extends Vue {
     this.searchValue = "";
     this.selectedToken = token;
     this.isSearchOpened = false;
+    this.$emit("select", token);
   }
 }
 </script>

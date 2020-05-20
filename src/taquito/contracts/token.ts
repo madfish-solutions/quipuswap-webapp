@@ -10,8 +10,8 @@ const CONTRACT = "KT1R299cg7K94e3rFCGzpacTXJshQ43meffR";
 // mint: "nat"
 // transfer: { 6: "address", 7: "address", 8: "nat" }
 
-export async function getStorage() {
-  const contract = await initContract(CONTRACT);
+export async function getStorage(contractAddress = CONTRACT) {
+  const contract = await initContract(contractAddress);
   const storage = await contract.storage();
   return storage;
 }
@@ -25,7 +25,7 @@ export async function getBalance(address: string) {
 export async function approve(address: string, coins: number) {
   const contract = await initContract(CONTRACT);
   const op = await contract.methods.approve(address, coins).send();
-  op.confirmation(1);
+  await op.confirmation(1);
   return op;
 }
 
