@@ -15,11 +15,19 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import AppLayout from "@/components/AppLayout.vue";
-
+import store from "@/store";
 @Component({
   components: { AppLayout },
 })
-export default class App extends Vue {}
+export default class App extends Vue {
+  created() {
+    this.tokens();
+  }
+
+  tokens = () => {
+    store.dispatch("tokens");
+  };
+}
 </script>
 
 <style lang="scss">

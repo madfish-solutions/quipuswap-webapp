@@ -40,22 +40,15 @@ import { Component, Vue } from "vue-property-decorator";
 import NavTabs from "@/components/NavTabs.vue";
 import Form, { FormIcon, FormField, FormInfo } from "@/components/Form";
 import SubmitBtn from "@/components/SubmitBtn.vue";
-import { getDexStorage, tezToTokenSwap, tokenToTezSwap } from "@/taquito/contracts/dex";
+import { tezToTokenSwap, tokenToTezSwap } from "@/taquito/contracts/dex";
 import { approve } from "@/taquito/contracts/token";
 import { ITokenItem } from "@/api/getTokens";
+import { getStorage } from "@/taquito/tezos";
 
-getDexStorage().then(a => console.log(a));
 @Component({
   components: { NavTabs, Form, FormIcon, FormField, FormInfo, SubmitBtn },
 })
 export default class Swap extends Vue {
-  private dexStorage: any = {
-    storage: {},
-    set setStorage(storage: any) {
-      this.storage = storage;
-    },
-  };
-
   private exchangeRate: any = {
     rate: "-",
     set setRate(rateString: string) {
@@ -77,22 +70,33 @@ export default class Swap extends Vue {
   private inputToken: any = {
     amount: "",
     token: {},
+    storage: {},
+
     set setToken(token: ITokenItem) {
       this.token = token;
     },
+
     set setAmount(amount: any) {
       this.amount = amount;
+    },
+    set setStorage(storage: object) {
+      this.storage = storage;
     },
   };
 
   private outputToken: any = {
     amount: "",
     token: {},
+    storage: {},
+
     set setToken(token: ITokenItem) {
       this.token = token;
     },
     set setAmount(amount: any) {
       this.amount = amount;
+    },
+    set setStorage(storage: object) {
+      this.storage = storage;
     },
   };
 
@@ -120,65 +124,77 @@ export default class Swap extends Vue {
     }
   };
 
-  onInputTokenAmount = async (val: string) => {
-    if (val.length) {
-      this.inputToken.setAmount = val;
-      this.calcOutputAmount();
+  onInputTokenAmount = async (amount: string) => {
+    if (amount.length) {
+      this.inputToken.setAmount = amount;
+      this.calcOutputAmount(parseFloat(amount));
       this.swap.setSwapPossibility = true;
-
       return;
     }
     this.resetAmount();
     this.swap.setSwapPossibility = false;
   };
 
-  onOutputTokenAmount = async (val: string) => {
-    if (val.length) {
-      this.outputToken.setAmount = val;
-      this.calcInputAmount();
+  onOutputTokenAmount = async (amount: string) => {
+    if (amount.length) {
+      this.outputToken.setAmount = amount;
+      this.calcInputAmount(parseFloat(amount));
       this.swap.setSwapPossibility = true;
-
       return;
     }
     this.resetAmount();
     this.swap.setSwapPossibility = false;
   };
 
-  calcOutputAmount() {
+  calcOutputAmount(amount: number) {
     const { inputToken, outputToken } = this;
-    if (inputToken.amount) {
-      if (inputToken.token.id === "xtz") {
-        outputToken.setAmount = `${this.calcTezToToken(inputToken.amount)}`;
-      } else {
-        outputToken.setAmount = `${this.calcTokenToTez(inputToken.amount)}`;
-      }
+    if (inputToken.token.type === "xtz") {
+      const tokenAmount: any = `${this.calcTezToToken(outputToken.storage, amount)}`;
+      outputToken.setAmount = tokenAmount;
+      const pricePerToken = (amount / tokenAmount).toFixed(2);
+      this.exchangeRate.setRate = `1 ${this.outputToken.token.name} = ${pricePerToken} ${this.inputToken.token.name}`;
+    }
+    if (outputToken.token.type === "token" && inputToken.token.type === "token") {
+      const xtzInput = `${this.calcTokenToTez(inputToken.storage, amount)}`;
+      const tokenAmount: any = `${this.calcTezToToken(outputToken.storage, xtzInput)}`;
+      console.log(xtzInput, tokenAmount);
+      const pricePerToken = (amount / tokenAmount).toFixed(2);
+      this.exchangeRate.setRate = `1 ${this.outputToken.token.name} = ${pricePerToken} ${this.inputToken.token.name}`;
+      outputToken.setAmount = tokenAmount;
     }
   }
 
-  calcInputAmount() {
+  calcInputAmount(amount: number) {
     const { inputToken, outputToken } = this;
-    if (outputToken.amount) {
-      if (outputToken.token.id === "xtz") {
-        inputToken.setAmount = `${this.calcTezToToken(outputToken.amount)}`;
-      } else {
-        inputToken.setAmount = `${this.calcTokenToTez(outputToken.amount)}`;
-      }
+    if (outputToken.token.type === "xtz") {
+      const tokenAmount: any = `${this.calcTezToToken(inputToken.storage, amount)}`;
+      const pricePerToken = (tokenAmount / outputToken.amount).toFixed(2);
+      inputToken.setAmount = tokenAmount;
+      this.exchangeRate.setRate = `1 Output ${this.outputToken.token.name} = ${pricePerToken} Input ${this.inputToken.token.name}`;
+    }
+    if (outputToken.token.type === "token" && inputToken.token.type === "token") {
+      const xtzOutput = `${this.calcTokenToTez(outputToken.storage, amount)}`;
+      const tokenAmount: any = `${this.calcTezToToken(inputToken.storage, xtzOutput)}`;
+      console.log(xtzOutput, tokenAmount);
+      const pricePerToken = (amount / tokenAmount).toFixed(2);
+      this.exchangeRate.setRate = `1 Output ${this.outputToken.token.name} = ${pricePerToken} Input ${this.inputToken.token.name}`;
+      inputToken.setAmount = tokenAmount;
     }
   }
 
-  async mounted() {
-    this.dexStorage.setStorage = await getDexStorage();
-  }
-
-  onSelectInputToken = (val: any) => {
-    this.inputToken.setToken = val;
-    this.calcExchangeRate();
+  onSelectInputToken = async (token: any) => {
+    this.inputToken.setToken = token;
+    if (token.type === "token") {
+      this.inputToken.setStorage = await getStorage(token.exchange);
+    }
     this.resetAmount();
   };
 
-  onSelectOutputToken = (val: any) => {
-    this.outputToken.setToken = val;
-    this.calcExchangeRate();
+  onSelectOutputToken = async (token: any) => {
+    this.outputToken.setToken = token;
+    if (token.type === "token") {
+      this.outputToken.setStorage = await getStorage(token.exchange);
+    }
     this.resetAmount();
   };
 
@@ -188,21 +204,31 @@ export default class Swap extends Vue {
   };
 
   calcExchangeRate() {
-    if (this.inputToken.token.name && this.outputToken.token.name) {
-      if (this.inputToken.token.id === "xtz") {
-        this.exchangeRate.setRate = `1 ${this.inputToken.token.name} = ${(
-          1 / this.calcTokenToTez(1)
-        ).toFixed(2)} ${this.outputToken.token.name}`;
-      } else {
-        this.exchangeRate.setRate = `1 ${this.inputToken.token.name} = ${this.calcTokenToTez(1)} ${
-          this.outputToken.token.name
-        }`;
-      }
+    const {
+      inputToken: { token: input, storage: inputStorage },
+      outputToken: { token: output, storage: outputStorage },
+    } = this;
+    if (!Object.keys(inputStorage).length || !Object.keys(outputStorage).length) return;
+    if (input.type === "token" && output.type === "token") {
+      const inputPricePerTezos = this.calcTezToToken(inputStorage, 1);
+      const outputPricePerTezos = this.calcTezToToken(outputStorage, 1);
+      console.log(inputPricePerTezos, "input", outputPricePerTezos, "out");
     }
+
+    // if (this.inputToken.token.name && this.outputToken.token.name) {
+    //   if (this.inputToken.token.id === "xtz") {
+    //     this.exchangeRate.setRate = `1 ${this.inputToken.token.name} = ${(
+    //       1 / this.calcTokenToTez(1)
+    //     ).toFixed(2)} ${this.outputToken.token.name}`;
+    //   } else {
+    //     this.exchangeRate.setRate = `1 ${this.inputToken.token.name} = ${this.calcTokenToTez(1)} ${
+    //       this.outputToken.token.name
+    //     }`;
+    //   }
+    // }
   }
 
-  calcTezToToken = (tezAmount: any): any => {
-    const { storage } = this.dexStorage;
+  calcTezToToken = (storage: any, tezAmount: any): any => {
     const mutezAmount: number = parseFloat(tezAmount) * 1000000;
     const fee: number = Number(`${mutezAmount / storage.feeRate}`);
     const newTezPool: any = Number(`${+storage.tezPool + +mutezAmount}`);
@@ -212,8 +238,7 @@ export default class Swap extends Vue {
     return minTokens.toFixed(2);
   };
 
-  calcTokenToTez = (tokenAmount: any): any => {
-    const { storage } = this.dexStorage;
+  calcTokenToTez = (storage: any, tokenAmount: any): any => {
     const fee: number = parseInt(`${tokenAmount / storage.feeRate}`, 10);
     const newTokenPool: any = parseInt(`${+storage.tokenPool + +tokenAmount}`, 10);
     const tempTokenPool: any = parseInt(`${newTokenPool - fee}`, 10);
