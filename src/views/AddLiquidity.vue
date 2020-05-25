@@ -3,11 +3,11 @@
     <NavTabs class="mb-6" />
     <Form>
       <NavInvest />
-      <FormField placeholder="0.0" label="Deposit" />
+      <FormField @input="e => (amount = e.target.value)" placeholder="0.0" label="Deposit" />
       <FormIcon>
         <img src="@/assets/plus.png" />
       </FormIcon>
-      <FormField placeholder="0.0" label="Deposit" />
+      <FormField placeholder="tz.." label="Baker address" @input="e => (baker = e.target.value)" />
       <FormInfo>
         <div class="flex justify-between mb-1">
           <span>Exchange rate</span>
@@ -28,7 +28,7 @@
       Select a token to continue
     </div>
     <div class="text-center">
-      <SubmitBtn disabled>
+      <SubmitBtn @click="handleAddLiquidity">
         Add Liquidity
       </SubmitBtn>
     </div>
@@ -41,9 +41,24 @@ import NavTabs from "@/components/NavTabs.vue";
 import NavInvest from "@/components/NavInvest.vue";
 import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
 import SubmitBtn from "@/components/SubmitBtn.vue";
+import { investLiquidity } from "@/taquito/index";
 
 @Component({
-  components: { NavTabs, NavInvest, Form, FormField, FormIcon, FormInfo, SubmitBtn },
+  components: {
+    NavTabs,
+    NavInvest,
+    Form,
+    FormField,
+    FormIcon,
+    FormInfo,
+    SubmitBtn,
+  },
 })
-export default class AddLiquidity extends Vue {}
+export default class AddLiquidity extends Vue {
+  amount: number = 0;
+  baker: string = "";
+  handleAddLiquidity(): void {
+    investLiquidity(this.amount, this.baker);
+  }
+}
 </script>
