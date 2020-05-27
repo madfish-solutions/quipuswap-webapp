@@ -1,7 +1,6 @@
 import initContract from "@/taquito/tezos";
 import BigNumber from "bignumber.js";
 
-const CONTRACT = "KT1R299cg7K94e3rFCGzpacTXJshQ43meffR";
 // approve: { 0: "address", 1: "nat" }
 // burn: "nat"
 // getAllowance: { 2: "address", 3: "address", 4: "contract" }
@@ -10,20 +9,20 @@ const CONTRACT = "KT1R299cg7K94e3rFCGzpacTXJshQ43meffR";
 // mint: "nat"
 // transfer: { 6: "address", 7: "address", 8: "nat" }
 
-export async function getStorage(contractAddress = CONTRACT) {
+export async function getStorage(contractAddress: string) {
   const contract = await initContract(contractAddress);
-  const storage = await contract.storage();
+  const storage = await contract.storage().catch(e => console.error(e));
   return storage;
 }
 
-export async function getBalance(address: string) {
-  const storage: any = await getStorage();
+export async function getBalance(contractAddress: string, address: string) {
+  const storage: any = await getStorage(contractAddress);
   const ledger = storage.ledger.valueMap.get(`"${address}"`);
   return new BigNumber(ledger.balance).toNumber();
 }
 
-export async function approve(address: string, coins: number) {
-  const contract = await initContract(CONTRACT);
+export async function approve(contractAddress: string, address: string, coins: number) {
+  const contract = await initContract(contractAddress);
   const op = await contract.methods.approve(address, coins).send();
   await op.confirmation(1);
   return op;

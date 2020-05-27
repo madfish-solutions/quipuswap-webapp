@@ -3,11 +3,32 @@
     <NavTabs class="mb-6" />
     <Form>
       <NavInvest />
-      <FormField @input="e => (amount = e.target.value)" placeholder="0.0" label="Deposit" />
+      <FormField
+        placeholder="0.0"
+        label="Deposit"
+        :withTezos="false"
+        :onlyTezos="true"
+        v-model="inputAmount"
+        @input="e => onInputAmount(e.target.value)"
+        @selectToken="onSelectToken"
+      />
+      <FormField
+        placeholder="0.0"
+        label="To token"
+        :withTezos="false"
+        v-model="outputAmount"
+        @input="e => onOutputAmount(e.target.value)"
+        @selectToken="onSelectToken"
+      />
       <FormIcon>
         <img src="@/assets/plus.png" />
       </FormIcon>
-      <FormField placeholder="tz.." label="Baker address" @input="e => (baker = e.target.value)" />
+      <FormField
+        placeholder="tz.."
+        label="Baker address"
+        :withSelect="false"
+        @input="e => (baker = e.target.value)"
+      />
       <FormInfo>
         <div class="flex justify-between mb-1">
           <span>Exchange rate</span>
@@ -41,7 +62,11 @@ import NavTabs from "@/components/NavTabs.vue";
 import NavInvest from "@/components/NavInvest.vue";
 import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
 import SubmitBtn from "@/components/SubmitBtn.vue";
-import { investLiquidity } from "@/taquito/index";
+import { investLiquidity } from "@/taquito/contracts/dex";
+import { getStorage } from "@/taquito/tezos";
+import { ITokenItem } from "@/api/getTokens";
+import { calcTezToToken, calcTokenToTez } from "../helpers/convert";
+// import { calcTezToToken, calcTokenToTez } from "@/helpers/convert";
 
 @Component({
   components: {
@@ -55,10 +80,59 @@ import { investLiquidity } from "@/taquito/index";
   },
 })
 export default class AddLiquidity extends Vue {
-  amount: number = 0;
+  inputAmount: string = "";
+  outputAmount: string = "";
   baker: string = "";
-  handleAddLiquidity(): void {
-    investLiquidity(this.amount, this.baker);
+
+  private selectedToken: any = {
+    token: {},
+    storage: {},
+    amount: null,
+    set setToken(token: ITokenItem) {
+      this.token = token;
+    },
+
+    set setAmount(amount: any) {
+      if (amount.length) this.amount = amount;
+      else this.amount = null;
+    },
+    set setStorage(storage: object) {
+      this.storage = storage;
+    },
+  };
+
+  onInputAmount(value: string) {
+    const amount = parseFloat(value);
+    if (amount) {
+      this.inputAmount = value;
+      this.outputAmount = calcTezToToken(this.selectedToken.storage, amount);
+    } else {
+      this.inputAmount = "";
+    }
   }
+
+  onOutputAmount(value: string) {
+    const amount = parseFloat(value);
+    if (amount) {
+      this.outputAmount = value;
+      this.inputAmount = calcTokenToTez(this.selectedToken.storage, amount);
+    } else {
+      this.outputAmount = "";
+    }
+  }
+
+  handleAddLiquidity() {
+    investLiquidity(
+      this.selectedToken.token.exchange,
+      this.inputAmount,
+      this.outputAmount,
+      this.baker
+    );
+  }
+
+  onSelectToken = async (token: any) => {
+    this.selectedToken.setToken = token;
+    this.selectedToken.setStorage = await getStorage(token.exchange);
+  };
 }
 </script>

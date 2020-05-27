@@ -1,7 +1,5 @@
 import initContract from "@/taquito/tezos";
 
-const CONTRACT = "KT1CVjrhWnYqSxHdMV6qWrfXN6mEsmtejDvX";
-
 // divestLiquidity: {0: "nat", 1: "nat", 2: "nat"}
 // initializeExchange: {1: "nat", 2: "key_hash"}
 // investLiquidity: {2: "nat", 3: "key_hash"}
@@ -13,53 +11,74 @@ const CONTRACT = "KT1CVjrhWnYqSxHdMV6qWrfXN6mEsmtejDvX";
 // tokenToTokenPayment: {8: "nat", 9: "nat", 10: "address", 11: "address"}
 // tokenToTokenSwap: {9: "nat", 10: "nat", 11: "address"}
 
-export async function getDexStorage() {
-  const contract = await initContract(CONTRACT);
-  const storage = await contract.storage<any>();
-  return storage;
-}
-
-export async function divestLiquidity(num1: string, num2: string, num3: string) {
-  const contract = await initContract(CONTRACT);
+export async function divestLiquidity(
+  contractAddress: string,
+  num1: string,
+  num2: string,
+  num3: string
+) {
+  const contract = await initContract(contractAddress);
   const op = await contract.methods.divestLiquidity(num1, num2, num3).send();
-  op.confirmation();
+  op.confirmation(1);
   return op;
 }
 
-export async function investLiquidity(amount: number, bakerPkh: string) {
-  const contract = await initContract(CONTRACT);
-  const op = await contract.methods.investLiquidity(amount, bakerPkh).send({ amount });
-  await op.confirmation();
+export async function investLiquidity(
+  contractAddress: string,
+  xtzAmount: string,
+  tokenAmount: string,
+  bakerPkh: string
+) {
+  const contract = await initContract(contractAddress);
+  const op = await contract.methods.investLiquidity(tokenAmount, bakerPkh).send({ amount: 1 });
+  await op.confirmation(1);
   return op;
 }
 
-export async function initializeExchange(num: number, hash: string) {
-  const contract = await initContract(CONTRACT);
-  const op = await contract.methods.initializeExchange(num, hash).send();
-  await op.confirmation();
+export async function initializeExchange(contractAddress: string, num: number, hash: string) {
+  const contract = await initContract(contractAddress);
+  const op = await contract.methods.initializeExchange(num, hash).send({ amount: <any>"1" });
+  await op.confirmation(1);
   return op;
 }
 
-export async function tezToTokenPayment(num: number, address: string) {
-  const contract = await initContract(CONTRACT);
+export async function tezToTokenPayment(contractAddress: string, num: number, address: string) {
+  const contract = await initContract(contractAddress);
   const op = await contract.methods.tezToTokenPayment(num, address).send({ amount: num });
-  op.confirmation();
+  op.confirmation(1);
   return op;
 }
 
-export async function tezToTokenSwap(num: number, num2: number) {
-  const contract = await initContract(CONTRACT);
+export async function tezToTokenSwap(contractAddress: string, num: number, num2: number) {
+  const contract = await initContract(contractAddress);
   const op = await contract.methods.tezToTokenSwap(num).send({ amount: num2 });
-  op.confirmation();
+  op.confirmation(1);
   return op;
 }
 
-export async function tokenToTezSwap(num1: number, num2: number) {
-  console.log("RUN");
-  const contract = await initContract(CONTRACT);
+export async function tokenToTezSwap(contractAddress: string, num1: number, num2: number) {
+  const contract = await initContract(contractAddress);
   const op = await contract.methods.tokenToTezSwap(num1, num2).send();
-  await op.confirmation();
-  console.log("DONE");
+  await op.confirmation(1);
+  return op;
+}
+export async function tokenToTokenSwap(
+  contractAddress: string,
+  inputAmount: number,
+  outputAmount: number,
+  tokenAddress: string
+) {
+  const contract = await initContract(contractAddress);
+  const op = await contract.methods
+    .tokenToTokenSwap(inputAmount, outputAmount, tokenAddress)
+    .send({ gasLimit: 1040000 });
+  await op.confirmation(1);
+  return op;
+}
 
+export async function tokenToTokenIn(contractAddress: string, amount: number, address: string) {
+  const contract = await initContract(contractAddress);
+  const op = await contract.methods.tokenToTokenIn(amount, address).send();
+  await op.confirmation(1);
   return op;
 }
