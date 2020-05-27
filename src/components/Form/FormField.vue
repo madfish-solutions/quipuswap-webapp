@@ -21,7 +21,7 @@
         </button>
       </div>
     </div>
-    <div class="field-search rounded-b-3px" v-if="isSearchOpened">
+    <div class="field-search rounded-b-3px" v-if="isSearchOpened && !onlyTezos">
       <div class="px-3 xs:px-6 py-3 text-sm">
         <input
           v-model="searchValue"
@@ -61,6 +61,9 @@ import TokenItem from "@/components/Form/TokenItem.vue";
 export default class FormField extends Vue {
   @Prop() label?: string;
   @Prop({ default: true }) withSelect?: boolean;
+  @Prop({ default: true }) showSearch?: boolean;
+  @Prop({ default: true }) withTezos?: boolean;
+  @Prop({ default: false }) onlyTezos?: boolean;
   @Ref("searchInput") readonly searchInput!: HTMLInputElement;
 
   value: string = "0.0";
@@ -70,16 +73,22 @@ export default class FormField extends Vue {
   selectedToken: ITokenItem | null = null;
 
   get filteredTokens(): ITokenItem[] {
+    const tokens =
+      (this.withTezos && [
+        {
+          id: "Tezos",
+          name: "Tezos",
+          type: "xtz",
+          symbol: "Tezos",
+          exchange: null,
+          imgUrl:
+            "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xB6eD7644C69416d67B522e20bC294A9a9B405B31/logo.png",
+        },
+      ]) ||
+      [];
+
     return [
-      {
-        id: "Tezos",
-        name: "Tezos",
-        type: "xtz",
-        symbol: "Tezos",
-        exchange: null,
-        imgUrl:
-          "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xB6eD7644C69416d67B522e20bC294A9a9B405B31/logo.png",
-      },
+      ...tokens,
       ...store.state.tokens.filter(
         (t: ITokenItem) =>
           t.name.toLowerCase().includes(this.searchValue.toLowerCase()) ||
@@ -88,16 +97,30 @@ export default class FormField extends Vue {
     ];
   }
 
+  created() {
+    if (this.onlyTezos) {
+      this.selectedToken = {
+        id: "Tezos",
+        name: "Tezos",
+        type: "xtz",
+        symbol: "Tezos",
+        exchange: null,
+        imgUrl:
+          "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xB6eD7644C69416d67B522e20bC294A9a9B405B31/logo.png",
+      };
+    }
+  }
+
   toggleSearch() {
     this.isSearchOpened = !this.isSearchOpened;
-    this.$nextTick(() => this.isSearchOpened && this.searchInput.focus());
+    this.$nextTick(() => this.isSearchOpened && !this.onlyTezos && this.searchInput.focus());
   }
 
   selectToken(token: ITokenItem) {
     this.searchValue = "";
     this.selectedToken = token;
     this.isSearchOpened = false;
-    this.$emit("select", token);
+    this.$emit("selectToken", token);
   }
 }
 </script>

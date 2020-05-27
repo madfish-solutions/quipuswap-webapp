@@ -15,7 +15,7 @@ export default new Vuex.Store({
   },
   actions: {
     async tokens({ commit, state }, tokens) {
-      const storage: any = await getStorage();
+      const storage: any = await getStorage().catch(e => console.error(e));
       const tokenList = storage.tokenList.map((token: any) => ({
         id: token,
         name: "Token",
