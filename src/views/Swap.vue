@@ -9,6 +9,7 @@
         @input="e => onInputTokenAmount(e.target.value)"
         @selectToken="onSelectInputToken"
       />
+
       <FormIcon>
         <img src="@/assets/arrow-down.png" />
       </FormIcon>
@@ -25,11 +26,11 @@
       </FormInfo>
     </Form>
     <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal">
-      {{ swap.status }}
+      <!-- {{ swap.status }} -->
     </div>
     <div class="text-center">
       <SubmitBtn :disabled="!swap.isPossibleToSwap" @click="swapCoins">
-        Swap
+        {{ swap.status }}
       </SubmitBtn>
     </div>
   </div>
@@ -61,7 +62,7 @@ export default class Swap extends Vue {
   private swap: any = {
     isPossibleToSwap: false,
     isLoading: false,
-    status: "Select a token to continue",
+    status: "Swap",
     set setSwapPossibility(isSwap: boolean) {
       this.isPossibleToSwap = isSwap;
     },
@@ -108,63 +109,64 @@ export default class Swap extends Vue {
     },
   };
 
+  mounted() {
+    this.$watch(
+      (vm?) => [
+        vm.inputToken.amount,
+        vm.inputToken.token,
+        vm.outputToken.amount,
+        vm.outputToken.token,
+      ],
+      () => this.validate()
+    );
+  }
+
   swapCoins = async () => {
     const {
       inputToken: {
         amount: inputAmount,
-        token: { type: inputType },
+        token: { type: inputType, id: inputId },
       },
       outputToken: {
         amount: outputAmount,
-        token: { type: outputType, id: outputId },
+        token: { type: outputType },
       },
     } = this;
 
     if (inputType === "xtz") {
       this.swap.setSwapStatus = "Swapping...";
-      await tezToTokenSwap(
-        this.outputToken.token.exchange,
-        parseInt(outputAmount, 10),
-        parseInt(inputAmount, 10)
-      );
+      await tezToTokenSwap(this.outputToken.token.exchange, outputAmount, inputAmount);
       this.swap.setSwapStatus = "Done!";
     }
 
     if (outputType === "xtz") {
       this.swap.setSwapStatus = "Waiting for approve";
-
-      await approve(outputId, this.inputToken.token.exchange, parseInt(outputAmount, 10));
+      await approve(inputId, this.inputToken.token.exchange, inputAmount);
       this.swap.setSwapStatus = "Approved! Swapping...";
-
-      await tokenToTezSwap(
-        this.inputToken.token.exchange,
-        parseInt(outputAmount, 10),
-        parseInt(inputAmount, 10)
-      );
+      await tokenToTezSwap(this.inputToken.token.exchange, inputAmount, outputAmount);
       this.swap.setSwapStatus = "Done!";
     }
+    setTimeout(() => {
+      this.swap.setSwapStatus = "Swap";
+    }, 3000);
   };
 
   onInputTokenAmount = async (amount: string) => {
     this.inputToken.setAmount = amount;
     if (amount.length) {
       this.calcOutputAmount(parseFloat(amount));
-      this.swap.setSwapPossibility = true;
       return;
     }
     this.outputToken.setAmount = "";
-    this.swap.setSwapPossibility = false;
   };
 
   onOutputTokenAmount = async (amount: string) => {
     this.outputToken.setAmount = amount;
     if (amount.length) {
       this.calcInputAmount(parseFloat(amount));
-      this.swap.setSwapPossibility = true;
       return;
     }
     this.inputToken.setAmount = "";
-    this.swap.setSwapPossibility = false;
   };
 
   calcOutputAmount(amount: number) {
@@ -187,7 +189,7 @@ export default class Swap extends Vue {
     if (inputType === "token" && outputType === "xtz") {
       const xtzInput: any = `${calcTokenToTez(inputStorage, amount)}`;
       const pricePerToken = (amount / xtzInput).toPrecision();
-      this.outputToken.setAmount = parseFloat(xtzInput).toPrecision();
+      this.outputToken.setAmount = xtzInput;
       this.exchangeRate.setRate = `1 ${this.outputToken.token.name} = ${pricePerToken} ${this.inputToken.token.name}`;
     }
   }
@@ -205,14 +207,14 @@ export default class Swap extends Vue {
     } = this;
     if (inputType === "xtz" && outputType === "token") {
       const tokenAmount: any = `${calcTokenToTez(outputStorage, amount)}`;
-      const pricePerToken = (tokenAmount / amount).toPrecision(5);
-      this.inputToken.setAmount = parseFloat(tokenAmount).toFixed(8);
+      const pricePerToken = (tokenAmount / amount).toFixed(3);
+      this.inputToken.setAmount = tokenAmount;
       this.exchangeRate.setRate = `1 ${this.outputToken.token.name} = ${pricePerToken} Input ${this.inputToken.token.name}`;
     }
     if (inputType === "token" && outputType === "xtz") {
       const xtzOutput = `${calcTezToToken(inputStorage, amount)}`;
       const tokenAmount: any = `${calcTezToToken(outputStorage, xtzOutput)}`;
-      const pricePerToken = (amount / tokenAmount).toPrecision(5);
+      const pricePerToken = (amount / tokenAmount).toFixed(3);
       this.exchangeRate.setRate = `1 ${this.outputToken.token.name} = ${pricePerToken} Input ${this.inputToken.token.name}`;
       this.inputToken.setAmount = xtzOutput;
     }
@@ -250,6 +252,20 @@ export default class Swap extends Vue {
       return this.calcInputAmount(this.inputToken.amount);
     }
     return 0;
+  }
+
+  validate() {
+    const { inputToken, outputToken } = this;
+    if (
+      inputToken.amount &&
+      outputToken.amount &&
+      Object.keys(inputToken.token).length &&
+      Object.keys(outputToken.token).length
+    ) {
+      this.swap.setSwapPossibility = true;
+    } else {
+      this.swap.setSwapPossibility = false;
+    }
   }
 }
 </script>

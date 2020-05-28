@@ -22,7 +22,13 @@
       <FormIcon>
         <img class="inline" src="@/assets/arrow-down.png" />
       </FormIcon>
-      <FormField label="Recipient Address" placeholder="0x1234..." :withSelect="false" />
+      <FormField
+        label="Recipient Address"
+        placeholder="0x1234..."
+        :withSelect="false"
+        v-model="recipient"
+        @input="e => onInputRecipient(e.target.value)"
+      />
       <FormInfo class="flex justify-between">
         <span>Exchange rate</span>
         <span>-</span>
@@ -33,7 +39,7 @@
       Select a token to continue
     </div>
     <div class="text-center">
-      <SubmitBtn disabled>
+      <SubmitBtn :disabled="!send.validate">
         Send
       </SubmitBtn>
     </div>
@@ -46,8 +52,6 @@ import NavTabs from "@/components/NavTabs.vue";
 
 import Form, { FormIcon, FormField, FormInfo } from "@/components/Form";
 import SubmitBtn from "@/components/SubmitBtn.vue";
-import { tezToTokenSwap, tokenToTezSwap } from "@/taquito/contracts/dex";
-import { approve } from "@/taquito/contracts/token";
 import { ITokenItem } from "@/api/getTokens";
 import { getStorage } from "@/taquito/tezos";
 import { calcTezToToken, calcTokenToTez } from "@/helpers/convert";
@@ -56,7 +60,7 @@ import { calcTezToToken, calcTokenToTez } from "@/helpers/convert";
 })
 export default class Send extends Vue {
   inputAmount: string = "0.0";
-
+  recipient: string = "";
   private exchangeRate: any = {
     rate: "-",
     set setRate(rateString: string) {
@@ -64,13 +68,13 @@ export default class Send extends Vue {
     },
   };
 
-  private swap: any = {
-    isPossibleToSwap: false,
+  private send: any = {
+    validate: false,
     status: "Select a token to continue",
-    set setSwapPossibility(isSwap: boolean) {
-      this.isPossibleToSwap = isSwap;
+    set setSendPossibility(isSwap: boolean) {
+      this.validate = isSwap;
     },
-    set setSwapStatus(status: string) {
+    set setSendStatus(status: string) {
       this.status = status;
     },
   };
@@ -110,61 +114,39 @@ export default class Send extends Vue {
     },
   };
 
-  swapCoins = async () => {
-    const {
-      inputToken: {
-        amount: inputAmount,
-        token: { type: inputType },
-      },
-      outputToken: {
-        amount: outputAmount,
-        token: { type: outputType, id: outputId },
-      },
-    } = this;
+  mounted() {
+    this.$watch(
+      (vm?) => [
+        vm.inputToken.amount,
+        vm.inputToken.token,
+        vm.outputToken.amount,
+        vm.outputToken.token,
+        vm.recipient,
+      ],
+      () => this.validate()
+    );
+  }
 
-    if (inputType === "xtz") {
-      this.swap.setSwapStatus = "Swapping...";
-      await tezToTokenSwap(
-        this.outputToken.token.exchange,
-        parseInt(outputAmount, 10),
-        parseInt(inputAmount, 10)
-      );
-      this.swap.setSwapStatus = "Done!";
-    }
-
-    if (outputType === "xtz") {
-      this.swap.setSwapStatus = "Waiting for approve";
-
-      await approve(outputId, this.inputToken.token.exchange, parseInt(outputAmount, 10));
-      this.swap.setSwapStatus = "Approved! Swapping...";
-
-      await tokenToTezSwap(
-        this.inputToken.token.exchange,
-        parseInt(outputAmount, 10),
-        parseInt(inputAmount, 10)
-      );
-      this.swap.setSwapStatus = "Done!";
-    }
-  };
+  onInputRecipient(address: string) {
+    this.recipient = address;
+  }
 
   onInputTokenAmount = async (amount: string) => {
     this.inputToken.setAmount = amount;
     if (amount.length) {
       this.calcOutputAmount(parseFloat(amount));
-      this.swap.setSwapPossibility = true;
       return;
     }
-    this.swap.setSwapPossibility = false;
+    this.outputToken.setAmount = "";
   };
 
   onOutputTokenAmount = async (amount: string) => {
     this.outputToken.setAmount = amount;
     if (amount.length) {
       this.calcInputAmount(parseFloat(amount));
-      this.swap.setSwapPossibility = true;
       return;
     }
-    this.swap.setSwapPossibility = false;
+    this.inputToken.setAmount = "";
   };
 
   calcOutputAmount(amount: number = this.inputToken.amount) {
@@ -223,7 +205,6 @@ export default class Send extends Vue {
     if (token.type === "token") {
       this.inputToken.setStorage = await getStorage(token.exchange);
     }
-    this.calcExchangePair();
   };
 
   onSelectOutputToken = async (token: any) => {
@@ -231,21 +212,21 @@ export default class Send extends Vue {
     if (token.type === "token") {
       this.outputToken.setStorage = await getStorage(token.exchange);
     }
-    this.calcExchangePair();
   };
 
-  calcExchangePair() {
-    const notAcceptablePair = [this.inputToken.type, this.outputToken.type].every(
-      val => val === "xtz"
-    );
-    if (notAcceptablePair) return 0;
-    if (this.inputToken.amount) {
-      return this.calcOutputAmount(this.inputToken.amount);
+  validate() {
+    const { inputToken, outputToken, recipient } = this;
+    if (
+      inputToken.amount &&
+      outputToken.amount &&
+      Object.keys(inputToken.token).length &&
+      Object.keys(outputToken.token).length &&
+      recipient.length
+    ) {
+      this.send.setSendPossibility = true;
+    } else {
+      this.send.setSendPossibility = false;
     }
-    if (this.outputToken.amount) {
-      return this.calcInputAmount(this.inputToken.amount);
-    }
-    return 0;
   }
 }
 </script>
