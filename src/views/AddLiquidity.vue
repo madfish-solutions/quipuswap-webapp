@@ -10,7 +10,6 @@
         :onlyTezos="true"
         v-model="inputAmount"
         @input="e => onInputAmount(e.target.value)"
-        @selectToken="onSelectToken"
       />
       <FormField
         placeholder="0.0"
@@ -49,7 +48,7 @@
       Select a token to continue
     </div>
     <div class="text-center">
-      <SubmitBtn @click="handleAddLiquidity">
+      <SubmitBtn @click="handleAddLiquidity" :disabled="!isAddLiquid">
         Add Liquidity
       </SubmitBtn>
     </div>
@@ -83,7 +82,7 @@ export default class AddLiquidity extends Vue {
   inputAmount: string = "";
   outputAmount: string = "";
   baker: string = "";
-
+  isAddLiquid: boolean = false;
   private selectedToken: any = {
     token: {},
     storage: {},
@@ -101,24 +100,33 @@ export default class AddLiquidity extends Vue {
     },
   };
 
+  mounted() {
+    this.$watch(
+      (vm?) => [vm.inputAmount, vm.outputAmount, vm.selectedToken.token],
+      () => this.validate()
+    );
+  }
+
   onInputAmount(value: string) {
-    const amount = parseFloat(value);
-    if (amount) {
-      this.inputAmount = value;
-      this.outputAmount = calcTezToToken(this.selectedToken.storage, amount);
-    } else {
-      this.inputAmount = "";
+    this.inputAmount = value;
+    if (value) {
+      this.outputAmount = Object.keys(this.selectedToken.token).length
+        ? calcTezToToken(this.selectedToken.storage, value)
+        : "";
+      return;
     }
+    this.inputAmount = "";
   }
 
   onOutputAmount(value: string) {
-    const amount = parseFloat(value);
-    if (amount) {
-      this.outputAmount = value;
-      this.inputAmount = calcTokenToTez(this.selectedToken.storage, amount);
-    } else {
-      this.outputAmount = "";
+    this.outputAmount = value;
+    if (value) {
+      this.inputAmount = Object.keys(this.selectedToken.token).length
+        ? calcTokenToTez(this.selectedToken.storage, value)
+        : "";
+      return;
     }
+    this.outputAmount = "";
   }
 
   handleAddLiquidity() {
@@ -134,5 +142,14 @@ export default class AddLiquidity extends Vue {
     this.selectedToken.setToken = token;
     this.selectedToken.setStorage = await getStorage(token.exchange);
   };
+
+  validate() {
+    const { inputAmount, outputAmount, selectedToken } = this;
+    if (inputAmount && outputAmount && Object.keys(selectedToken.token).length) {
+      this.isAddLiquid = true;
+    } else {
+      this.isAddLiquid = false;
+    }
+  }
 }
 </script>
