@@ -54,7 +54,7 @@ import Form, { FormIcon, FormField, FormInfo } from "@/components/Form";
 import SubmitBtn from "@/components/SubmitBtn.vue";
 import { ITokenItem } from "@/api/getTokens";
 import { getStorage } from "@/taquito/tezos";
-import { calcTezToToken, calcTokenToTez } from "@/helpers/convert";
+import { calcTezToToken, calcTokenToTez } from "@/helpers/calc";
 @Component({
   components: { NavTabs, Form, FormIcon, FormField, FormInfo, SubmitBtn },
 })
