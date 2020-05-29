@@ -36,13 +36,15 @@
         <span>{{ exchangeRate.rate }}</span>
       </FormInfo>
     </Form>
-
-    <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal">
-      Select a token to continue
-    </div>
-    <div class="text-center">
-      <SubmitBtn :disabled="!send.validate">
-        Send
+    <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal"></div>
+    <div class="flex justify-center align-center text-center">
+      <SubmitBtn :disabled="!send.validate" @click="handeSendMoney">
+        <template v-if="!isLoading">
+          {{ send.status }}
+        </template>
+        <template v-if="isLoading">
+          <Loader size="large" />
+        </template>
       </SubmitBtn>
     </div>
   </div>
@@ -54,17 +56,23 @@ import NavTabs from "@/components/NavTabs.vue";
 
 import Form, { FormIcon, FormField, FormInfo } from "@/components/Form";
 import SubmitBtn from "@/components/SubmitBtn.vue";
+import Loader from "@/components/Loader.vue";
 import { ITokenItem } from "@/api/getTokens";
 import { getStorage } from "@/taquito/tezos";
+import { tezToTokenPayment, tokenToTezPayment } from "@/taquito/contracts/dex";
+import { approve } from "@/taquito/contracts/token";
+
 import { calcTezToToken, calcTokenToTez, round } from "@/helpers/calc";
 import store from "@/store";
 
 @Component({
-  components: { NavTabs, Form, FormIcon, FormField, FormInfo, SubmitBtn },
+  components: { NavTabs, Form, FormIcon, FormField, FormInfo, SubmitBtn, Loader },
 })
 export default class Send extends Vue {
   inputAmount: string = "0.0";
   recipient: string = "";
+  isLoading: boolean = false;
+
   private exchangeRate: any = {
     rate: "-",
     set setRate(rateString: string) {
@@ -74,7 +82,7 @@ export default class Send extends Vue {
 
   private send: any = {
     validate: false,
-    status: "Select a token to continue",
+    status: "Send",
 
     set setSendPossibility(isSwap: boolean) {
       this.validate = isSwap;
@@ -138,6 +146,38 @@ export default class Send extends Vue {
       ],
       () => this.validate()
     );
+  }
+
+  async handeSendMoney() {
+    const {
+      inputToken: {
+        amount: inputAmount,
+        token: { type: inputType, exchange: inputExchange, id: inputId },
+      },
+      outputToken: {
+        amount: outputAmount,
+        token: { type: outputType, exchange: outputExchange },
+      },
+    } = this;
+    this.isLoading = true;
+    try {
+      if (inputType === "xtz") {
+        await tezToTokenPayment(outputExchange, inputAmount, this.recipient);
+        this.send.setSendStatus = "Done!";
+      }
+
+      if (outputType === "xtz") {
+        await approve(inputId, inputExchange, inputAmount);
+        await tokenToTezPayment(inputExchange, inputAmount, outputAmount, this.recipient);
+        this.send.setSendStatus = "Done!";
+      }
+    } catch {
+      this.send.setSendStatus = "Error";
+    }
+    this.isLoading = false;
+    setTimeout(() => {
+      this.send.setSendStatus = "Send";
+    }, 3000);
   }
 
   onInputRecipient(address: string) {

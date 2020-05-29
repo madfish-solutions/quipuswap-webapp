@@ -20,9 +20,7 @@
             <span v-else>Select a token</span>
           </template>
           <template v-if="isLoading">
-            <div class="loading bg-accent w-1 h-1 mx-1 rounded-full"></div>
-            <div class="loading bg-accent w-1 h-1 mx-1 rounded-full"></div>
-            <div class="loading bg-accent w-1 h-1 mx-1 rounded-full"></div>
+            <Loader />
           </template>
           <img class="w-3 ml-2" style="margin-top: -2px" src="@/assets/chevron-white.svg" />
         </button>
@@ -58,12 +56,13 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Ref } from "vue-property-decorator";
+import Loader from "@/components/Loader.vue";
 import { ITokenItem } from "@/api/getTokens";
 import store from "@/store";
 import TokenItem from "@/components/Form/TokenItem.vue";
 
 @Component({
-  components: { TokenItem },
+  components: { TokenItem, Loader },
 })
 export default class FormField extends Vue {
   @Prop() label?: string;
@@ -175,27 +174,5 @@ input {
 }
 
 .append {
-}
-.loading {
-  animation: dots 1s steps(5, end) infinite;
-}
-
-@keyframes dots {
-  0% {
-    background-color: rgba(246, 204, 91, 1);
-  }
-  20% {
-    background-color: rgba(246, 204, 91, 0.5);
-  }
-  40% {
-    background-color: rgba(246, 204, 91, 0);
-  }
-  60% {
-    background-color: rgba(246, 204, 91, 0.5);
-  }
-  80%,
-  100% {
-    background-color: rgba(246, 204, 91, 1);
-  }
 }
 </style>

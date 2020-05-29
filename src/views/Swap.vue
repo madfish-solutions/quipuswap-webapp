@@ -30,9 +30,14 @@
     <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal">
       <!-- {{ swap.status }} -->
     </div>
-    <div class="text-center">
+    <div class="flex justify-center align-center text-center">
       <SubmitBtn :disabled="!swap.isPossibleToSwap" @click="swapCoins">
-        {{ swap.status }}
+        <template v-if="!isLoading">
+          {{ swap.status }}
+        </template>
+        <template v-if="isLoading">
+          <Loader size="large" />
+        </template>
       </SubmitBtn>
     </div>
   </div>
@@ -162,7 +167,7 @@ export default class Swap extends Vue {
     }
     setTimeout(() => {
       this.swap.setSwapStatus = "Swap";
-    }, 3000);
+    }, 5000);
   };
 
   onInputTokenAmount = async (amount: string) => {
