@@ -48,6 +48,19 @@ export async function tezToTokenPayment(contractAddress: string, num: number, ad
   op.confirmation(1);
   return op;
 }
+export async function tokenToTezPayment(
+  contractAddress: string,
+  inputAmount: number,
+  outputAmount: number,
+  address: string
+) {
+  const contract = await initContract(contractAddress);
+  const op = await contract.methods
+    .tokenToTezPayment(inputAmount, outputAmount, address)
+    .send({ amount: inputAmount });
+  op.confirmation(1);
+  return op;
+}
 
 export async function tezToTokenSwap(contractAddress: string, num: number, num2: number) {
   const contract = await initContract(contractAddress);

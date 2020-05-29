@@ -12,11 +12,16 @@
           @click="toggleSearch"
           class="flex text-white border-accent border-2 items-center rounded-3px py-2 px-3 text-sm sm:text-base whitespace-no-wrap flex-shrink-0"
         >
-          <template v-if="selectedToken">
-            <img class="w-5 h-5 mr-2" :src="selectedToken.imgUrl" />
-            {{ selectedToken.symbol }}
+          <template v-if="!isLoading">
+            <template v-if="selectedToken">
+              <img class="w-5 h-5 mr-2" :src="selectedToken.imgUrl" />
+              {{ selectedToken.symbol }}
+            </template>
+            <span v-else>Select a token</span>
           </template>
-          <span v-else>Select a token</span>
+          <template v-if="isLoading">
+            <Loader />
+          </template>
           <img class="w-3 ml-2" style="margin-top: -2px" src="@/assets/chevron-white.svg" />
         </button>
       </div>
@@ -51,15 +56,17 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Ref } from "vue-property-decorator";
+import Loader from "@/components/Loader.vue";
 import { ITokenItem } from "@/api/getTokens";
 import store from "@/store";
 import TokenItem from "@/components/Form/TokenItem.vue";
 
 @Component({
-  components: { TokenItem },
+  components: { TokenItem, Loader },
 })
 export default class FormField extends Vue {
   @Prop() label?: string;
+  @Prop({ default: false }) isLoading?: boolean;
   @Prop({ default: true }) withSelect?: boolean;
   @Prop({ default: true }) showSearch?: boolean;
   @Prop({ default: true }) withTezos?: boolean;

@@ -6,6 +6,7 @@
         placeholder="0.0"
         label="Input"
         v-model="inputToken.amount"
+        :isLoading="inputToken.loading"
         @input="e => onInputTokenAmount(e.target.value)"
         @selectToken="onSelectInputToken"
       />
@@ -17,6 +18,7 @@
         placeholder="0.0"
         label="Output"
         v-model="outputToken.amount"
+        :isLoading="outputToken.loading"
         @input="e => onOutputTokenAmount(e.target.value)"
         @selectToken="onSelectOutputToken"
       />
@@ -28,9 +30,14 @@
     <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal">
       <!-- {{ swap.status }} -->
     </div>
-    <div class="text-center">
+    <div class="flex justify-center align-center text-center">
       <SubmitBtn :disabled="!swap.isPossibleToSwap" @click="swapCoins">
-        {{ swap.status }}
+        <template v-if="!isLoading">
+          {{ swap.status }}
+        </template>
+        <template v-if="isLoading">
+          <Loader size="large" />
+        </template>
       </SubmitBtn>
     </div>
   </div>
@@ -45,7 +52,8 @@ import { tezToTokenSwap, tokenToTezSwap } from "@/taquito/contracts/dex";
 import { approve } from "@/taquito/contracts/token";
 import { ITokenItem } from "@/api/getTokens";
 import { getStorage } from "@/taquito/tezos";
-import { calcTezToToken, calcTokenToTez } from "@/helpers/convert";
+import { calcTezToToken, calcTokenToTez, round } from "@/helpers/calc";
+import store from "@/store";
 
 @Component({
   components: { NavTabs, Form, FormIcon, FormField, FormInfo, SubmitBtn },
@@ -76,6 +84,7 @@ export default class Swap extends Vue {
 
   private inputToken: any = {
     amount: "",
+    loading: false,
     token: {},
     storage: {},
 
@@ -89,12 +98,16 @@ export default class Swap extends Vue {
     },
     set setStorage(storage: object) {
       this.storage = storage;
+    },
+    set setLoading(loading: boolean) {
+      this.loading = loading;
     },
   };
 
   private outputToken: any = {
     amount: "",
     token: {},
+    loading: false,
     storage: {},
 
     set setToken(token: ITokenItem) {
@@ -106,6 +119,9 @@ export default class Swap extends Vue {
     },
     set setStorage(storage: object) {
       this.storage = storage;
+    },
+    set setLoading(loading: boolean) {
+      this.loading = loading;
     },
   };
 
@@ -132,23 +148,26 @@ export default class Swap extends Vue {
         token: { type: outputType },
       },
     } = this;
+    try {
+      if (inputType === "xtz") {
+        this.swap.setSwapStatus = "Swapping...";
+        await tezToTokenSwap(this.outputToken.token.exchange, outputAmount, inputAmount);
+        this.swap.setSwapStatus = "Done!";
+      }
 
-    if (inputType === "xtz") {
-      this.swap.setSwapStatus = "Swapping...";
-      await tezToTokenSwap(this.outputToken.token.exchange, outputAmount, inputAmount);
-      this.swap.setSwapStatus = "Done!";
-    }
-
-    if (outputType === "xtz") {
-      this.swap.setSwapStatus = "Waiting for approve";
-      await approve(inputId, this.inputToken.token.exchange, inputAmount);
-      this.swap.setSwapStatus = "Approved! Swapping...";
-      await tokenToTezSwap(this.inputToken.token.exchange, inputAmount, outputAmount);
-      this.swap.setSwapStatus = "Done!";
+      if (outputType === "xtz") {
+        this.swap.setSwapStatus = "Waiting for approve";
+        await approve(inputId, this.inputToken.token.exchange, inputAmount);
+        this.swap.setSwapStatus = "Approved! Swapping...";
+        await tokenToTezSwap(this.inputToken.token.exchange, inputAmount, outputAmount);
+        this.swap.setSwapStatus = "Done!";
+      }
+    } catch {
+      this.swap.setSwapStatus = "Error!";
     }
     setTimeout(() => {
       this.swap.setSwapStatus = "Swap";
-    }, 3000);
+    }, 5000);
   };
 
   onInputTokenAmount = async (amount: string) => {
@@ -182,15 +201,13 @@ export default class Swap extends Vue {
     } = this;
     if (inputType === "xtz" && outputType === "token") {
       const tokenAmount: any = `${calcTezToToken(outputStorage, amount)}`;
-      const pricePerToken = (amount / tokenAmount).toPrecision();
-      this.outputToken.setAmount = tokenAmount;
-      this.exchangeRate.setRate = `1 ${this.outputToken.token.name} = ${pricePerToken} ${this.inputToken.token.name}`;
+      this.outputToken.setAmount = amount && tokenAmount;
+      this.calcExchangePair();
     }
     if (inputType === "token" && outputType === "xtz") {
       const xtzInput: any = `${calcTokenToTez(inputStorage, amount)}`;
-      const pricePerToken = (amount / xtzInput).toPrecision();
-      this.outputToken.setAmount = xtzInput;
-      this.exchangeRate.setRate = `1 ${this.outputToken.token.name} = ${pricePerToken} ${this.inputToken.token.name}`;
+      this.outputToken.setAmount = amount && xtzInput;
+      this.calcExchangePair();
     }
   }
 
@@ -205,53 +222,73 @@ export default class Swap extends Vue {
         storage: outputStorage,
       },
     } = this;
-    if (inputType === "xtz" && outputType === "token") {
+    if (inputType === "xtz" && outputType === "token" && amount) {
       const tokenAmount: any = `${calcTokenToTez(outputStorage, amount)}`;
-      const pricePerToken = (tokenAmount / amount).toFixed(3);
       this.inputToken.setAmount = tokenAmount;
-      this.exchangeRate.setRate = `1 ${this.outputToken.token.name} = ${pricePerToken} Input ${this.inputToken.token.name}`;
+      this.calcExchangePair();
     }
-    if (inputType === "token" && outputType === "xtz") {
-      const xtzOutput = `${calcTezToToken(inputStorage, amount)}`;
-      const tokenAmount: any = `${calcTezToToken(outputStorage, xtzOutput)}`;
-      const pricePerToken = (amount / tokenAmount).toFixed(3);
-      this.exchangeRate.setRate = `1 ${this.outputToken.token.name} = ${pricePerToken} Input ${this.inputToken.token.name}`;
+    if (inputType === "token" && outputType === "xtz" && amount) {
+      const xtzOutput: any = `${calcTezToToken(inputStorage, amount)}`;
       this.inputToken.setAmount = xtzOutput;
+      this.calcExchangePair();
     }
   }
 
   onSelectInputToken = async (token: any) => {
     this.inputToken.setToken = token;
+    this.exchangeRate.setRate = "-";
+
     if (token.type === "token") {
-      this.swap.setIsLoading = true;
-      this.inputToken.setStorage = await getStorage(token.exchange);
-      this.swap.setIsLoading = false;
+      this.inputToken.setLoading = true;
+      const newStorage = getStorage(token.exchange);
+      const storage: any = store.state.tokensStorage[token.exchange] || (await newStorage);
+      this.inputToken.setStorage = storage;
+      store.commit("tokensStorage", { key: token.exchange, value: storage });
+      this.inputToken.setLoading = false;
     }
-    this.calcExchangePair();
+    this.calcOutputAmount(this.inputToken.amount);
   };
 
   onSelectOutputToken = async (token: any) => {
     this.outputToken.setToken = token;
+    this.exchangeRate.setRate = "-";
+
     if (token.type === "token") {
-      this.swap.setIsLoading = true;
-      this.outputToken.setStorage = await getStorage(token.exchange);
-      this.swap.setIsLoading = false;
+      this.outputToken.setLoading = true;
+      const newStorage = getStorage(token.exchange);
+      const storage: any = store.state.tokensStorage[token.exchange] || (await newStorage);
+      this.outputToken.setStorage = storage;
+      store.commit("tokensStorage", { key: token.exchange, value: storage });
+      this.outputToken.setLoading = false;
     }
-    this.calcExchangePair();
+    this.calcOutputAmount(this.inputToken.amount);
   };
 
   calcExchangePair() {
-    const notAcceptablePair = [this.inputToken.type, this.outputToken.type].every(
-      val => val === "xtz"
-    );
-    if (notAcceptablePair) return 0;
-    if (this.inputToken.amount) {
-      return this.calcOutputAmount(this.inputToken.amount);
+    const {
+      inputToken: {
+        token: { type: inputType },
+        storage: inputStorage,
+        amount: inputAmount,
+      },
+      outputToken: {
+        token: { type: outputType },
+        storage: outputStorage,
+      },
+    } = this;
+
+    if (inputType === "xtz" && outputType === "token") {
+      const amount = inputAmount > 0 ? inputAmount : 1;
+      const tokenAmount: any = `${calcTezToToken(outputStorage, amount)}`;
+      const pricePerToken = round(amount / tokenAmount);
+      this.exchangeRate.setRate = `1 ${this.outputToken.token.name} = ${pricePerToken} ${this.inputToken.token.name}`;
     }
-    if (this.outputToken.amount) {
-      return this.calcInputAmount(this.inputToken.amount);
+    if (inputType === "token" && outputType === "xtz") {
+      const amount = inputAmount > 0 ? inputAmount : 1;
+      const xtzInput: any = `${calcTokenToTez(inputStorage, amount)}`;
+      const pricePerToken = round(amount / xtzInput);
+      this.exchangeRate.setRate = `1 ${this.outputToken.token.name} = ${pricePerToken} ${this.inputToken.token.name}`;
     }
-    return 0;
   }
 
   validate() {

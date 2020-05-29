@@ -7,10 +7,14 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     tokens: [],
+    tokensStorage: {} as any,
   },
   mutations: {
     tokens(state, tokens) {
       state.tokens = tokens;
+    },
+    tokensStorage(state, storage) {
+      state.tokensStorage = { ...state.tokensStorage, [storage.key]: storage.value };
     },
   },
   actions: {

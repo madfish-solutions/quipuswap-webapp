@@ -60,7 +60,7 @@ import SubmitBtn from "@/components/SubmitBtn.vue";
 import { divestLiquidity } from "@/taquito/contracts/dex";
 import { getStorage } from "@/taquito/tezos";
 import { ITokenItem } from "@/api/getTokens";
-import { calcTezToToken, calcTokenToTez } from "../helpers/convert";
+import { calcTezToToken, calcTokenToTez } from "@/helpers/calc";
 @Component({
   components: { NavTabs, NavInvest, Form, FormField, FormIcon, FormInfo, SubmitBtn },
 })
