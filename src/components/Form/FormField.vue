@@ -12,11 +12,18 @@
           @click="toggleSearch"
           class="flex text-white border-accent border-2 items-center rounded-3px py-2 px-3 text-sm sm:text-base whitespace-no-wrap flex-shrink-0"
         >
-          <template v-if="selectedToken">
-            <img class="w-5 h-5 mr-2" :src="selectedToken.imgUrl" />
-            {{ selectedToken.symbol }}
+          <template v-if="!isLoading">
+            <template v-if="selectedToken">
+              <img class="w-5 h-5 mr-2" :src="selectedToken.imgUrl" />
+              {{ selectedToken.symbol }}
+            </template>
+            <span v-else>Select a token</span>
           </template>
-          <span v-else>Select a token</span>
+          <template v-if="isLoading">
+            <div class="loading bg-accent w-1 h-1 mx-1 rounded-full"></div>
+            <div class="loading bg-accent w-1 h-1 mx-1 rounded-full"></div>
+            <div class="loading bg-accent w-1 h-1 mx-1 rounded-full"></div>
+          </template>
           <img class="w-3 ml-2" style="margin-top: -2px" src="@/assets/chevron-white.svg" />
         </button>
       </div>
@@ -60,6 +67,7 @@ import TokenItem from "@/components/Form/TokenItem.vue";
 })
 export default class FormField extends Vue {
   @Prop() label?: string;
+  @Prop({ default: false }) isLoading?: boolean;
   @Prop({ default: true }) withSelect?: boolean;
   @Prop({ default: true }) showSearch?: boolean;
   @Prop({ default: true }) withTezos?: boolean;
@@ -167,5 +175,27 @@ input {
 }
 
 .append {
+}
+.loading {
+  animation: dots 1s steps(5, end) infinite;
+}
+
+@keyframes dots {
+  0% {
+    background-color: rgba(246, 204, 91, 1);
+  }
+  20% {
+    background-color: rgba(246, 204, 91, 0.5);
+  }
+  40% {
+    background-color: rgba(246, 204, 91, 0);
+  }
+  60% {
+    background-color: rgba(246, 204, 91, 0.5);
+  }
+  80%,
+  100% {
+    background-color: rgba(246, 204, 91, 1);
+  }
 }
 </style>

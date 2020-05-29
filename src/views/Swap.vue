@@ -6,6 +6,7 @@
         placeholder="0.0"
         label="Input"
         v-model="inputToken.amount"
+        :isLoading="inputToken.loading"
         @input="e => onInputTokenAmount(e.target.value)"
         @selectToken="onSelectInputToken"
       />
@@ -17,6 +18,7 @@
         placeholder="0.0"
         label="Output"
         v-model="outputToken.amount"
+        :isLoading="outputToken.loading"
         @input="e => onOutputTokenAmount(e.target.value)"
         @selectToken="onSelectOutputToken"
       />
@@ -46,6 +48,7 @@ import { approve } from "@/taquito/contracts/token";
 import { ITokenItem } from "@/api/getTokens";
 import { getStorage } from "@/taquito/tezos";
 import { calcTezToToken, calcTokenToTez, round } from "@/helpers/calc";
+import store from "@/store";
 
 @Component({
   components: { NavTabs, Form, FormIcon, FormField, FormInfo, SubmitBtn },
@@ -76,6 +79,7 @@ export default class Swap extends Vue {
 
   private inputToken: any = {
     amount: "",
+    loading: false,
     token: {},
     storage: {},
 
@@ -89,12 +93,16 @@ export default class Swap extends Vue {
     },
     set setStorage(storage: object) {
       this.storage = storage;
+    },
+    set setLoading(loading: boolean) {
+      this.loading = loading;
     },
   };
 
   private outputToken: any = {
     amount: "",
     token: {},
+    loading: false,
     storage: {},
 
     set setToken(token: ITokenItem) {
@@ -106,6 +114,9 @@ export default class Swap extends Vue {
     },
     set setStorage(storage: object) {
       this.storage = storage;
+    },
+    set setLoading(loading: boolean) {
+      this.loading = loading;
     },
   };
 
@@ -223,7 +234,12 @@ export default class Swap extends Vue {
     this.exchangeRate.setRate = "-";
 
     if (token.type === "token") {
-      this.inputToken.setStorage = await getStorage(token.exchange);
+      this.inputToken.setLoading = true;
+      const newStorage = getStorage(token.exchange);
+      const storage: any = store.state.tokensStorage[token.exchange] || (await newStorage);
+      this.inputToken.setStorage = storage;
+      store.commit("tokensStorage", { key: token.exchange, value: storage });
+      this.inputToken.setLoading = false;
     }
     this.calcOutputAmount(this.inputToken.amount);
   };
@@ -233,7 +249,12 @@ export default class Swap extends Vue {
     this.exchangeRate.setRate = "-";
 
     if (token.type === "token") {
-      this.outputToken.setStorage = await getStorage(token.exchange);
+      this.outputToken.setLoading = true;
+      const newStorage = getStorage(token.exchange);
+      const storage: any = store.state.tokensStorage[token.exchange] || (await newStorage);
+      this.outputToken.setStorage = storage;
+      store.commit("tokensStorage", { key: token.exchange, value: storage });
+      this.outputToken.setLoading = false;
     }
     this.calcOutputAmount(this.inputToken.amount);
   };
