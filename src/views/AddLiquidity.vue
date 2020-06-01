@@ -15,7 +15,8 @@
         placeholder="0.0"
         label="To token"
         :withTezos="false"
-        v-model="outputAmount"
+        v-model="selectedToken.amount"
+        :isLoading="selectedToken.loading"
         @input="e => onOutputAmount(e.target.value)"
         @selectToken="onSelectToken"
       />
@@ -31,23 +32,21 @@
       <FormInfo>
         <div class="flex justify-between mb-1">
           <span>Exchange rate</span>
-          <span>-</span>
+          <span>{{ stat.exchangeRate }}</span>
         </div>
         <div class="flex justify-between mb-1">
           <span>Current pool size</span>
-          <span>-</span>
+          <span>{{ stat.poolSize }}</span>
         </div>
         <div class="flex justify-between">
           <span>Your Pool Share (%)</span>
-          <span>-</span>
+          <span>{{ stat.poolShare }}</span>
         </div>
       </FormInfo>
     </Form>
 
-    <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal">
-      Select a token to continue
-    </div>
-    <div class="text-center">
+    <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal"></div>
+    <div class="flex justify-center text-center">
       <SubmitBtn @click="handleAddLiquidity" :disabled="!isAddLiquid">
         Add Liquidity
       </SubmitBtn>
@@ -62,10 +61,10 @@ import NavInvest from "@/components/NavInvest.vue";
 import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
 import SubmitBtn from "@/components/SubmitBtn.vue";
 import { investLiquidity } from "@/taquito/contracts/dex";
-import { getStorage } from "@/taquito/tezos";
+import { getStorage, isCorrectAddress } from "@/taquito/tezos";
 import { ITokenItem } from "@/api/getTokens";
-import { calcTezToToken, calcTokenToTez } from "../helpers/convert";
-// import { calcTezToToken, calcTokenToTez } from "@/helpers/convert";
+import { calcTezToToken, calcTokenToTez, round } from "@/helpers/calc";
+import store from "@/store";
 
 @Component({
   components: {
@@ -80,72 +79,132 @@ import { calcTezToToken, calcTokenToTez } from "../helpers/convert";
 })
 export default class AddLiquidity extends Vue {
   inputAmount: string = "";
-  outputAmount: string = "";
   baker: string = "";
   isAddLiquid: boolean = false;
   private selectedToken: any = {
     token: {},
     storage: {},
+    loading: false,
     amount: null,
     set setToken(token: ITokenItem) {
       this.token = token;
     },
 
     set setAmount(amount: any) {
-      if (amount.length) this.amount = amount;
+      if (amount) this.amount = amount;
       else this.amount = null;
     },
     set setStorage(storage: object) {
       this.storage = storage;
     },
+    set setLoading(loading: boolean) {
+      this.loading = loading;
+    },
+  };
+
+  stat: any = {
+    exchangeRate: "-",
+    poolSize: "-",
+    poolShare: "-",
+
+    set setExchangeRate(exchangeRate: string) {
+      this.exchangeRate = exchangeRate;
+    },
+
+    set setPoolSize(poolSize: string) {
+      this.poolSize = poolSize;
+    },
+
+    set setPoolShare(poolShare: string) {
+      this.poolShare = poolShare;
+    },
   };
 
   mounted() {
     this.$watch(
-      (vm?) => [vm.inputAmount, vm.outputAmount, vm.selectedToken.token],
+      (vm?) => [vm.inputAmount, vm.outputAmount, vm.baker],
       () => this.validate()
     );
   }
 
   onInputAmount(value: string) {
     this.inputAmount = value;
-    if (value) {
-      this.outputAmount = Object.keys(this.selectedToken.token).length
-        ? calcTezToToken(this.selectedToken.storage, value)
-        : "";
+    if (value && Object.keys(this.selectedToken.token).length) {
+      this.selectedToken.setAmount = calcTezToToken(this.selectedToken.storage, this.inputAmount);
+      this.calcExchangePair();
       return;
     }
     this.inputAmount = "";
+    this.selectedToken.setAmount = "";
+
+    this.resetStats();
   }
 
   onOutputAmount(value: string) {
-    this.outputAmount = value;
-    if (value) {
-      this.inputAmount = Object.keys(this.selectedToken.token).length
-        ? calcTokenToTez(this.selectedToken.storage, value)
-        : "";
+    this.selectedToken.setAmount = value;
+    if (value && Object.keys(this.selectedToken.token).length) {
+      this.inputAmount = calcTokenToTez(this.selectedToken.storage, this.selectedToken.amount);
+      this.calcExchangePair();
       return;
     }
-    this.outputAmount = "";
+    this.selectedToken.setAmount = "";
+    this.inputAmount = "";
+
+    this.resetStats();
   }
 
   handleAddLiquidity() {
     investLiquidity(
       this.selectedToken.token.exchange,
       this.inputAmount,
-      this.outputAmount,
+      this.selectedToken.amount,
       this.baker
     );
   }
 
   onSelectToken = async (token: any) => {
     this.selectedToken.setToken = token;
-    this.selectedToken.setStorage = await getStorage(token.exchange);
+    this.selectedToken.setLoading = true;
+    const newStorage = getStorage(token.exchange);
+    const storage: any = store.state.tokensStorage[token.exchange] || (await newStorage);
+    this.selectedToken.setStorage = storage;
+    store.commit("tokensStorage", { key: token.exchange, value: storage });
+    this.selectedToken.setLoading = false;
+    this.calcExchangePair();
   };
 
-  validate() {
-    const { inputAmount, outputAmount, selectedToken } = this;
-    if (inputAmount && outputAmount && Object.keys(selectedToken.token).length) {
+  resetStats() {
+    this.stat.setPoolShare = "-";
+  }
+
+  calcExchangePair() {
+    const {
+      selectedToken: { storage },
+    } = this;
+
+    const amount: any = parseFloat(this.inputAmount) > 0 ? this.inputAmount : 1;
+    const tokenAmount: any = `${calcTezToToken(storage, amount)}`;
+    const pricePerToken = round(amount / tokenAmount);
+    this.stat.setExchangeRate = `1 ${this.selectedToken.token.name} = ${pricePerToken} Tezos`;
+    this.stat.setPoolSize = `${storage.tokenPool}`;
+    this.stat.setPoolShare = `${((this.selectedToken.amount / storage.tokenPool) * 100).toFixed(
+      2
+    )} %`;
+  }
+
+  async validate() {
+    const {
+      inputAmount,
+      selectedToken: { amount: outputAmount },
+      selectedToken,
+    } = this;
+
+    if (
+      inputAmount &&
+      outputAmount &&
+      Object.keys(selectedToken.token).length &&
+      (await isCorrectAddress(this.baker))
+    ) {
       this.isAddLiquid = true;
     } else {
       this.isAddLiquid = false;

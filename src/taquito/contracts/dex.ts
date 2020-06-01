@@ -13,12 +13,12 @@ import initContract from "@/taquito/tezos";
 
 export async function divestLiquidity(
   contractAddress: string,
-  num1: string,
-  num2: string,
-  num3: string
+  sharesBurned: number,
+  minTez: string,
+  minTokens: string
 ) {
   const contract = await initContract(contractAddress);
-  const op = await contract.methods.divestLiquidity(num1, num2, num3).send();
+  const op = await contract.methods.divestLiquidity(sharesBurned, minTez, minTokens).send();
   op.confirmation(1);
   return op;
 }

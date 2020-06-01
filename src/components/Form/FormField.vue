@@ -22,7 +22,12 @@
           <template v-if="isLoading">
             <Loader />
           </template>
-          <img class="w-3 ml-2" style="margin-top: -2px" src="@/assets/chevron-white.svg" />
+          <img
+            class="w-3 ml-2"
+            style="margin-top: -2px"
+            src="@/assets/chevron-white.svg"
+            v-if="!onlyTezos"
+          />
         </button>
       </div>
     </div>

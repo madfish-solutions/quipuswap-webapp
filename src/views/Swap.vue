@@ -32,10 +32,10 @@
     </div>
     <div class="flex justify-center align-center text-center">
       <SubmitBtn :disabled="!swap.isPossibleToSwap" @click="swapCoins">
-        <template v-if="!isLoading">
+        <template v-if="!swap.loading">
           {{ swap.status }}
         </template>
-        <template v-if="isLoading">
+        <template v-if="swap.loading">
           <Loader size="large" />
         </template>
       </SubmitBtn>
@@ -48,6 +48,7 @@ import { Component, Vue } from "vue-property-decorator";
 import NavTabs from "@/components/NavTabs.vue";
 import Form, { FormIcon, FormField, FormInfo } from "@/components/Form";
 import SubmitBtn from "@/components/SubmitBtn.vue";
+import Loader from "@/components/Loader.vue";
 import { tezToTokenSwap, tokenToTezSwap } from "@/taquito/contracts/dex";
 import { approve } from "@/taquito/contracts/token";
 import { ITokenItem } from "@/api/getTokens";
@@ -56,7 +57,7 @@ import { calcTezToToken, calcTokenToTez, round } from "@/helpers/calc";
 import store from "@/store";
 
 @Component({
-  components: { NavTabs, Form, FormIcon, FormField, FormInfo, SubmitBtn },
+  components: { NavTabs, Form, FormIcon, FormField, FormInfo, SubmitBtn, Loader },
 })
 export default class Swap extends Vue {
   inputAmount: string = "0.0";
@@ -69,7 +70,7 @@ export default class Swap extends Vue {
 
   private swap: any = {
     isPossibleToSwap: false,
-    isLoading: false,
+    loading: false,
     status: "Swap",
     set setSwapPossibility(isSwap: boolean) {
       this.isPossibleToSwap = isSwap;
@@ -77,8 +78,8 @@ export default class Swap extends Vue {
     set setSwapStatus(status: string) {
       this.status = status;
     },
-    set setIsLoading(loading: boolean) {
-      this.isLoading = loading;
+    set setLoading(loading: boolean) {
+      this.loading = loading;
     },
   };
 
@@ -148,23 +149,21 @@ export default class Swap extends Vue {
         token: { type: outputType },
       },
     } = this;
+    this.swap.setLoading = true;
     try {
       if (inputType === "xtz") {
-        this.swap.setSwapStatus = "Swapping...";
         await tezToTokenSwap(this.outputToken.token.exchange, outputAmount, inputAmount);
-        this.swap.setSwapStatus = "Done!";
       }
 
       if (outputType === "xtz") {
-        this.swap.setSwapStatus = "Waiting for approve";
         await approve(inputId, this.inputToken.token.exchange, inputAmount);
-        this.swap.setSwapStatus = "Approved! Swapping...";
         await tokenToTezSwap(this.inputToken.token.exchange, inputAmount, outputAmount);
-        this.swap.setSwapStatus = "Done!";
       }
     } catch {
       this.swap.setSwapStatus = "Error!";
     }
+    this.swap.setLoading = false;
+
     setTimeout(() => {
       this.swap.setSwapStatus = "Swap";
     }, 5000);
