@@ -58,7 +58,7 @@ import Form, { FormIcon, FormField, FormInfo } from "@/components/Form";
 import SubmitBtn from "@/components/SubmitBtn.vue";
 import Loader from "@/components/Loader.vue";
 import { ITokenItem } from "@/api/getTokens";
-import { getStorage } from "@/taquito/tezos";
+import { getStorage, isCorrectAddress } from "@/taquito/tezos";
 import { tezToTokenPayment, tokenToTezPayment } from "@/taquito/contracts/dex";
 import { approve } from "@/taquito/contracts/token";
 
@@ -305,14 +305,14 @@ export default class Send extends Vue {
     }
   }
 
-  validate() {
+  async validate() {
     const { inputToken, outputToken, recipient } = this;
     if (
       inputToken.amount &&
       outputToken.amount &&
       Object.keys(inputToken.token).length &&
       Object.keys(outputToken.token).length &&
-      recipient.length
+      (await isCorrectAddress(recipient))
     ) {
       this.send.setSendPossibility = true;
     } else {
