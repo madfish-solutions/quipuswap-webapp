@@ -29,6 +29,16 @@ export async function getStorage(contractAddress: string) {
   return storage;
 }
 
+export async function getTezosBalance(pkh: string) {
+  const balance: any = await tezos.tz.getBalance(pkh);
+  return balance / 1000000;
+}
+
+export async function getTokenBalance(contractAddress: string, pkh: string) {
+  const storage = await getStorage(contractAddress);
+  return storage.ledger.get(pkh).balance;
+}
+
 export async function isCorrectAddress(address: string) {
   const isAddress = await validateAddress(address);
   return isAddress === ValidationResult.VALID;

@@ -52,7 +52,7 @@ import Loader from "@/components/Loader.vue";
 import { tezToTokenSwap, tokenToTezSwap } from "@/taquito/contracts/dex";
 import { approve } from "@/taquito/contracts/token";
 import { ITokenItem } from "@/api/getTokens";
-import { getStorage } from "@/taquito/tezos";
+import { getStorage, getTezosBalance } from "@/taquito/tezos";
 import { calcTezToToken, calcTokenToTez, round } from "@/helpers/calc";
 import store from "@/store";
 
@@ -60,6 +60,8 @@ import store from "@/store";
   components: { NavTabs, Form, FormIcon, FormField, FormInfo, SubmitBtn, Loader },
 })
 export default class Swap extends Vue {
+  accBalance: number = 0;
+  tokenBalance: number = 0;
   inputAmount: string = "0.0";
   private exchangeRate: any = {
     rate: "-",
@@ -126,7 +128,8 @@ export default class Swap extends Vue {
     },
   };
 
-  mounted() {
+  async mounted() {
+    this.accBalance = await getTezosBalance(store.state.accountPublicKeyHash);
     this.$watch(
       (vm?) => [
         vm.inputToken.amount,
@@ -263,7 +266,7 @@ export default class Swap extends Vue {
     this.calcOutputAmount(this.inputToken.amount);
   };
 
-  calcExchangePair() {
+  async calcExchangePair() {
     const {
       inputToken: {
         token: { type: inputType },
@@ -274,9 +277,10 @@ export default class Swap extends Vue {
         token: { type: outputType },
         storage: outputStorage,
       },
+      accBalance,
     } = this;
-
     if (inputType === "xtz" && outputType === "token") {
+      if (accBalance < parseFloat(inputAmount)) this.swap.setSwapStatus = "Low balance";
       const amount = inputAmount > 0 ? inputAmount : 1;
       const tokenAmount: any = `${calcTezToToken(outputStorage, amount)}`;
       const pricePerToken = round(amount / tokenAmount);
@@ -291,14 +295,16 @@ export default class Swap extends Vue {
   }
 
   validate() {
-    const { inputToken, outputToken } = this;
+    const { inputToken, outputToken, accBalance } = this;
     if (
       inputToken.amount &&
       outputToken.amount &&
       Object.keys(inputToken.token).length &&
-      Object.keys(outputToken.token).length
+      Object.keys(outputToken.token).length &&
+      accBalance > parseFloat(inputToken.amount)
     ) {
       this.swap.setSwapPossibility = true;
+      this.swap.setSwapStatus = "Swap";
     } else {
       this.swap.setSwapPossibility = false;
     }
