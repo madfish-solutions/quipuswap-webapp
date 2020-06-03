@@ -36,7 +36,7 @@ export async function getTezosBalance(pkh: string) {
 
 export async function getTokenBalance(contractAddress: string, pkh: string) {
   const storage = await getStorage(contractAddress);
-  return storage.ledger.get(pkh).balance;
+  return Number(storage.ledger.get(pkh).balance);
 }
 
 export async function isCorrectAddress(address: string) {

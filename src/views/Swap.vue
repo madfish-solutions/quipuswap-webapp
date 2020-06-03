@@ -52,7 +52,7 @@ import Loader from "@/components/Loader.vue";
 import { tezToTokenSwap, tokenToTezSwap } from "@/taquito/contracts/dex";
 import { approve } from "@/taquito/contracts/token";
 import { ITokenItem } from "@/api/getTokens";
-import { getStorage, getTezosBalance } from "@/taquito/tezos";
+import { getStorage, getTezosBalance, getTokenBalance } from "@/taquito/tezos";
 import { calcTezToToken, calcTokenToTez, round } from "@/helpers/calc";
 import store from "@/store";
 
@@ -60,9 +60,19 @@ import store from "@/store";
   components: { NavTabs, Form, FormIcon, FormField, FormInfo, SubmitBtn, Loader },
 })
 export default class Swap extends Vue {
-  accBalance: number = 0;
-  tokenBalance: number = 0;
+  private balance: any = {
+    account: 0,
+    token: 0,
+    set accountBalance(balance: number) {
+      this.account = balance;
+    },
+    set tokenBalance(balance: number) {
+      this.token = balance;
+    },
+  };
+
   inputAmount: string = "0.0";
+
   private exchangeRate: any = {
     rate: "-",
     set setRate(rateString: string) {
@@ -129,7 +139,7 @@ export default class Swap extends Vue {
   };
 
   async mounted() {
-    this.accBalance = await getTezosBalance(store.state.accountPublicKeyHash);
+    this.balance.accountBalance = await getTezosBalance(store.state.accountPublicKeyHash);
     this.$watch(
       (vm?) => [
         vm.inputToken.amount,
@@ -247,6 +257,7 @@ export default class Swap extends Vue {
       this.inputToken.setStorage = storage;
       store.commit("tokensStorage", { key: token.exchange, value: storage });
       this.inputToken.setLoading = false;
+      this.balance.tokenBalance = await getTokenBalance(token.id, store.state.accountPublicKeyHash);
     }
     this.calcOutputAmount(this.inputToken.amount);
   };
@@ -262,6 +273,7 @@ export default class Swap extends Vue {
       this.outputToken.setStorage = storage;
       store.commit("tokensStorage", { key: token.exchange, value: storage });
       this.outputToken.setLoading = false;
+      this.balance.tokenBalance = await getTokenBalance(token.id, store.state.accountPublicKeyHash);
     }
     this.calcOutputAmount(this.inputToken.amount);
   };
@@ -277,10 +289,8 @@ export default class Swap extends Vue {
         token: { type: outputType },
         storage: outputStorage,
       },
-      accBalance,
     } = this;
     if (inputType === "xtz" && outputType === "token") {
-      if (accBalance < parseFloat(inputAmount)) this.swap.setSwapStatus = "Low balance";
       const amount = inputAmount > 0 ? inputAmount : 1;
       const tokenAmount: any = `${calcTezToToken(outputStorage, amount)}`;
       const pricePerToken = round(amount / tokenAmount);
@@ -292,22 +302,44 @@ export default class Swap extends Vue {
       const pricePerToken = round(amount / xtzInput);
       this.exchangeRate.setRate = `1 ${this.outputToken.token.name} = ${pricePerToken} ${this.inputToken.token.name}`;
     }
+    if (!this.isEnoughMoney()) this.swap.setSwapStatus = "Low balance";
   }
 
   validate() {
-    const { inputToken, outputToken, accBalance } = this;
+    const { inputToken, outputToken } = this;
     if (
       inputToken.amount &&
       outputToken.amount &&
       Object.keys(inputToken.token).length &&
       Object.keys(outputToken.token).length &&
-      accBalance > parseFloat(inputToken.amount)
+      this.isEnoughMoney()
     ) {
       this.swap.setSwapPossibility = true;
       this.swap.setSwapStatus = "Swap";
     } else {
       this.swap.setSwapPossibility = false;
     }
+  }
+
+  isEnoughMoney() {
+    const {
+      inputToken: {
+        token: { type: inputType },
+        amount: inputAmount,
+      },
+      outputToken: {
+        token: { type: outputType },
+      },
+      balance: { account, token },
+    } = this;
+    console.log(account, token);
+    if (inputType === "xtz" && outputType === "token") {
+      if (account < parseFloat(inputAmount)) return false;
+    }
+    if (inputType === "token" && outputType === "xtz") {
+      if (token < parseFloat(inputAmount)) return false;
+    }
+    return true;
   }
 }
 </script>
