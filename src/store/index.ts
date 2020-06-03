@@ -7,6 +7,7 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     tokens: [],
+    accountPublicKeyHash: "tz1bQEJqMqC92ommfsRB6pWG9LVBKNgXPysh",
     tokensStorage: {} as any,
   },
   mutations: {
