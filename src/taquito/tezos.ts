@@ -7,11 +7,8 @@ const tezos = new TezosToolkit();
 export default async function initContract(contractAddress: string) {
   try {
     const signer = await InMemorySigner.fromSecretKey(
-      // secretKey
       "edskRvJ57F7SM8yJi96rASgBSeLd6a8DCkqQg9p4WyMtMSR5skd9jPWRfHaY3jwjc8yHYRKbmKpj4t7KwGUyH6cK6quLrXqS6K"
     );
-    // await tezos.importKey(tkey.email, tkey.password, tkey.mnemonic.join(" "), tkey.secret);
-    console.log(await signer.publicKeyHash(), "a");
     await tezos.setProvider({
       rpc: "https://api.tez.ie/rpc/carthagenet",
       signer,
@@ -31,7 +28,7 @@ export async function getStorage(contractAddress: string) {
 
 export async function getTezosBalance(pkh: string) {
   const balance: any = await tezos.tz.getBalance(pkh);
-  return balance / 1000000;
+  return balance;
 }
 
 export async function getTokenBalance(contractAddress: string, pkh: string) {

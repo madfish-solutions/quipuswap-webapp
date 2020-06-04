@@ -52,8 +52,10 @@ import Loader from "@/components/Loader.vue";
 import { tezToTokenSwap, tokenToTezSwap } from "@/taquito/contracts/dex";
 import { approve } from "@/taquito/contracts/token";
 import { ITokenItem } from "@/api/getTokens";
-import { getStorage, getTezosBalance, getTokenBalance } from "@/taquito/tezos";
+import { getStorage, getTokenBalance } from "@/taquito/tezos";
 import { calcTezToToken, calcTokenToTez, round } from "@/helpers/calc";
+import sleep from "@/helpers/sleep";
+
 import store from "@/store";
 
 @Component({
@@ -61,11 +63,7 @@ import store from "@/store";
 })
 export default class Swap extends Vue {
   private balance: any = {
-    account: 0,
     token: 0,
-    set accountBalance(balance: number) {
-      this.account = balance;
-    },
     set tokenBalance(balance: number) {
       this.token = balance;
     },
@@ -106,7 +104,7 @@ export default class Swap extends Vue {
     },
 
     set setAmount(amount: any) {
-      if (amount.length) this.amount = amount;
+      if (typeof amount === "string") this.amount = amount;
       else this.amount = null;
     },
     set setStorage(storage: object) {
@@ -127,7 +125,7 @@ export default class Swap extends Vue {
       this.token = token;
     },
     set setAmount(amount: any) {
-      if (amount.length) this.amount = amount;
+      if (typeof amount === "string") this.amount = amount;
       else this.amount = null;
     },
     set setStorage(storage: object) {
@@ -139,7 +137,6 @@ export default class Swap extends Vue {
   };
 
   async mounted() {
-    this.balance.accountBalance = await getTezosBalance(store.state.accountPublicKeyHash);
     this.$watch(
       (vm?) => [
         vm.inputToken.amount,
@@ -167,19 +164,17 @@ export default class Swap extends Vue {
       if (inputType === "xtz") {
         await tezToTokenSwap(this.outputToken.token.exchange, outputAmount, inputAmount);
       }
-
       if (outputType === "xtz") {
         await approve(inputId, this.inputToken.token.exchange, inputAmount);
         await tokenToTezSwap(this.inputToken.token.exchange, inputAmount, outputAmount);
       }
+      this.swap.setSwapStatus = "Swap is done successful";
     } catch {
-      this.swap.setSwapStatus = "Error!";
+      this.swap.setSwapStatus = "Something went wrong";
     }
     this.swap.setLoading = false;
-
-    setTimeout(() => {
-      this.swap.setSwapStatus = "Swap";
-    }, 5000);
+    await sleep(5000);
+    this.swap.setSwapStatus = "Swap";
   };
 
   onInputTokenAmount = async (amount: string) => {
@@ -330,11 +325,11 @@ export default class Swap extends Vue {
       outputToken: {
         token: { type: outputType },
       },
-      balance: { account, token },
+      balance: { token },
     } = this;
-    console.log(account, token);
+    const { balance } = store.state;
     if (inputType === "xtz" && outputType === "token") {
-      if (account < parseFloat(inputAmount)) return false;
+      if (balance < parseFloat(inputAmount)) return false;
     }
     if (inputType === "token" && outputType === "xtz") {
       if (token < parseFloat(inputAmount)) return false;

@@ -16,16 +16,22 @@
 import { Component, Vue } from "vue-property-decorator";
 import AppLayout from "@/components/AppLayout.vue";
 import store from "@/store";
+
 @Component({
   components: { AppLayout },
 })
 export default class App extends Vue {
   created() {
+    this.balance();
     this.tokens();
   }
 
   tokens = () => {
     store.dispatch("tokens");
+  };
+
+  balance = () => {
+    store.dispatch("balance");
   };
 }
 </script>
