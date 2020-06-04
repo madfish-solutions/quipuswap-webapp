@@ -38,7 +38,7 @@
     </Form>
     <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal"></div>
     <div class="flex justify-center align-center text-center">
-      <SubmitBtn :disabled="!send.validate" @click="handeSendMoney">
+      <SubmitBtn :disabled="!send.validate" @click="handleSendMoney">
         <template v-if="!isLoading">
           {{ send.status }}
         </template>
@@ -58,10 +58,10 @@ import Form, { FormIcon, FormField, FormInfo } from "@/components/Form";
 import SubmitBtn from "@/components/SubmitBtn.vue";
 import Loader from "@/components/Loader.vue";
 import { ITokenItem } from "@/api/getTokens";
-import { getStorage, isCorrectAddress } from "@/taquito/tezos";
+import { getStorage, isCorrectAddress, getTokenBalance } from "@/taquito/tezos";
 import { tezToTokenPayment, tokenToTezPayment } from "@/taquito/contracts/dex";
 import { approve } from "@/taquito/contracts/token";
-
+import sleep from "@/helpers/sleep";
 import { calcTezToToken, calcTokenToTez, round } from "@/helpers/calc";
 import store from "@/store";
 
@@ -72,6 +72,13 @@ export default class Send extends Vue {
   inputAmount: string = "0.0";
   recipient: string = "";
   isLoading: boolean = false;
+
+  private balance: any = {
+    token: 0,
+    set tokenBalance(balance: number) {
+      this.token = balance;
+    },
+  };
 
   private exchangeRate: any = {
     rate: "-",
@@ -148,7 +155,7 @@ export default class Send extends Vue {
     );
   }
 
-  async handeSendMoney() {
+  async handleSendMoney() {
     const {
       inputToken: {
         amount: inputAmount,
@@ -163,21 +170,18 @@ export default class Send extends Vue {
     try {
       if (inputType === "xtz") {
         await tezToTokenPayment(outputExchange, inputAmount, this.recipient);
-        this.send.setSendStatus = "Done!";
       }
-
       if (outputType === "xtz") {
         await approve(inputId, inputExchange, inputAmount);
         await tokenToTezPayment(inputExchange, inputAmount, outputAmount, this.recipient);
-        this.send.setSendStatus = "Done!";
       }
+      this.send.setSendStatus = "Done!";
     } catch {
-      this.send.setSendStatus = "Error";
+      this.send.setSendStatus = "Something went wrong";
     }
     this.isLoading = false;
-    setTimeout(() => {
-      this.send.setSendStatus = "Send";
-    }, 3000);
+    await sleep(5000);
+    this.send.setSendStatus = "Send";
   }
 
   onInputRecipient(address: string) {
@@ -256,6 +260,7 @@ export default class Send extends Vue {
       this.inputToken.setLoading = true;
       const newStorage = getStorage(token.exchange);
       const storage: any = store.state.tokensStorage[token.exchange] || (await newStorage);
+      this.balance.setToken = await getTokenBalance(token.id, store.state.accountPublicKeyHash);
       this.inputToken.setStorage = storage;
       store.commit("tokensStorage", { key: token.exchange, value: storage });
       this.inputToken.setLoading = false;
@@ -271,6 +276,7 @@ export default class Send extends Vue {
       this.outputToken.setLoading = true;
       const newStorage = getStorage(token.exchange);
       const storage: any = store.state.tokensStorage[token.exchange] || (await newStorage);
+      this.balance.tokenBalance = await getTokenBalance(token.id, store.state.accountPublicKeyHash);
       this.outputToken.setStorage = storage;
       store.commit("tokensStorage", { key: token.exchange, value: storage });
       this.outputToken.setLoading = false;
@@ -307,17 +313,46 @@ export default class Send extends Vue {
 
   async validate() {
     const { inputToken, outputToken, recipient } = this;
+    const isAddress = await isCorrectAddress(recipient);
+
     if (
       inputToken.amount &&
       outputToken.amount &&
       Object.keys(inputToken.token).length &&
       Object.keys(outputToken.token).length &&
-      (await isCorrectAddress(recipient))
+      this.isEnoughMoney() &&
+      isAddress
     ) {
       this.send.setSendPossibility = true;
+      this.send.setSendStatus = "Send";
     } else {
+      if (!this.isEnoughMoney()) this.send.setSendStatus = "Low balance";
+      else this.send.setSendStatus = "Send";
       this.send.setSendPossibility = false;
     }
+  }
+
+  isEnoughMoney() {
+    const {
+      inputToken: {
+        token: { type: inputType },
+        amount: inputAmount,
+      },
+      outputToken: {
+        token: { type: outputType },
+      },
+      balance: { token },
+    } = this;
+    const { balance } = store.state;
+    console.log(balance, token);
+
+    if (inputType === "xtz" && outputType === "token") {
+      if (balance < parseFloat(inputAmount)) return false;
+    }
+    if (inputType === "token" && outputType === "xtz") {
+      if (token < parseFloat(inputAmount)) return false;
+    }
+    return true;
   }
 }
 </script>
