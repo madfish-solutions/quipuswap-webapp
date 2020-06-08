@@ -1,15 +1,13 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import { getStorage } from "@/taquito/contracts/factory";
-import { getTezosBalance } from "@/taquito/tezos";
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
     tokens: [],
-    accountPublicKeyHash: "tz1bQEJqMqC92ommfsRB6pWG9LVBKNgXPysh",
-    balance: 0,
+    account: { balance: 0, pkh: "" },
     tokensStorage: {} as any,
   },
   mutations: {
@@ -19,8 +17,8 @@ export default new Vuex.Store({
     tokensStorage(state, storage) {
       state.tokensStorage = { ...state.tokensStorage, [storage.key]: storage.value };
     },
-    balance(state, balance) {
-      state.balance = balance;
+    account(state, account) {
+      state.account = account;
     },
   },
   actions: {
@@ -36,11 +34,6 @@ export default new Vuex.Store({
           "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xB6eD7644C69416d67B522e20bC294A9a9B405B31/logo.png",
       }));
       commit("tokens", tokenList);
-    },
-    async balance({ commit, state }) {
-      const balance1 = await getTezosBalance(state.accountPublicKeyHash);
-      console.log(balance1, "1");
-      commit("balance", balance1);
     },
   },
   modules: {},
