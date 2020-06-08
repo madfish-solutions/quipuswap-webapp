@@ -49,12 +49,13 @@ import NavTabs from "@/components/NavTabs.vue";
 import Form, { FormIcon, FormField, FormInfo } from "@/components/Form";
 import SubmitBtn from "@/components/SubmitBtn.vue";
 import Loader from "@/components/Loader.vue";
-import { tezToTokenSwap, tokenToTezSwap } from "@/taquito/contracts/dex";
+import { tokenToTezSwap } from "@/taquito/contracts/dex";
 import { approve } from "@/taquito/contracts/token";
 import { ITokenItem } from "@/api/getTokens";
 import { getStorage, getTokenBalance } from "@/taquito/tezos";
 import { calcTezToToken, calcTokenToTez, round } from "@/helpers/calc";
 import sleep from "@/helpers/sleep";
+import { ThanosWallet } from "@thanos-wallet/dapp";
 
 import store from "@/store";
 
@@ -160,9 +161,14 @@ export default class Swap extends Vue {
       },
     } = this;
     this.swap.setLoading = true;
+    const wallet = new ThanosWallet("Quipuswap");
+    await wallet.connect("carthagenet");
+    const tezos = wallet.toTezos();
     try {
       if (inputType === "xtz") {
-        await tezToTokenSwap(this.outputToken.token.exchange, outputAmount, inputAmount);
+        const contract = await tezos.wallet.at(this.outputToken.token.exchange);
+        await contract.methods.tezToTokenSwap(outputAmount).send({ amount: inputAmount });
+        // await tezToTokenSwap(this.outputToken.token.exchange, outputAmount, inputAmount);
       }
       if (outputType === "xtz") {
         await approve(inputId, this.inputToken.token.exchange, inputAmount);
@@ -252,7 +258,7 @@ export default class Swap extends Vue {
       this.inputToken.setStorage = storage;
       store.commit("tokensStorage", { key: token.exchange, value: storage });
       this.inputToken.setLoading = false;
-      this.balance.tokenBalance = await getTokenBalance(token.id, store.state.accountPublicKeyHash);
+      this.balance.tokenBalance = await getTokenBalance(token.id, store.state.account.pkh);
     }
     this.calcOutputAmount(this.inputToken.amount);
   };
@@ -268,7 +274,7 @@ export default class Swap extends Vue {
       this.outputToken.setStorage = storage;
       store.commit("tokensStorage", { key: token.exchange, value: storage });
       this.outputToken.setLoading = false;
-      this.balance.tokenBalance = await getTokenBalance(token.id, store.state.accountPublicKeyHash);
+      this.balance.tokenBalance = await getTokenBalance(token.id, store.state.account.pkh);
     }
     this.calcOutputAmount(this.inputToken.amount);
   };
@@ -327,7 +333,9 @@ export default class Swap extends Vue {
       },
       balance: { token },
     } = this;
-    const { balance } = store.state;
+    const {
+      account: { balance },
+    } = store.state;
     if (inputType === "xtz" && outputType === "token") {
       if (balance < parseFloat(inputAmount)) return false;
     }

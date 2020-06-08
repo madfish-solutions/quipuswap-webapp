@@ -1,7 +1,7 @@
 <template>
   <div class="-mx-3 xs:-mx-4 shadow-lg">
     <div class="field" :class="isSearchOpened ? 'rounded-t-3px' : 'rounded-3px'">
-      <div class="flex-1 flex flex-col jutify-center">
+      <div class="flex-1 flex flex-col justify-center">
         <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">
           {{ label }}
         </div>
