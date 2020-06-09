@@ -12,9 +12,9 @@
       <template v-if="Object.keys(account).length">
         <div class="flex flex-row w-auto justify-center absolute right-0 top-40px right-0px">
           <span
-            class="connect-button button-balance  text-white w-24 h-12 border-2 border border-accent rounded-3px rounded-r-lg  flex items-center justify-center "
+            class="connect-button button-balance  text-white w-24 h-12 border-2 border border-accent rounded-3px rounded-lg  flex items-center justify-center "
           >
-            {{ `${account.balance} XTZ` }}
+            {{ `${(account.balance / 1000000).toFixed(1)} XTZ` }}
           </span>
           <span
             class="connect-button text-white w-64 h-12 border-2 border border-l-0 border-accent rounded-3px  flex items-center justify-center "

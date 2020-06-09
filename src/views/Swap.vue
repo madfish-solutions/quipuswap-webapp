@@ -49,13 +49,10 @@ import NavTabs from "@/components/NavTabs.vue";
 import Form, { FormIcon, FormField, FormInfo } from "@/components/Form";
 import SubmitBtn from "@/components/SubmitBtn.vue";
 import Loader from "@/components/Loader.vue";
-import { tokenToTezSwap } from "@/taquito/contracts/dex";
-import { approve } from "@/taquito/contracts/token";
 import { ITokenItem } from "@/api/getTokens";
-import { getStorage, getTokenBalance } from "@/taquito/tezos";
+import { getStorage, getTokenBalance, useThanosWallet } from "@/taquito/tezos";
 import { calcTezToToken, calcTokenToTez, round } from "@/helpers/calc";
 import sleep from "@/helpers/sleep";
-import { ThanosWallet } from "@thanos-wallet/dapp";
 
 import store from "@/store";
 
@@ -161,21 +158,30 @@ export default class Swap extends Vue {
       },
     } = this;
     this.swap.setLoading = true;
-    const wallet = new ThanosWallet("Quipuswap");
-    await wallet.connect("carthagenet");
-    const tezos = wallet.toTezos();
+
+    const tezos = await useThanosWallet();
     try {
       if (inputType === "xtz") {
         const contract = await tezos.wallet.at(this.outputToken.token.exchange);
-        await contract.methods.tezToTokenSwap(outputAmount).send({ amount: inputAmount });
-        // await tezToTokenSwap(this.outputToken.token.exchange, outputAmount, inputAmount);
+        const operation = await contract.methods
+          .tezToTokenSwap(inputAmount)
+          .send({ amount: outputAmount });
+        await operation.confirmation();
       }
       if (outputType === "xtz") {
-        await approve(inputId, this.inputToken.token.exchange, inputAmount);
-        await tokenToTezSwap(this.inputToken.token.exchange, inputAmount, outputAmount);
+        const contractToken = await tezos.wallet.at(inputId);
+        const contractDex = await tezos.wallet.at(this.inputToken.token.exchange);
+        const approve = await contractToken.methods
+          .approve(this.inputToken.token.exchange, inputAmount)
+          .send();
+        await approve.confirmation();
+
+        const swap = await contractDex.methods.tokenToTezSwap(inputAmount, outputAmount).send();
+        await swap.confirmation();
       }
       this.swap.setSwapStatus = "Swap is done successful";
-    } catch {
+    } catch (e) {
+      console.error(e);
       this.swap.setSwapStatus = "Something went wrong";
     }
     this.swap.setLoading = false;

@@ -48,7 +48,12 @@
     <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal"></div>
     <div class="flex justify-center text-center">
       <SubmitBtn @click="handleAddLiquidity" :disabled="!isAddLiquid">
-        Add Liquidity
+        <template v-if="!loading">
+          Add Liquidity
+        </template>
+        <template v-if="loading">
+          <Loader size="large" />
+        </template>
       </SubmitBtn>
     </div>
   </div>
@@ -58,10 +63,10 @@
 import { Component, Vue } from "vue-property-decorator";
 import NavTabs from "@/components/NavTabs.vue";
 import NavInvest from "@/components/NavInvest.vue";
+import Loader from "@/components/Loader.vue";
 import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
 import SubmitBtn from "@/components/SubmitBtn.vue";
-import { investLiquidity } from "@/taquito/contracts/dex";
-import { getStorage, isCorrectAddress } from "@/taquito/tezos";
+import { getStorage, isCorrectAddress, useThanosWallet } from "@/taquito/tezos";
 import { ITokenItem } from "@/api/getTokens";
 import { calcTezToToken, calcTokenToTez, round } from "@/helpers/calc";
 import store from "@/store";
@@ -75,12 +80,14 @@ import store from "@/store";
     FormIcon,
     FormInfo,
     SubmitBtn,
+    Loader,
   },
 })
 export default class AddLiquidity extends Vue {
   inputAmount: string = "";
   baker: string = "";
   isAddLiquid: boolean = false;
+  loading: boolean = false;
   private selectedToken: any = {
     token: {},
     storage: {},
@@ -153,13 +160,19 @@ export default class AddLiquidity extends Vue {
     this.resetStats();
   }
 
-  handleAddLiquidity() {
-    investLiquidity(
-      this.selectedToken.token.exchange,
-      this.inputAmount,
-      this.selectedToken.amount,
-      this.baker
-    );
+  async handleAddLiquidity() {
+    try {
+      this.loading = true;
+      const tezos = await useThanosWallet();
+      const contract = await tezos.wallet.at(this.selectedToken.token.exchange);
+      const investLiquidity = await contract.methods
+        .investLiquidity(this.selectedToken.amount, this.baker)
+        .send({ amount: this.inputAmount as any });
+      await investLiquidity.confirmation();
+    } catch (e) {
+      console.error(e);
+    }
+    this.loading = false;
   }
 
   onSelectToken = async (token: any) => {
