@@ -39,8 +39,13 @@
 
     <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal"></div>
     <div class="flex justify-center text-center">
-      <SubmitBtn :disabled="!isRemoveLiquid">
-        Remove Liquidity
+      <SubmitBtn :disabled="!isRemoveLiquid" @click="handleDivestLiquidity">
+        <template v-if="!loading">
+          Remove Liquidity
+        </template>
+        <template v-if="loading">
+          <Loader size="large" />
+        </template>
       </SubmitBtn>
     </div>
   </div>
@@ -51,19 +56,20 @@ import { Component, Vue } from "vue-property-decorator";
 import NavTabs from "@/components/NavTabs.vue";
 import NavInvest from "@/components/NavInvest.vue";
 import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
+import Loader from "@/components/Loader.vue";
 import SubmitBtn from "@/components/SubmitBtn.vue";
-import { divestLiquidity } from "@/taquito/contracts/dex";
-import { getStorage } from "@/taquito/tezos";
+import { getStorage, useThanosWallet } from "@/taquito/tezos";
 import { ITokenItem } from "@/api/getTokens";
 import { calcTezToToken, calcTokenToTez, round } from "@/helpers/calc";
 import store from "@/store";
 
 @Component({
-  components: { NavTabs, NavInvest, Form, FormField, FormIcon, FormInfo, SubmitBtn },
+  components: { NavTabs, NavInvest, Form, FormField, FormIcon, FormInfo, SubmitBtn, Loader },
 })
 export default class RemoveLiquidity extends Vue {
   isRemoveLiquid: boolean = false;
   outputAmount: string = "";
+  loading: boolean = false;
   private selectedToken: any = {
     token: {},
     storage: {},
@@ -136,13 +142,19 @@ export default class RemoveLiquidity extends Vue {
     this.resetStats();
   }
 
-  handleAddLiquidity() {
-    divestLiquidity(
-      this.selectedToken.token.exchange,
-      1,
-      this.outputAmount,
-      this.selectedToken.amount
-    );
+  async handleDivestLiquidity() {
+    this.loading = true;
+    try {
+      const tezos = await useThanosWallet();
+      const contract = await tezos.wallet.at(this.selectedToken.token.exchange);
+      const divestLiquidity = await contract.methods
+        .divestLiquidity(1, this.outputAmount, this.selectedToken.amount)
+        .send();
+      await divestLiquidity.confirmation();
+    } catch (e) {
+      console.error(e);
+    }
+    this.loading = false;
   }
 
   onSelectToken = async (token: any) => {

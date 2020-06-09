@@ -1,6 +1,7 @@
 import { TezosToolkit } from "@taquito/taquito";
 import { InMemorySigner } from "@taquito/signer";
 import { validateAddress, ValidationResult } from "@taquito/utils";
+import { ThanosWallet } from "@thanos-wallet/dapp";
 
 const tezos = new TezosToolkit();
 
@@ -39,4 +40,11 @@ export async function getTokenBalance(contractAddress: string, pkh: string) {
 export async function isCorrectAddress(address: string) {
   const isAddress = await validateAddress(address);
   return isAddress === ValidationResult.VALID;
+}
+
+export async function useThanosWallet() {
+  const wallet = new ThanosWallet("Quipuswap");
+  await wallet.connect("carthagenet");
+  const thanosWallet = wallet.toTezos();
+  return thanosWallet;
 }

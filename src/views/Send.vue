@@ -58,11 +58,10 @@ import Form, { FormIcon, FormField, FormInfo } from "@/components/Form";
 import SubmitBtn from "@/components/SubmitBtn.vue";
 import Loader from "@/components/Loader.vue";
 import { ITokenItem } from "@/api/getTokens";
-import { getStorage, isCorrectAddress, getTokenBalance } from "@/taquito/tezos";
-import { tezToTokenPayment, tokenToTezPayment } from "@/taquito/contracts/dex";
-import { approve } from "@/taquito/contracts/token";
+import { getStorage, isCorrectAddress, getTokenBalance, useThanosWallet } from "@/taquito/tezos";
 import sleep from "@/helpers/sleep";
 import { calcTezToToken, calcTokenToTez, round } from "@/helpers/calc";
+
 import store from "@/store";
 
 @Component({
@@ -167,13 +166,25 @@ export default class Send extends Vue {
       },
     } = this;
     this.isLoading = true;
+    const tezos = await useThanosWallet();
     try {
       if (inputType === "xtz") {
-        await tezToTokenPayment(outputExchange, inputAmount, this.recipient);
+        const contract = await tezos.wallet.at(outputExchange);
+        const payment = await contract.methods
+          .tezToTokenPayment(inputAmount, this.recipient)
+          .send({ amount: inputAmount });
+        await payment.confirmation();
       }
       if (outputType === "xtz") {
-        await approve(inputId, inputExchange, inputAmount);
-        await tokenToTezPayment(inputExchange, inputAmount, outputAmount, this.recipient);
+        const contractToken = await tezos.wallet.at(inputId);
+        const contractDex = await tezos.wallet.at(inputExchange);
+        const approve = await contractToken.methods.approve(inputExchange, inputAmount).send();
+        await approve.confirmation();
+
+        const payment = await contractDex.methods
+          .tokenToTezPayment(inputAmount, outputAmount, this.recipient)
+          .send({ amount: inputAmount });
+        await payment.confirmation();
       }
       this.send.setSendStatus = "Done!";
     } catch {
