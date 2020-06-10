@@ -6,12 +6,13 @@
         label="Input"
         placeholder="0.0"
         v-model="inputToken.amount"
+        :subLabel="inputToken.label"
         :isLoading="inputToken.loading"
         @input="e => onInputTokenAmount(e.target.value)"
         @selectToken="onSelectInputToken"
       />
       <FormIcon>
-        <img class="inline" src="@/assets/arrow-down.png" />
+        <img class="inline" src="@/assets/arrow-down.svg" />
       </FormIcon>
       <FormField
         label="Output"
@@ -22,7 +23,7 @@
         @selectToken="onSelectOutputToken"
       />
       <FormIcon>
-        <img class="inline" src="@/assets/arrow-down.png" />
+        <img class="inline" src="@/assets/arrow-down.svg" />
       </FormIcon>
       <FormField
         label="Recipient Address"
@@ -62,7 +63,7 @@ import { getStorage, isCorrectAddress, getTokenBalance, useThanosWallet } from "
 import sleep from "@/helpers/sleep";
 import { calcTezToToken, calcTokenToTez, round } from "@/helpers/calc";
 
-import store from "@/store";
+import store, { getAccount } from "@/store";
 
 @Component({
   components: { NavTabs, Form, FormIcon, FormField, FormInfo, SubmitBtn, Loader },
@@ -103,6 +104,7 @@ export default class Send extends Vue {
     token: {},
     storage: {},
     loading: false,
+    label: "",
 
     set setToken(token: ITokenItem) {
       this.token = token;
@@ -117,6 +119,9 @@ export default class Send extends Vue {
     },
     set setLoading(loading: boolean) {
       this.loading = loading;
+    },
+    set setLabel(label: string) {
+      this.label = label;
     },
   };
 
@@ -266,14 +271,20 @@ export default class Send extends Vue {
   onSelectInputToken = async (token: any) => {
     this.inputToken.setToken = token;
     this.exchangeRate.setRate = "-";
+    this.inputToken.setLabel = "";
 
     if (token.type === "token") {
+      const account = getAccount();
+
       this.inputToken.setLoading = true;
       const newStorage = getStorage(token.exchange);
       const storage: any = store.state.tokensStorage[token.exchange] || (await newStorage);
-      this.balance.setToken = await getTokenBalance(token.id, store.state.account.pkh);
+      this.balance.setToken = await getTokenBalance(token.id, account.pkh);
       this.inputToken.setStorage = storage;
       store.commit("tokensStorage", { key: token.exchange, value: storage });
+      const balance = await getTokenBalance(token.id, account.pkh);
+      this.inputToken.setLabel = `Balance: ${balance} Token`;
+      this.balance.tokenBalance = await getTokenBalance(token.id, account.pkh);
       this.inputToken.setLoading = false;
     }
     this.calcOutputAmount(this.inputToken.amount);

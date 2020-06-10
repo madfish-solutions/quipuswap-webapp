@@ -1,5 +1,6 @@
 import Vue from "vue";
 import Vuex from "vuex";
+
 import { getStorage } from "@/taquito/contracts/factory";
 
 Vue.use(Vuex);
@@ -38,3 +39,12 @@ export default new Vuex.Store({
   },
   modules: {},
 });
+
+export function setAccount(account: object) {
+  localStorage.setItem("account", JSON.stringify(account));
+}
+
+export function getAccount() {
+  const account: any = localStorage.getItem("account");
+  return JSON.parse(account) || {};
+}

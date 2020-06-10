@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <AppLayout class="pt-4 pb-12 relative px-4 xs:px-6">
-      <template v-if="!Object.keys(account).length">
+      <template v-if="!account.pkh.length">
         <button
           class="text-white w-56 h-12 border-2 border border-accent rounded-3px absolute right-0 top-40px right-40px hidden md:block"
           @click="handleUseThanos"
@@ -9,7 +9,7 @@
           Connect to a Wallet
         </button>
       </template>
-      <template v-if="Object.keys(account).length">
+      <template v-if="account.pkh.length">
         <div class="flex flex-row w-auto justify-center absolute right-0 top-40px right-0px">
           <span
             class="connect-button button-balance  text-white w-24 h-12 border-2 border border-accent rounded-3px rounded-lg  flex items-center justify-center "
@@ -30,28 +30,35 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 import { ThanosWallet } from "@thanos-wallet/dapp";
 import AppLayout from "@/components/AppLayout.vue";
-import store from "@/store";
+import store, { getAccount as getThanosAccount, setAccount } from "@/store";
 
 @Component({
   components: { AppLayout },
 })
 export default class App extends Vue {
-  account: object = {};
+  account: any = {
+    pkh: "",
+    balance: 0,
+
+    set setPkh(pkh: string) {
+      this.pkh = pkh;
+    },
+
+    set setBalance(balance: number) {
+      this.balance = balance;
+    },
+  };
+
   created() {
     this.tokens();
-  }
-  /*  eslint class-methods-use-this: ["error", { "exceptMethods": ["getAccount"] }] */
-
-  get getAccount() {
-    return store.state.account;
-  }
-
-  @Watch("getAccount")
-  changeAccount(account: object) {
-    this.account = account;
+    const account = getThanosAccount();
+    if (Object.keys(account).length) {
+      this.account.setPkh = account.pkh;
+      this.account.setBalance = account.balance;
+    }
   }
 
   tokens = () => {
@@ -72,7 +79,9 @@ export default class App extends Vue {
       const pkh = await tezos.wallet.pkh();
       const balance = await tezos.tz.getBalance(pkh);
       console.info(`address: ${pkh}, balance: ${balance}`);
-      store.commit("account", { pkh, balance });
+      setAccount({ pkh, balance });
+      this.account.setPkh = pkh;
+      this.account.setBalance = balance;
     } catch (err) {
       console.error(err);
     }

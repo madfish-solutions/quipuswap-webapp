@@ -1,12 +1,16 @@
 <template>
   <div class="-mx-3 xs:-mx-4 shadow-lg">
-    <div class="field" :class="isSearchOpened ? 'rounded-t-3px' : 'rounded-3px'">
+    <div :class="isSearchOpened ? 'field rounded-t-3px' : ' field rounded-3px relative'">
       <div class="flex-1 flex flex-col justify-center">
         <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">
           {{ label }}
         </div>
         <input class="w-full" v-bind="$attrs" v-on="$listeners" />
+        <div class="label sm:text-sm font-light w-full">
+          {{ subLabel }}
+        </div>
       </div>
+
       <div v-if="withSelect" class="append flex">
         <button
           @click="toggleSearch"
@@ -15,7 +19,7 @@
           <template v-if="!isLoading">
             <template v-if="selectedToken">
               <img class="w-5 h-5 mr-2" :src="selectedToken.imgUrl" />
-              {{ selectedToken.symbol }}
+              <span class="truncate">{{ selectedToken.symbol }}</span>
             </template>
             <span v-else>Select a token</span>
           </template>
@@ -71,6 +75,7 @@ import TokenItem from "@/components/Form/TokenItem.vue";
 })
 export default class FormField extends Vue {
   @Prop() label?: string;
+  @Prop() subLabel?: string;
   @Prop({ default: false }) isLoading?: boolean;
   @Prop({ default: true }) withSelect?: boolean;
   @Prop({ default: true }) showSearch?: boolean;
@@ -162,7 +167,11 @@ input {
 
 @screen xs {
   .field {
-    @apply px-6 h-24;
+    @apply px-6 h-32;
+  }
+
+  .field-extend {
+    @apply px-6 h-32;
   }
 
   .token-item {

@@ -6,13 +6,14 @@
         placeholder="0.0"
         label="Input"
         v-model="inputToken.amount"
+        :subLabel="inputToken.label"
         :isLoading="inputToken.loading"
         @input="e => onInputTokenAmount(e.target.value)"
         @selectToken="onSelectInputToken"
       />
 
       <FormIcon>
-        <img src="@/assets/arrow-down.png" />
+        <img src="@/assets/arrow-down.svg" />
       </FormIcon>
       <FormField
         placeholder="0.0"
@@ -54,7 +55,7 @@ import { getStorage, getTokenBalance, useThanosWallet } from "@/taquito/tezos";
 import { calcTezToToken, calcTokenToTez, round } from "@/helpers/calc";
 import sleep from "@/helpers/sleep";
 
-import store from "@/store";
+import store, { getAccount } from "@/store";
 
 @Component({
   components: { NavTabs, Form, FormIcon, FormField, FormInfo, SubmitBtn, Loader },
@@ -96,7 +97,7 @@ export default class Swap extends Vue {
     loading: false,
     token: {},
     storage: {},
-
+    label: "",
     set setToken(token: ITokenItem) {
       this.token = token;
     },
@@ -111,6 +112,9 @@ export default class Swap extends Vue {
     set setLoading(loading: boolean) {
       this.loading = loading;
     },
+    set setLabel(label: string) {
+      this.label = label;
+    },
   };
 
   private outputToken: any = {
@@ -118,7 +122,6 @@ export default class Swap extends Vue {
     token: {},
     loading: false,
     storage: {},
-
     set setToken(token: ITokenItem) {
       this.token = token;
     },
@@ -164,8 +167,8 @@ export default class Swap extends Vue {
       if (inputType === "xtz") {
         const contract = await tezos.wallet.at(this.outputToken.token.exchange);
         const operation = await contract.methods
-          .tezToTokenSwap(inputAmount)
-          .send({ amount: outputAmount });
+          .tezToTokenSwap(outputAmount)
+          .send({ amount: inputAmount });
         await operation.confirmation();
       }
       if (outputType === "xtz") {
@@ -256,15 +259,19 @@ export default class Swap extends Vue {
   onSelectInputToken = async (token: any) => {
     this.inputToken.setToken = token;
     this.exchangeRate.setRate = "-";
+    this.inputToken.setLabel = "";
 
     if (token.type === "token") {
+      const account = getAccount();
       this.inputToken.setLoading = true;
       const newStorage = getStorage(token.exchange);
       const storage: any = store.state.tokensStorage[token.exchange] || (await newStorage);
       this.inputToken.setStorage = storage;
       store.commit("tokensStorage", { key: token.exchange, value: storage });
+      const balance = await getTokenBalance(token.id, account.pkh);
+      this.inputToken.setLabel = `Balance: ${balance} Token`;
+      this.balance.tokenBalance = await getTokenBalance(token.id, account.pkh);
       this.inputToken.setLoading = false;
-      this.balance.tokenBalance = await getTokenBalance(token.id, store.state.account.pkh);
     }
     this.calcOutputAmount(this.inputToken.amount);
   };
@@ -274,13 +281,15 @@ export default class Swap extends Vue {
     this.exchangeRate.setRate = "-";
 
     if (token.type === "token") {
+      const account = getAccount();
       this.outputToken.setLoading = true;
       const newStorage = getStorage(token.exchange);
       const storage: any = store.state.tokensStorage[token.exchange] || (await newStorage);
       this.outputToken.setStorage = storage;
       store.commit("tokensStorage", { key: token.exchange, value: storage });
       this.outputToken.setLoading = false;
-      this.balance.tokenBalance = await getTokenBalance(token.id, store.state.account.pkh);
+      const balance = await getTokenBalance(token.id, account.pkh);
+      this.balance.tokenBalance = balance;
     }
     this.calcOutputAmount(this.inputToken.amount);
   };
@@ -339,9 +348,7 @@ export default class Swap extends Vue {
       },
       balance: { token },
     } = this;
-    const {
-      account: { balance },
-    } = store.state;
+    const { balance } = getAccount();
     if (inputType === "xtz" && outputType === "token") {
       if (balance < parseFloat(inputAmount)) return false;
     }

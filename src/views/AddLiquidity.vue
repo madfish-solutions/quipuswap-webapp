@@ -21,7 +21,7 @@
         @selectToken="onSelectToken"
       />
       <FormIcon>
-        <img src="@/assets/plus.png" />
+        <img src="@/assets/plus.svg" />
       </FormIcon>
       <FormField
         placeholder="tz.."
