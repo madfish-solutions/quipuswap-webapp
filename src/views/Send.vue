@@ -62,8 +62,8 @@ import { ITokenItem } from "@/api/getTokens";
 import { getStorage, isCorrectAddress, getTokenBalance, useThanosWallet } from "@/taquito/tezos";
 import sleep from "@/helpers/sleep";
 import { calcTezToToken, calcTokenToTez, round } from "@/helpers/calc";
-
 import store, { getAccount } from "@/store";
+import bus from "@/store/bus";
 
 @Component({
   components: { NavTabs, Form, FormIcon, FormField, FormInfo, SubmitBtn, Loader },
@@ -192,6 +192,7 @@ export default class Send extends Vue {
         await payment.confirmation();
       }
       this.send.setSendStatus = "Done!";
+      bus.$emit("refreshWallet");
     } catch {
       this.send.setSendStatus = "Something went wrong";
     }

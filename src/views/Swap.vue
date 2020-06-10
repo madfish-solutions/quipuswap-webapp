@@ -54,8 +54,8 @@ import { ITokenItem } from "@/api/getTokens";
 import { getStorage, getTokenBalance, useThanosWallet } from "@/taquito/tezos";
 import { calcTezToToken, calcTokenToTez, round } from "@/helpers/calc";
 import sleep from "@/helpers/sleep";
-
 import store, { getAccount } from "@/store";
+import bus from "@/store/bus";
 
 @Component({
   components: { NavTabs, Form, FormIcon, FormField, FormInfo, SubmitBtn, Loader },
@@ -183,6 +183,7 @@ export default class Swap extends Vue {
         await swap.confirmation();
       }
       this.swap.setSwapStatus = "Swap is done successful";
+      bus.$emit("refreshWallet");
     } catch (e) {
       console.error(e);
       this.swap.setSwapStatus = "Something went wrong";
