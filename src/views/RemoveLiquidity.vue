@@ -12,7 +12,7 @@
         @selectToken="onSelectToken"
       />
       <FormIcon>
-        <img src="@/assets/arrow-down.png" />
+        <img src="@/assets/arrow-down.svg" />
       </FormIcon>
       <FormField
         label="Output"
