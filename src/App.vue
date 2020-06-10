@@ -34,6 +34,7 @@ import { Component, Vue } from "vue-property-decorator";
 import { ThanosWallet } from "@thanos-wallet/dapp";
 import AppLayout from "@/components/AppLayout.vue";
 import store, { getAccount as getThanosAccount, setAccount } from "@/store";
+import bus from "@/store/bus";
 
 @Component({
   components: { AppLayout },
@@ -59,6 +60,7 @@ export default class App extends Vue {
       this.account.setPkh = account.pkh;
       this.account.setBalance = account.balance;
     }
+    bus.$on("refreshWallet", this.handleUseThanos);
   }
 
   tokens = () => {
