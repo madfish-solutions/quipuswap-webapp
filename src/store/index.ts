@@ -1,6 +1,5 @@
 import Vue from "vue";
 import Vuex from "vuex";
-
 import { getStorage } from "@/taquito/contracts/factory";
 
 Vue.use(Vuex);
@@ -47,4 +46,13 @@ export function setAccount(account: object) {
 export function getAccount() {
   const account: any = localStorage.getItem("account");
   return JSON.parse(account) || {};
+}
+
+export function setNetwork(network: string) {
+  localStorage.setItem("network", network);
+}
+
+export function getNetwork() {
+  const network: string = localStorage.getItem("network") || "mainnet";
+  return network;
 }

@@ -203,11 +203,13 @@ export default class Swap extends Vue {
   };
 
   onOutputTokenAmount = async (amount: string) => {
-    this.outputToken.setAmount = amount;
-    if (amount.length) {
+    const isNum = /^[0-9]*$/g.test(amount);
+    if (isNum) {
+      this.outputToken.setAmount = amount;
       this.calcInputAmount(parseFloat(amount));
       return;
     }
+    this.outputToken.setAmount = this.outputToken.amount;
     this.inputToken.setAmount = "";
   };
 

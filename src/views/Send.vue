@@ -296,10 +296,12 @@ export default class Send extends Vue {
     this.exchangeRate.setRate = "-";
 
     if (token.type === "token") {
+      const account = getAccount();
+
       this.outputToken.setLoading = true;
       const newStorage = getStorage(token.exchange);
       const storage: any = store.state.tokensStorage[token.exchange] || (await newStorage);
-      this.balance.tokenBalance = await getTokenBalance(token.id, store.state.account.pkh);
+      this.balance.tokenBalance = await getTokenBalance(token.id, account.pkh);
       this.outputToken.setStorage = storage;
       store.commit("tokensStorage", { key: token.exchange, value: storage });
       this.outputToken.setLoading = false;
@@ -366,9 +368,7 @@ export default class Send extends Vue {
       },
       balance: { token },
     } = this;
-    const {
-      account: { balance },
-    } = store.state;
+    const { balance } = getAccount();
     console.log(balance, token);
 
     if (inputType === "xtz" && outputType === "token") {
