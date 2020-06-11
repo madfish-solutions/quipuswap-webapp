@@ -12,8 +12,8 @@ export const calcTezToToken = (storage: any, tezAmount: any): any => {
     const newTezPool: any = parseFloat(`${+storage.tezPool + +mutezAmount}`);
     const tempTezPool: any = parseFloat(`${newTezPool - fee}`);
     const newTokenPool: any = parseFloat(`${storage.invariant / tempTezPool}`);
-    const minTokens = parseFloat(`${storage.tokenPool - newTokenPool}`);
-    return round(minTokens);
+    const minTokens = `${storage.tokenPool - newTokenPool}`;
+    return parseInt(minTokens, 10);
   }
   return 0;
 };

@@ -1,10 +1,13 @@
 import { TezosToolkit } from "@taquito/taquito";
 import { InMemorySigner } from "@taquito/signer";
 import { validateAddress, ValidationResult } from "@taquito/utils";
-import { ThanosWallet } from "@thanos-wallet/dapp";
+import { ThanosWallet, ThanosDAppNetwork } from "@thanos-wallet/dapp";
 
 const tezos = new TezosToolkit();
-
+export const NETWORKS = {
+  mainnet: "Tezos Mainnet",
+  carthagenet: "Carthage Testnet",
+};
 export default async function initContract(contractAddress: string) {
   try {
     const signer = await InMemorySigner.fromSecretKey(
@@ -34,7 +37,7 @@ export async function getTezosBalance(pkh: string) {
 
 export async function getTokenBalance(contractAddress: string, pkh: string) {
   const storage = await getStorage(contractAddress);
-  return Number(storage.ledger.get(pkh).balance);
+  return storage.ledger.get(pkh) ? Number(storage.ledger.get(pkh).balance) : 0;
 }
 
 export async function isCorrectAddress(address: string) {
@@ -42,9 +45,10 @@ export async function isCorrectAddress(address: string) {
   return isAddress === ValidationResult.VALID;
 }
 
-export async function useThanosWallet() {
+export async function useThanosWallet(forcePermission: boolean = false) {
   const wallet = new ThanosWallet("Quipuswap");
-  await wallet.connect("carthagenet");
+  const network: ThanosDAppNetwork = localStorage.getItem("network") as ThanosDAppNetwork;
+  await wallet.connect(network, { forcePermission });
   const thanosWallet = wallet.toTezos();
   return thanosWallet;
 }
