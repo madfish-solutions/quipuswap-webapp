@@ -3,16 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "start": "vue-cli-service serve",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@taquito/michelson-encoder": "^6.2.0-beta.1",
-    "@taquito/signer": "^6.2.0-beta.1",
-    "@taquito/taquito": "^6.3.0-wallet.3",
-    "@taquito/utils": "^6.3.0-wallet.3",
-    "@thanos-wallet/dapp": "^0.4.3",
+    "@taquito/michelson-encoder": "^6.3.3-beta.0",
+    "@taquito/signer": "^6.3.3-beta.0",
+    "@taquito/taquito": "^6.3.3-beta.0",
+    "@taquito/utils": "^6.3.3-beta.0",
+    "@thanos-wallet/dapp": "^0.5.0",
     "bignumber.js": "^9.0.0",
     "core-js": "^3.6.4",
     "eslint-config-prettier": "^6.10.0",
