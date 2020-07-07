@@ -3,6 +3,7 @@ export interface ITokenItem {
   symbol: string;
   name: string;
   imgUrl: string;
+  type?: string;
 }
 
 const tokens: ITokenItem[] = [
