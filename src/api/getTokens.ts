@@ -4,6 +4,7 @@ export interface ITokenItem {
   name: string;
   imgUrl: string;
   type?: string;
+  exchange?: null;
 }
 
 const tokens: ITokenItem[] = [
