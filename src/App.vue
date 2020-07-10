@@ -27,7 +27,7 @@
       <template v-if="!account.pkh.length">
         <button
           class="text-white w-56 h-12 border-2 border border-accent rounded-3px absolute right-0 top-40px right-40px hidden md:block"
-          @click="handleUseThanos"
+          @click="handleConnect"
         >
           Connect to a Wallet
         </button>
@@ -43,7 +43,7 @@
             class="connect-button text-white button-pkh cursor-pointer w-64 h-12 border-2 border border-l-0 border-accent rounded-3px  flex items-center justify-center "
             @mouseover="action.setName = `Change account`"
             @mouseleave="action.setName = `${account.pkh.slice(0, 10)}...${account.pkh.slice(26)} `"
-            @click="handleUseThanos(true)"
+            @click="handleConnectForce"
           >
             <span>{{ action.name }}</span>
           </div>
@@ -130,6 +130,9 @@ export default class App extends Vue {
   tokens = () => {
     store.dispatch("tokens");
   };
+
+  handleConnect = () => this.handleUseThanos();
+  handleConnectForce = () => this.handleUseThanos(true);
 
   handleUseThanos = async (forcePermission: boolean = false) => {
     try {
