@@ -48,9 +48,7 @@
     <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal"></div>
     <div class="flex justify-center text-center">
       <SubmitBtn @click="handleAddLiquidity" :disabled="!isAddLiquid">
-        <template v-if="!loading">
-          Add Liquidity
-        </template>
+        <template v-if="!loading">Add Liquidity</template>
         <template v-if="loading">
           <Loader size="large" />
         </template>

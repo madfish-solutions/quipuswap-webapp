@@ -36,6 +36,13 @@
   </div>
 </template>
 
+<script lang="ts">
+import { Vue, Component } from "vue-property-decorator";
+
+@Component
+export default class NavGovernance extends Vue {}
+</script>
+
 <style lang="postcss" scoped>
 a {
   @apply text-white opacity-50 border-b-2 border-transparent rounded-t-3px py-3;

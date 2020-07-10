@@ -4,7 +4,40 @@
     <Form>
       <NavGovernance />
 
-      <div>Vote Baker</div>
+      <FormField
+        placeholder="tz.."
+        label="Current candidate"
+        :withSelect="false"
+        v-model="currentCandidate"
+        readonly
+      />
+
+      <FormIcon>
+        <img src="@/assets/arrow-down.svg" />
+      </FormIcon>
+
+      <FormField
+        placeholder="tz.."
+        label="Next candidate"
+        :withSelect="false"
+        v-model="nextCandidate"
+        readonly
+      />
+
+      <FormInfo>
+        <div class="flex justify-between mb-1">
+          <span>Total share</span>
+          <span>100500</span>
+        </div>
+        <div class="flex justify-between mb-1">
+          <span>Your share</span>
+          <span>57.36%</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Total votes</span>
+          <span>50000</span>
+        </div>
+      </FormInfo>
     </Form>
   </div>
 </template>
@@ -13,14 +46,20 @@
 import { Component, Vue } from "vue-property-decorator";
 import NavTabs from "@/components/NavTabs.vue";
 import NavGovernance from "@/components/NavGovernance.vue";
-import Form from "@/components/Form";
+import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
 
 @Component({
   components: {
     NavTabs,
     NavGovernance,
     Form,
+    FormField,
+    FormIcon,
+    FormInfo,
   },
 })
-export default class VoteBaker extends Vue {}
+export default class VoteBaker extends Vue {
+  currentCandidate: string = "tz1W5VkdB5s7ENMESVBtwyt9kyvLqPcUczRT";
+  nextCandidate: string = "tz1NortRftucvAkD1J58L32EhSVrQEWJCEnB";
+}
 </script>
