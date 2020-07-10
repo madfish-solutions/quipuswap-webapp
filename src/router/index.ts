@@ -5,6 +5,10 @@ import Send from "@/views/Send.vue";
 import AddLiquidity from "@/views/AddLiquidity.vue";
 import RemoveLiquidity from "@/views/RemoveLiquidity.vue";
 import CreateExchange from "@/views/CreateExchange.vue";
+import VoteBaker from "@/views/VoteBaker.vue";
+import DelegateVote from "@/views/DelegateVote.vue";
+import Veta from "@/views/Veta.vue";
+import Rewards from "@/views/Rewards.vue";
 
 Vue.use(VueRouter);
 
@@ -15,6 +19,11 @@ const routes: RouteConfig[] = [
   { path: "/invest/add-liquidity", name: "AddLiquidity", component: AddLiquidity },
   { path: "/invest/remove-liquidity", name: "RemoveLiquidity", component: RemoveLiquidity },
   { path: "/invest/create-exchange", name: "CreateExchange", component: CreateExchange },
+  { path: "/governance", redirect: "/governance/vote-baker" },
+  { path: "/governance/vote-baker", name: "VoteBaker", component: VoteBaker },
+  { path: "/governance/delegate-vote", name: "DelegateVote", component: DelegateVote },
+  { path: "/governance/veta", name: "Veta", component: Veta },
+  { path: "/governance/rewards", name: "Rewards", component: Rewards },
 ];
 
 const router = new VueRouter({
