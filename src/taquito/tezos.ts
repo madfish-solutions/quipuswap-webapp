@@ -47,7 +47,8 @@ export async function isCorrectAddress(address: string) {
 
 export async function useThanosWallet(forcePermission: boolean = false) {
   const wallet = new ThanosWallet("Quipuswap");
-  const network: ThanosDAppNetwork = localStorage.getItem("network") as ThanosDAppNetwork;
+  const network: ThanosDAppNetwork =
+    (localStorage.getItem("network") as ThanosDAppNetwork) || "mainnet";
   await wallet.connect(network, { forcePermission });
   const thanosWallet = wallet.toTezos();
   return thanosWallet;
