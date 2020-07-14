@@ -1,45 +1,52 @@
 <template>
-  <div class="flex items-stretch">
-    <router-link
-      to="/governance/vote-baker"
-      active-class="active"
-      class="w-1/4 flex flex-col justify-around text-center leading-tight"
-    >
-      <span class="text-base xs:text-xl">Vote</span>
-      <span class="text-xs">Baker</span>
-    </router-link>
+  <div>
+    <GovernancePairSelect />
 
-    <router-link
-      to="/governance/delegate-vote"
-      active-class="active"
-      class="w-1/4 flex flex-col justify-around text-center leading-tight"
-    >
-      <span class="text-base xs:text-xl">Delegate</span>
-      <span class="text-xs">Vote</span>
-    </router-link>
+    <div class="flex items-stretch">
+      <router-link
+        to="/governance/vote-baker"
+        active-class="active"
+        class="w-1/4 flex flex-col justify-around text-center leading-tight"
+      >
+        <span class="text-base xs:text-xl">Vote</span>
+        <span class="text-xs">Baker</span>
+      </router-link>
 
-    <router-link
-      to="/governance/veta"
-      active-class="active"
-      class="w-1/4 flex flex-col justify-around text-center leading-tight"
-    >
-      <span class="text-base xs:text-xl">Veta</span>
-    </router-link>
+      <router-link
+        to="/governance/delegate-vote"
+        active-class="active"
+        class="w-1/4 flex flex-col justify-around text-center leading-tight"
+      >
+        <span class="text-base xs:text-xl">Delegate</span>
+        <span class="text-xs">Vote</span>
+      </router-link>
 
-    <router-link
-      to="/governance/rewards"
-      active-class="active"
-      class="w-1/4 flex flex-col justify-around text-center leading-tight"
-    >
-      <span class="text-base xs:text-xl">Rewards</span>
-    </router-link>
+      <router-link
+        to="/governance/veta"
+        active-class="active"
+        class="w-1/4 flex flex-col justify-around text-center leading-tight"
+      >
+        <span class="text-base xs:text-xl">Veta</span>
+      </router-link>
+
+      <router-link
+        to="/governance/rewards"
+        active-class="active"
+        class="w-1/4 flex flex-col justify-around text-center leading-tight"
+      >
+        <span class="text-base xs:text-xl">Rewards</span>
+      </router-link>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
+import GovernancePairSelect from "@/components/GovernancePairSelect";
 
-@Component
+@Component({
+  components: { GovernancePairSelect },
+})
 export default class NavGovernance extends Vue {}
 </script>
 
