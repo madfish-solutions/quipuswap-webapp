@@ -1,3 +1,5 @@
+import "unfetch/polyfill";
+
 import Vue from "vue";
 import "reflect-metadata";
 import App from "./App.vue";
