@@ -42,7 +42,7 @@
 
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
-import GovernancePairSelect from "@/components/GovernancePairSelect";
+import GovernancePairSelect from "@/components/GovernancePairSelect.vue";
 
 @Component({
   components: { GovernancePairSelect },
