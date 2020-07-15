@@ -1,7 +1,10 @@
 <template>
   <div class="max-w-xl mx-auto">
     <NavTabs class="mb-6" />
-    <Form>
+
+    <GovernancePairSelect :selectedToken="selectedToken" v-on:token-selected="selectToken" />
+
+    <Form v-if="selectedToken">
       <NavGovernance />
 
       <FormField
@@ -39,19 +42,22 @@
         </div>
       </FormInfo>
 
-      <div v-if="allKnownBakers">
+      <!-- <div v-if="allKnownBakers">
         {{ allKnownBakers[0].name }}
-      </div>
+      </div>-->
     </Form>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
+import { ITokenItem } from "@/api/getTokens";
+import store from "@/store";
 import { getAllKnownBakers, BBKnownBaker } from "@/baking-bad";
 import NavTabs from "@/components/NavTabs.vue";
 import NavGovernance from "@/components/NavGovernance.vue";
 import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
+import GovernancePairSelect from "@/components/GovernancePairSelect.vue";
 
 @Component({
   components: {
@@ -61,6 +67,7 @@ import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
     FormField,
     FormIcon,
     FormInfo,
+    GovernancePairSelect,
   },
 })
 export default class VoteBaker extends Vue {
@@ -69,12 +76,23 @@ export default class VoteBaker extends Vue {
 
   allKnownBakers: BBKnownBaker[] = [];
 
+  get selectedToken(): ITokenItem | null {
+    const tokenExchange = this.$route.params.token;
+    return (
+      store.state.tokens.find((t: any) => t.exchange === tokenExchange) || null
+    );
+  }
+
   async mounted() {
     try {
       this.allKnownBakers = await getAllKnownBakers();
     } catch (err) {
       console.error(err);
     }
+  }
+
+  selectToken(token: ITokenItem) {
+    this.$router.replace(`/governance/vote-baker/${token.exchange}`);
   }
 }
 </script>

@@ -20,10 +20,10 @@ const routes: RouteConfig[] = [
   { path: "/invest/remove-liquidity", name: "RemoveLiquidity", component: RemoveLiquidity },
   { path: "/invest/create-exchange", name: "CreateExchange", component: CreateExchange },
   { path: "/governance", redirect: "/governance/vote-baker" },
-  { path: "/governance/vote-baker", name: "VoteBaker", component: VoteBaker },
-  { path: "/governance/delegate-vote", name: "DelegateVote", component: DelegateVote },
-  { path: "/governance/veta", name: "Veta", component: Veta },
-  { path: "/governance/rewards", name: "Rewards", component: Rewards },
+  { path: "/governance/vote-baker/:token?", name: "VoteBaker", component: VoteBaker },
+  { path: "/governance/delegate-vote/:token?", name: "DelegateVote", component: DelegateVote },
+  { path: "/governance/veta/:token?", name: "Veta", component: Veta },
+  { path: "/governance/rewards/:token?", name: "Rewards", component: Rewards },
 ];
 
 const router = new VueRouter({
