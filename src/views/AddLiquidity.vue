@@ -11,6 +11,9 @@
         v-model="inputAmount"
         @input="e => onInputAmount(e.target.value)"
       />
+      <FormIcon>
+        <img src="@/assets/plus.svg" />
+      </FormIcon>
       <FormField
         placeholder="0.0"
         label="To token"
@@ -20,7 +23,7 @@
         @input="e => onOutputAmount(e.target.value)"
         @selectToken="onSelectToken"
       />
-      <FormIcon>
+      <!-- <FormIcon>
         <img src="@/assets/plus.svg" />
       </FormIcon>
       <FormField
@@ -28,8 +31,7 @@
         label="Baker address"
         :withSelect="false"
         @input="e => (baker = e.target.value)"
-        style="display: none"
-      />
+      />-->
       <FormInfo>
         <div class="flex justify-between mb-1">
           <span>Exchange rate</span>
@@ -84,7 +86,7 @@ import store from "@/store";
 })
 export default class AddLiquidity extends Vue {
   inputAmount: string = "";
-  baker: string = "";
+  // baker: string = "";
   isAddLiquid: boolean = false;
   loading: boolean = false;
   private selectedToken: any = {
@@ -128,7 +130,7 @@ export default class AddLiquidity extends Vue {
 
   mounted() {
     this.$watch(
-      (vm?) => [vm.inputAmount, vm.outputAmount, vm.baker],
+      (vm?) => [vm.inputAmount, vm.outputAmount],
       () => this.validate()
     );
   }

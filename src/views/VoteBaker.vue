@@ -32,15 +32,15 @@
       <FormInfo>
         <div class="flex justify-between mb-1">
           <span>Total shares</span>
-          <span>{{totalShares !== undefined ? totalShares : "-"}}</span>
+          <span>{{totalShares !== null ? totalShares : "-"}}</span>
         </div>
         <div class="flex justify-between mb-1">
           <span>Your shares</span>
-          <span>{{yourShares !== undefined ? `${yourShares}%` : "-"}}</span>
+          <span>{{yourShares !== null ? `${yourShares}%` : "-"}}</span>
         </div>
         <div class="flex justify-between">
           <span>Total votes</span>
-          <span>{{totalVotes !== undefined ? totalVotes : "-"}}</span>
+          <span>{{totalVotes !== null ? totalVotes : "-"}}</span>
         </div>
       </FormInfo>
     </Form>
@@ -74,9 +74,9 @@ export default class VoteBaker extends Vue {
 
   currentCandidate: string = "-";
   nextCandidate: string = "-";
-  totalShares?: number;
-  totalVotes?: number;
-  yourShares?: number;
+  totalShares: number | null = null;
+  totalVotes: number | null = null;
+  yourShares: number | null = null;
 
   allKnownBakers: BBKnownBaker[] = [];
 
