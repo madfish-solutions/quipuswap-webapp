@@ -1,7 +1,7 @@
 <template>
   <div class="mb-8 text-white -mx-3 xs:-mx-4 shadow-lg">
     <button
-      class="relative field rounded-t-3px flex items-stretch text-left"
+      class="relative field rounded-t-3px flex items-stretch text-left focus:outline-none"
       :class="isSearchOpened ? '' : 'rounded-b-3px'"
       @click="toggleSearch"
     >
@@ -67,6 +67,17 @@ export default class GovernancePairSelect extends Vue {
   isSearchOpened: boolean = !Boolean(this.selectedToken);
   isLoading: boolean = false;
 
+  mounted() {
+    this.$watch(
+      (vm?) => [vm.selectedToken],
+      () => {
+        if (this.selectedToken) {
+          this.isSearchOpened = false;
+        }
+      }
+    );
+  }
+
   get filteredTokens(): ITokenItem[] {
     return store.state.tokens.filter(
       (t: ITokenItem) =>
@@ -82,8 +93,11 @@ export default class GovernancePairSelect extends Vue {
 
   selectToken(token: ITokenItem) {
     this.searchValue = "";
-    this.isSearchOpened = false;
-    this.$emit("token-selected", token);
+    if (!this.selectedToken || this.selectedToken.exchange !== token.exchange) {
+      this.$emit("token-selected", token);
+    } else {
+      this.isSearchOpened = false;
+    }
   }
 }
 </script>
