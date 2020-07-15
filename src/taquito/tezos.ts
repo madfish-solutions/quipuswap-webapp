@@ -26,7 +26,7 @@ export default async function initContract(contractAddress: string) {
 
 export async function getStorage(contractAddress: string) {
   const contract = await initContract(contractAddress);
-  const storage = await contract.storage<any>();
+  const storage = await contract.storage<any>().then(s => s.storage);
   return storage;
 }
 
@@ -35,8 +35,14 @@ export async function getTezosBalance(pkh: string) {
   return balance;
 }
 
+export async function getTokenStorage(contractAddress: string) {
+  const contract = await initContract(contractAddress);
+  const storage = await contract.storage<any>();
+  return storage;
+}
+
 export async function getTokenBalance(contractAddress: string, pkh: string) {
-  const storage = await getStorage(contractAddress);
+  const storage = await getTokenStorage(contractAddress);
   const val = await storage.ledger.get(pkh);
   return val ? Number(val.balance) : 0;
 }

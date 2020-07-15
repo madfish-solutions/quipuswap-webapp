@@ -28,6 +28,7 @@
         label="Baker address"
         :withSelect="false"
         @input="e => (baker = e.target.value)"
+        style="display: none"
       />
       <FormInfo>
         <div class="flex justify-between mb-1">
@@ -135,7 +136,10 @@ export default class AddLiquidity extends Vue {
   onInputAmount(value: string) {
     this.inputAmount = value;
     if (value && Object.keys(this.selectedToken.token).length) {
-      this.selectedToken.setAmount = calcTezToToken(this.selectedToken.storage, this.inputAmount);
+      this.selectedToken.setAmount = calcTezToToken(
+        this.selectedToken.storage,
+        this.inputAmount
+      );
       this.calcExchangePair();
       return;
     }
@@ -148,7 +152,10 @@ export default class AddLiquidity extends Vue {
   onOutputAmount(value: string) {
     this.selectedToken.setAmount = value;
     if (value && Object.keys(this.selectedToken.token).length) {
-      this.inputAmount = calcTokenToTez(this.selectedToken.storage, this.selectedToken.amount);
+      this.inputAmount = calcTokenToTez(
+        this.selectedToken.storage,
+        this.selectedToken.amount
+      );
       this.calcExchangePair();
       return;
     }
@@ -164,7 +171,7 @@ export default class AddLiquidity extends Vue {
       const tezos = await useThanosWallet();
       const contract = await tezos.wallet.at(this.selectedToken.token.exchange);
       const investLiquidity = await contract.methods
-        .investLiquidity(this.selectedToken.amount, this.baker)
+        .use(4, "investLiquidity", this.selectedToken.amount)
         .send({ amount: this.inputAmount as any });
       await investLiquidity.confirmation();
     } catch (e) {
@@ -177,7 +184,8 @@ export default class AddLiquidity extends Vue {
     this.selectedToken.setToken = token;
     this.selectedToken.setLoading = true;
     const newStorage = getStorage(token.exchange);
-    const storage: any = store.state.tokensStorage[token.exchange] || (await newStorage);
+    const storage: any =
+      store.state.tokensStorage[token.exchange] || (await newStorage);
     this.selectedToken.setStorage = storage;
     store.commit("tokensStorage", { key: token.exchange, value: storage });
     this.selectedToken.setLoading = false;
@@ -198,9 +206,10 @@ export default class AddLiquidity extends Vue {
     const pricePerToken = round(amount / tokenAmount);
     this.stat.setExchangeRate = `1 ${this.selectedToken.token.name} = ${pricePerToken} Tezos`;
     this.stat.setPoolSize = `${storage.tokenPool}`;
-    this.stat.setPoolShare = `${((this.selectedToken.amount / storage.tokenPool) * 100).toFixed(
-      2
-    )} %`;
+    this.stat.setPoolShare = `${(
+      (this.selectedToken.amount / storage.tokenPool) *
+      100
+    ).toFixed(2)} %`;
   }
 
   async validate() {
@@ -213,8 +222,8 @@ export default class AddLiquidity extends Vue {
     if (
       inputAmount &&
       outputAmount &&
-      Object.keys(selectedToken.token).length &&
-      (await isCorrectAddress(this.baker))
+      Object.keys(selectedToken.token).length
+      // && (await isCorrectAddress(this.baker))
     ) {
       this.isAddLiquid = true;
     } else {

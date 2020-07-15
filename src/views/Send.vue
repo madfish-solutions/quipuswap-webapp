@@ -40,9 +40,7 @@
     <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal"></div>
     <div class="flex justify-center align-center text-center">
       <SubmitBtn :disabled="!send.validate" @click="handleSendMoney">
-        <template v-if="!isLoading">
-          {{ send.status }}
-        </template>
+        <template v-if="!isLoading">{{ send.status }}</template>
         <template v-if="isLoading">
           <Loader size="large" />
         </template>
@@ -59,14 +57,27 @@ import Form, { FormIcon, FormField, FormInfo } from "@/components/Form";
 import SubmitBtn from "@/components/SubmitBtn.vue";
 import Loader from "@/components/Loader.vue";
 import { ITokenItem } from "@/api/getTokens";
-import { getStorage, isCorrectAddress, getTokenBalance, useThanosWallet } from "@/taquito/tezos";
+import {
+  getStorage,
+  isCorrectAddress,
+  getTokenBalance,
+  useThanosWallet,
+} from "@/taquito/tezos";
 import sleep from "@/helpers/sleep";
 import { calcTezToToken, calcTokenToTez, round } from "@/helpers/calc";
 import store, { getAccount } from "@/store";
 import bus from "@/store/bus";
 
 @Component({
-  components: { NavTabs, Form, FormIcon, FormField, FormInfo, SubmitBtn, Loader },
+  components: {
+    NavTabs,
+    Form,
+    FormIcon,
+    FormField,
+    FormInfo,
+    SubmitBtn,
+    Loader,
+  },
 })
 export default class Send extends Vue {
   inputAmount: string = "0.0";
@@ -176,18 +187,26 @@ export default class Send extends Vue {
       if (inputType === "xtz") {
         const contract = await tezos.wallet.at(outputExchange);
         const payment = await contract.methods
-          .tezToTokenPayment(inputAmount, this.recipient)
+          .use(1, "tezToTokenPayment", inputAmount, this.recipient)
           .send({ amount: inputAmount });
         await payment.confirmation();
       }
       if (outputType === "xtz") {
         const contractToken = await tezos.wallet.at(inputId);
         const contractDex = await tezos.wallet.at(inputExchange);
-        const approve = await contractToken.methods.approve(inputExchange, inputAmount).send();
+        const approve = await contractToken.methods
+          .approve(inputExchange, inputAmount)
+          .send();
         await approve.confirmation();
 
         const payment = await contractDex.methods
-          .tokenToTezPayment(inputAmount, outputAmount, this.recipient)
+          .use(
+            2,
+            "tokenToTezPayment",
+            inputAmount,
+            outputAmount,
+            this.recipient
+          )
           .send({ amount: inputAmount });
         await payment.confirmation();
       }
@@ -279,7 +298,8 @@ export default class Send extends Vue {
 
       this.inputToken.setLoading = true;
       const newStorage = getStorage(token.exchange);
-      const storage: any = store.state.tokensStorage[token.exchange] || (await newStorage);
+      const storage: any =
+        store.state.tokensStorage[token.exchange] || (await newStorage);
       this.balance.setToken = await getTokenBalance(token.id, account.pkh);
       this.inputToken.setStorage = storage;
       store.commit("tokensStorage", { key: token.exchange, value: storage });
@@ -300,7 +320,8 @@ export default class Send extends Vue {
 
       this.outputToken.setLoading = true;
       const newStorage = getStorage(token.exchange);
-      const storage: any = store.state.tokensStorage[token.exchange] || (await newStorage);
+      const storage: any =
+        store.state.tokensStorage[token.exchange] || (await newStorage);
       this.balance.tokenBalance = await getTokenBalance(token.id, account.pkh);
       this.outputToken.setStorage = storage;
       store.commit("tokensStorage", { key: token.exchange, value: storage });
