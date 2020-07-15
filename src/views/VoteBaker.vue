@@ -12,6 +12,7 @@
         label="Current candidate"
         :withSelect="false"
         v-model="currentCandidate"
+        :isLoading="isLoading"
         readonly
       />
 
@@ -24,27 +25,24 @@
         label="Next candidate"
         :withSelect="false"
         v-model="nextCandidate"
+        :isLoading="isLoading"
         readonly
       />
 
       <FormInfo>
         <div class="flex justify-between mb-1">
-          <span>Total share</span>
-          <span>100500</span>
+          <span>Total shares</span>
+          <span>{{totalShares !== undefined ? totalShares : "-"}}</span>
         </div>
         <div class="flex justify-between mb-1">
-          <span>Your share</span>
-          <span>57.36%</span>
+          <span>Your shares</span>
+          <span>{{yourShares !== undefined ? `${yourShares}%` : "-"}}</span>
         </div>
         <div class="flex justify-between">
           <span>Total votes</span>
-          <span>50000</span>
+          <span>{{totalVotes !== undefined ? totalVotes : "-"}}</span>
         </div>
       </FormInfo>
-
-      <!-- <div v-if="allKnownBakers">
-        {{ allKnownBakers[0].name }}
-      </div>-->
     </Form>
   </div>
 </template>
@@ -52,6 +50,7 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import { ITokenItem } from "@/api/getTokens";
+import { getStorage } from "@/taquito/tezos";
 import store from "@/store";
 import { getAllKnownBakers, BBKnownBaker } from "@/baking-bad";
 import NavTabs from "@/components/NavTabs.vue";
@@ -71,8 +70,13 @@ import GovernancePairSelect from "@/components/GovernancePairSelect.vue";
   },
 })
 export default class VoteBaker extends Vue {
-  currentCandidate: string = "tz1W5VkdB5s7ENMESVBtwyt9kyvLqPcUczRT";
-  nextCandidate: string = "tz1NortRftucvAkD1J58L32EhSVrQEWJCEnB";
+  isLoading: boolean = false;
+
+  currentCandidate: string = "-";
+  nextCandidate: string = "-";
+  totalShares?: number;
+  totalVotes?: number;
+  yourShares?: number;
 
   allKnownBakers: BBKnownBaker[] = [];
 
@@ -83,9 +87,29 @@ export default class VoteBaker extends Vue {
     );
   }
 
-  async mounted() {
+  mounted() {
+    this.$watch(
+      (vm?) => [vm.selectedToken],
+      () => {
+        if (this.selectedToken) {
+          this.loadData(this.selectedToken);
+        }
+      }
+    );
+  }
+
+  async loadData(token: ITokenItem) {
     try {
-      this.allKnownBakers = await getAllKnownBakers();
+      this.isLoading = true;
+
+      const storage = await getStorage(token.exchange);
+
+      this.currentCandidate = storage.currentDelegated || "-";
+      this.nextCandidate = storage.delegated || "-";
+      this.totalShares = storage.totalShares;
+      this.totalVotes = storage.totalVotes;
+
+      this.isLoading = false;
     } catch (err) {
       console.error(err);
     }
