@@ -1,6 +1,10 @@
+import mem from "mem";
 import { BBKnownBaker } from "./types";
 
 const API_BASE_URL = "https://api.baking-bad.org/v2";
+
+export const getAllKnownBakersMemoized = mem(getAllKnownBakers);
+export const getKnownBakerMemoized = mem(getKnownBaker);
 
 export function getAllKnownBakers() {
   return request<BBKnownBaker[]>("/bakers" + "?type=tezos_only,multiasset,tezos_dune");

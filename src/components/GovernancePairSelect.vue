@@ -1,5 +1,5 @@
 <template>
-  <div class="mb-8 text-white -mx-3 xs:-mx-4 shadow-lg">
+  <div class="mb-4 text-white -mx-3 xs:-mx-4 shadow-lg">
     <button
       class="relative field rounded-t-3px flex items-stretch text-left focus:outline-none"
       :class="isSearchOpened ? '' : 'rounded-b-3px'"
@@ -87,8 +87,10 @@ export default class GovernancePairSelect extends Vue {
   }
 
   toggleSearch() {
-    this.isSearchOpened = !this.isSearchOpened;
-    this.$nextTick(() => this.isSearchOpened && this.searchInput.focus());
+    if (this.selectedToken) {
+      this.isSearchOpened = !this.isSearchOpened;
+      this.$nextTick(() => this.isSearchOpened && this.searchInput.focus());
+    }
   }
 
   selectToken(token: ITokenItem) {

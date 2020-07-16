@@ -32,17 +32,39 @@
       <FormInfo>
         <div class="flex justify-between mb-1">
           <span>Total shares</span>
-          <span>{{totalShares !== null ? totalShares : "-"}}</span>
+          <span>{{ totalShares !== null ? totalShares : "-" }}</span>
         </div>
         <div class="flex justify-between mb-1">
           <span>Your shares</span>
-          <span>{{yourShares !== null ? `${yourShares}%` : "-"}}</span>
+          <span>{{ yourShares !== null ? `${yourShares}%` : "-" }}</span>
         </div>
         <div class="flex justify-between">
           <span>Total votes</span>
-          <span>{{totalVotes !== null ? totalVotes : "-"}}</span>
+          <span>{{ totalVotes !== null ? totalVotes : "-" }}</span>
         </div>
       </FormInfo>
+
+      <BakerFormField
+        label="Baker"
+        placeholder="tz.."
+        v-model="bakerAddress"
+        v-on:input="bakerAddress = $event.target.value"
+        :selectedBaker="selectedBaker"
+        v-on:baker-selected="selectBaker"
+        :spellcheck="false"
+      />
+
+      <!-- <FormField placeholder="tz.." label="Baker" withSelect />
+
+      <FormInfo v-if="allKnownBakers.length > 0" class="mt-4">
+        <button
+          v-for="baker in allKnownBakers"
+          :key="baker.address"
+          class="p-2 w-full flex flex-stretch focus:outline-none"
+        >
+          {{ baker.name }}
+        </button>
+      </FormInfo> -->
     </Form>
   </div>
 </template>
@@ -50,13 +72,14 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import { ITokenItem } from "@/api/getTokens";
-import { getStorage } from "@/taquito/tezos";
+import { getStorage, isAddressValid } from "@/taquito/tezos";
 import store from "@/store";
-import { getAllKnownBakers, BBKnownBaker } from "@/baking-bad";
+import { BBKnownBaker } from "@/baking-bad";
 import NavTabs from "@/components/NavTabs.vue";
 import NavGovernance from "@/components/NavGovernance.vue";
 import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
 import GovernancePairSelect from "@/components/GovernancePairSelect.vue";
+import BakerFormField from "@/components/Form/BakerFormField.vue";
 
 @Component({
   components: {
@@ -67,6 +90,7 @@ import GovernancePairSelect from "@/components/GovernancePairSelect.vue";
     FormIcon,
     FormInfo,
     GovernancePairSelect,
+    BakerFormField,
   },
 })
 export default class VoteBaker extends Vue {
@@ -78,45 +102,61 @@ export default class VoteBaker extends Vue {
   totalVotes: number | null = null;
   yourShares: number | null = null;
 
-  allKnownBakers: BBKnownBaker[] = [];
+  bakerAddress: string = "";
+  selectedBaker: BBKnownBaker | null = null;
 
   get selectedToken(): ITokenItem | null {
     const tokenExchange = this.$route.params.token;
-    return (
-      store.state.tokens.find((t: any) => t.exchange === tokenExchange) || null
-    );
+    return store.state.tokens.find((t: any) => t.exchange === tokenExchange) || null;
+  }
+
+  created() {
+    this.loadData();
   }
 
   mounted() {
     this.$watch(
       (vm?) => [vm.selectedToken],
-      () => {
-        if (this.selectedToken) {
-          this.loadData(this.selectedToken);
-        }
-      }
+      () => this.loadData()
+    );
+
+    this.$watch(
+      (vm?) => [vm.bakerAddress],
+      () => this.bakerAddressChanged()
     );
   }
 
-  async loadData(token: ITokenItem) {
-    try {
-      this.isLoading = true;
+  async loadData() {
+    if (!this.selectedToken) return;
 
-      const storage = await getStorage(token.exchange);
+    this.isLoading = true;
+    try {
+      const storage = await getStorage(this.selectedToken.exchange);
 
       this.currentCandidate = storage.currentDelegated || "-";
       this.nextCandidate = storage.delegated || "-";
       this.totalShares = storage.totalShares;
       this.totalVotes = storage.totalVotes;
-
-      this.isLoading = false;
     } catch (err) {
       console.error(err);
+    } finally {
+      this.isLoading = false;
     }
   }
 
   selectToken(token: ITokenItem) {
     this.$router.replace(`/governance/vote-baker/${token.exchange}`);
+  }
+
+  selectBaker(baker: BBKnownBaker) {
+    this.selectedBaker = baker;
+    this.bakerAddress = baker.address;
+  }
+
+  bakerAddressChanged() {
+    if (this.selectedBaker && !isAddressValid(this.bakerAddress)) {
+      this.selectedBaker = null;
+    }
   }
 }
 </script>

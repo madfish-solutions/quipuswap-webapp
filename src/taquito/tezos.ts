@@ -52,6 +52,10 @@ export async function isCorrectAddress(address: string) {
   return isAddress === ValidationResult.VALID;
 }
 
+export function isAddressValid(address: any) {
+  return validateAddress(address) === ValidationResult.VALID;
+}
+
 export async function useThanosWallet(forcePermission: boolean = false) {
   const wallet = new ThanosWallet("Quipuswap");
   const network: ThanosDAppNetwork =
