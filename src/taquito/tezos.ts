@@ -59,7 +59,7 @@ export function isAddressValid(address: any) {
 export async function useThanosWallet(forcePermission: boolean = false) {
   const wallet = new ThanosWallet("Quipuswap");
   const network: ThanosDAppNetwork =
-    (localStorage.getItem("network") as ThanosDAppNetwork) || "mainnet";
+    (localStorage.getItem("network") as ThanosDAppNetwork) || "carthagenet";
   await wallet.connect(network, { forcePermission });
   const thanosWallet = wallet.toTezos();
   return thanosWallet;

@@ -41,11 +41,13 @@
           </div>
           <div class="flex justify-between mb-1">
             <span>Your shares</span>
-            <span>{{
+            <span>
+              {{
               yourShares !== null
-                ? `${yourShares} (${toPercentage(yourShares / totalShares)}%)`
-                : "-"
-            }}</span>
+              ? `${yourShares} (${toPercentage(yourShares / totalShares)}%)`
+              : "-"
+              }}
+            </span>
           </div>
           <div class="flex justify-between">
             <span>Your candidate</span>
@@ -56,9 +58,7 @@
 
       <Form class="mt-8">
         <FormInfo>
-          <div class="flex items-center justify-center text-base font-semibold">
-            Vote baker
-          </div>
+          <div class="flex items-center justify-center text-base font-semibold">Vote baker</div>
         </FormInfo>
 
         <FormField
@@ -145,9 +145,15 @@ export default class VoteBaker extends Vue {
   voteStatus: string = "Vote";
   readyToVote: boolean = false;
 
+  get account() {
+    return getAccount();
+  }
+
   get selectedToken(): ITokenItem | null {
     const tokenExchange = this.$route.params.token;
-    return store.state.tokens.find((t: any) => t.exchange === tokenExchange) || null;
+    return (
+      store.state.tokens.find((t: any) => t.exchange === tokenExchange) || null
+    );
   }
 
   created() {
@@ -156,7 +162,7 @@ export default class VoteBaker extends Vue {
 
   mounted() {
     this.$watch(
-      (vm?) => [vm.selectedToken],
+      (vm?) => [vm.selectedToken, vm.account],
       () => this.loadData()
     );
 
@@ -183,7 +189,7 @@ export default class VoteBaker extends Vue {
       this.totalShares = storage.totalShares;
       this.totalVotes = storage.totalVotes;
 
-      const me = getAccount().pkh || "";
+      const me = this.account.pkh || "";
 
       if (me) {
         const [myShares, myCandidate] = await Promise.all([
@@ -219,7 +225,8 @@ export default class VoteBaker extends Vue {
   }
 
   validateVote() {
-    this.readyToVote = isAddressValid(this.bakerAddress) && isAddressValid(this.voter);
+    this.readyToVote =
+      isAddressValid(this.bakerAddress) && isAddressValid(this.voter);
   }
 
   toPercentage(val: any) {
@@ -237,7 +244,9 @@ export default class VoteBaker extends Vue {
       // }
 
       const contract = await tezos.wallet.at(this.selectedToken!.exchange);
-      const operation = await contract.methods.use(7, "vote", this.voter, this.bakerAddress).send();
+      const operation = await contract.methods
+        .use(7, "vote", this.voter, this.bakerAddress)
+        .send();
       await operation.confirmation();
 
       this.voteStatus = "Done!";

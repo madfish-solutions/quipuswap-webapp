@@ -4,10 +4,10 @@ import { getStorage } from "@/taquito/contracts/factory";
 
 Vue.use(Vuex);
 
-export default new Vuex.Store({
+const store = new Vuex.Store({
   state: {
     tokens: [],
-    account: { balance: 0, pkh: "" },
+    account: getAccountInitial(),
     tokensStorage: {} as any,
   },
   mutations: {
@@ -41,13 +41,20 @@ export default new Vuex.Store({
   modules: {},
 });
 
+export default store;
+
 export function setAccount(account: object) {
   localStorage.setItem("account", JSON.stringify(account));
+  store.commit("account", account);
 }
 
 export function getAccount() {
-  const account: any = localStorage.getItem("account");
-  return JSON.parse(account) || {};
+  return store.state.account;
+}
+
+function getAccountInitial() {
+  const account = localStorage.getItem("account");
+  return account ? JSON.parse(account) : { balance: 0, pkh: "" };
 }
 
 export function setNetwork(network: string) {
@@ -55,6 +62,6 @@ export function setNetwork(network: string) {
 }
 
 export function getNetwork() {
-  const network: string = localStorage.getItem("network") || "mainnet";
+  const network: string = localStorage.getItem("network") || "carthagenet";
   return network;
 }
