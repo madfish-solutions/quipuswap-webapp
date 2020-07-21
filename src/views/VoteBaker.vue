@@ -68,6 +68,7 @@
           v-model="voter"
           v-on:input="voter = $event.target.value"
           :isLoading="isLoading"
+          :spellcheck="false"
         />
 
         <FormIcon>
@@ -237,12 +238,6 @@ export default class VoteBaker extends Vue {
     this.voting = true;
     try {
       const tezos = await useThanosWallet();
-
-      // const me = await tezos.wallet.pkh();
-      // if (this.voter === getAccount().pkh && this.voter !== me) {
-      //   this.voter = me;
-      // }
-
       const contract = await tezos.wallet.at(this.selectedToken!.exchange);
       const operation = await contract.methods
         .use(7, "vote", this.voter, this.bakerAddress)
@@ -253,7 +248,10 @@ export default class VoteBaker extends Vue {
       bus.$emit("refreshWallet");
     } catch (err) {
       console.error(err);
-      this.voteStatus = "Failed";
+      const msg = err.message;
+      this.voteStatus = msg.startsWith("Dex/")
+        ? msg.replace("Dex/", "Failed: ")
+        : "Failed";
     } finally {
       this.voting = false;
       await new Promise(r => setTimeout(r, 5000));
