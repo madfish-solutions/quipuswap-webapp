@@ -11,6 +11,9 @@
         v-model="inputAmount"
         @input="e => onInputAmount(e.target.value)"
       />
+      <FormIcon>
+        <img src="@/assets/plus.svg" />
+      </FormIcon>
       <FormField
         placeholder="0.0"
         label="To token"
@@ -20,7 +23,7 @@
         @input="e => onOutputAmount(e.target.value)"
         @selectToken="onSelectToken"
       />
-      <FormIcon>
+      <!-- <FormIcon>
         <img src="@/assets/plus.svg" />
       </FormIcon>
       <FormField
@@ -28,7 +31,7 @@
         label="Baker address"
         :withSelect="false"
         @input="e => (baker = e.target.value)"
-      />
+      />-->
       <FormInfo>
         <div class="flex justify-between mb-1">
           <span>Exchange rate</span>
@@ -48,9 +51,7 @@
     <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal"></div>
     <div class="flex justify-center text-center">
       <SubmitBtn @click="handleAddLiquidity" :disabled="!isAddLiquid">
-        <template v-if="!loading">
-          Add Liquidity
-        </template>
+        <template v-if="!loading">{{ addLiqStatus }}</template>
         <template v-if="loading">
           <Loader size="large" />
         </template>
@@ -61,6 +62,7 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
+import BigNumber from "bignumber.js";
 import NavTabs from "@/components/NavTabs.vue";
 import NavInvest from "@/components/NavInvest.vue";
 import Loader from "@/components/Loader.vue";
@@ -68,7 +70,15 @@ import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
 import SubmitBtn from "@/components/SubmitBtn.vue";
 import { getStorage, isCorrectAddress, useThanosWallet } from "@/taquito/tezos";
 import { ITokenItem } from "@/api/getTokens";
-import { calcTezToToken, calcTokenToTez, round } from "@/helpers/calc";
+import {
+  calcTezToToken,
+  calcTokenToTez,
+  round,
+  tzToMutez,
+  mutezToTz,
+  estimateTezosToToken,
+  estimateTokenToTezos,
+} from "@/helpers/calc";
 import store from "@/store";
 
 @Component({
@@ -85,8 +95,9 @@ import store from "@/store";
 })
 export default class AddLiquidity extends Vue {
   inputAmount: string = "";
-  baker: string = "";
+  // baker: string = "";
   isAddLiquid: boolean = false;
+  addLiqStatus = "Add Liquidity";
   loading: boolean = false;
   private selectedToken: any = {
     token: {},
@@ -129,7 +140,7 @@ export default class AddLiquidity extends Vue {
 
   mounted() {
     this.$watch(
-      (vm?) => [vm.inputAmount, vm.outputAmount, vm.baker],
+      (vm?) => [vm.inputAmount, vm.outputAmount],
       () => this.validate()
     );
   }
@@ -137,7 +148,10 @@ export default class AddLiquidity extends Vue {
   onInputAmount(value: string) {
     this.inputAmount = value;
     if (value && Object.keys(this.selectedToken.token).length) {
-      this.selectedToken.setAmount = calcTezToToken(this.selectedToken.storage, this.inputAmount);
+      this.selectedToken.setAmount = estimateTezosToToken(
+        this.selectedToken.storage,
+        this.inputAmount
+      );
       this.calcExchangePair();
       return;
     }
@@ -150,7 +164,10 @@ export default class AddLiquidity extends Vue {
   onOutputAmount(value: string) {
     this.selectedToken.setAmount = value;
     if (value && Object.keys(this.selectedToken.token).length) {
-      this.inputAmount = calcTokenToTez(this.selectedToken.storage, this.selectedToken.amount);
+      this.inputAmount = estimateTokenToTezos(
+        this.selectedToken.storage,
+        this.selectedToken.amount
+      );
       this.calcExchangePair();
       return;
     }
@@ -164,22 +181,53 @@ export default class AddLiquidity extends Vue {
     try {
       this.loading = true;
       const tezos = await useThanosWallet();
+      const contractToken = await tezos.wallet.at(this.selectedToken.token.id);
+      const contractDex = await tezos.wallet.at(
+        this.selectedToken.token.exchange
+      );
+      const approve = await contractToken.methods
+        .approve(this.selectedToken.token.exchange, this.selectedToken.amount)
+        .send();
+      await approve.confirmation();
+
       const contract = await tezos.wallet.at(this.selectedToken.token.exchange);
-      const investLiquidity = await contract.methods
-        .investLiquidity(this.selectedToken.amount, this.baker)
-        .send({ amount: this.inputAmount as any });
-      await investLiquidity.confirmation();
-    } catch (e) {
-      console.error(e);
+      const { storage } = this.selectedToken;
+      const tezPerShare = new BigNumber(storage.tezPool)
+        .div(storage.totalShares)
+        .integerValue(BigNumber.ROUND_DOWN);
+      const shares = new BigNumber("10")
+        .div(mutezToTz(tezPerShare))
+        .integerValue(BigNumber.ROUND_DOWN);
+
+      const op = await contract.methods
+        .use(
+          4,
+          "investLiquidity",
+          shares.integerValue(BigNumber.ROUND_DOWN).toNumber()
+        )
+        .send({ amount: +this.inputAmount as any });
+      await op.confirmation();
+
+      this.addLiqStatus = "Done!";
+    } catch (err) {
+      console.error(err);
+
+      const msg = err.message;
+      this.addLiqStatus = msg.startsWith("Dex/")
+        ? msg.replace("Dex/", "Failed: ")
+        : "Failed";
     }
     this.loading = false;
+    await new Promise(r => setTimeout(r, 5000));
+    this.addLiqStatus = "Add Liquidity";
   }
 
   onSelectToken = async (token: any) => {
     this.selectedToken.setToken = token;
     this.selectedToken.setLoading = true;
     const newStorage = getStorage(token.exchange);
-    const storage: any = store.state.tokensStorage[token.exchange] || (await newStorage);
+    const storage: any =
+      store.state.tokensStorage[token.exchange] || (await newStorage);
     this.selectedToken.setStorage = storage;
     store.commit("tokensStorage", { key: token.exchange, value: storage });
     this.selectedToken.setLoading = false;
@@ -200,9 +248,10 @@ export default class AddLiquidity extends Vue {
     const pricePerToken = round(amount / tokenAmount);
     this.stat.setExchangeRate = `1 ${this.selectedToken.token.name} = ${pricePerToken} Tezos`;
     this.stat.setPoolSize = `${storage.tokenPool}`;
-    this.stat.setPoolShare = `${((this.selectedToken.amount / storage.tokenPool) * 100).toFixed(
-      2
-    )} %`;
+    this.stat.setPoolShare = `${(
+      (this.selectedToken.amount / storage.tokenPool) *
+      100
+    ).toFixed(2)} %`;
   }
 
   async validate() {
@@ -215,8 +264,8 @@ export default class AddLiquidity extends Vue {
     if (
       inputAmount &&
       outputAmount &&
-      Object.keys(selectedToken.token).length &&
-      (await isCorrectAddress(this.baker))
+      Object.keys(selectedToken.token).length
+      // && (await isCorrectAddress(this.baker))
     ) {
       this.isAddLiquid = true;
     } else {

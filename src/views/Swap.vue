@@ -33,9 +33,7 @@
     </div>
     <div class="flex justify-center align-center text-center">
       <SubmitBtn :disabled="!swap.isPossibleToSwap" @click="swapCoins">
-        <template v-if="!swap.loading">
-          {{ swap.status }}
-        </template>
+        <template v-if="!swap.loading">{{ swap.status }}</template>
         <template v-if="swap.loading">
           <Loader size="large" />
         </template>
@@ -58,7 +56,15 @@ import store, { getAccount } from "@/store";
 import bus from "@/store/bus";
 
 @Component({
-  components: { NavTabs, Form, FormIcon, FormField, FormInfo, SubmitBtn, Loader },
+  components: {
+    NavTabs,
+    Form,
+    FormIcon,
+    FormField,
+    FormInfo,
+    SubmitBtn,
+    Loader,
+  },
 })
 export default class Swap extends Vue {
   private balance: any = {
@@ -164,22 +170,28 @@ export default class Swap extends Vue {
 
     const tezos = await useThanosWallet();
     try {
+      const me = await tezos.wallet.pkh();
+
       if (inputType === "xtz") {
         const contract = await tezos.wallet.at(this.outputToken.token.exchange);
         const operation = await contract.methods
-          .tezToTokenSwap(outputAmount)
+          .use(1, "tezToTokenPayment", outputAmount, me)
           .send({ amount: inputAmount });
         await operation.confirmation();
       }
       if (outputType === "xtz") {
         const contractToken = await tezos.wallet.at(inputId);
-        const contractDex = await tezos.wallet.at(this.inputToken.token.exchange);
+        const contractDex = await tezos.wallet.at(
+          this.inputToken.token.exchange
+        );
         const approve = await contractToken.methods
           .approve(this.inputToken.token.exchange, inputAmount)
           .send();
         await approve.confirmation();
 
-        const swap = await contractDex.methods.tokenToTezSwap(inputAmount, outputAmount).send();
+        const swap = await contractDex.methods
+          .use(2, "tokenToTezPayment", inputAmount, outputAmount, me)
+          .send();
         await swap.confirmation();
       }
       this.swap.setSwapStatus = "Swap is done successful";
@@ -268,7 +280,8 @@ export default class Swap extends Vue {
       const account = getAccount();
       this.inputToken.setLoading = true;
       const newStorage = getStorage(token.exchange);
-      const storage: any = store.state.tokensStorage[token.exchange] || (await newStorage);
+      const storage: any =
+        store.state.tokensStorage[token.exchange] || (await newStorage);
       this.inputToken.setStorage = storage;
       store.commit("tokensStorage", { key: token.exchange, value: storage });
       const balance = await getTokenBalance(token.id, account.pkh);
@@ -287,7 +300,8 @@ export default class Swap extends Vue {
       const account = getAccount();
       this.outputToken.setLoading = true;
       const newStorage = getStorage(token.exchange);
-      const storage: any = store.state.tokensStorage[token.exchange] || (await newStorage);
+      const storage: any =
+        store.state.tokensStorage[token.exchange] || (await newStorage);
       this.outputToken.setStorage = storage;
       store.commit("tokensStorage", { key: token.exchange, value: storage });
       this.outputToken.setLoading = false;

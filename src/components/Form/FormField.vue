@@ -2,13 +2,17 @@
   <div class="-mx-3 xs:-mx-4 shadow-lg">
     <div :class="isSearchOpened ? 'field rounded-t-3px' : ' field rounded-3px relative'">
       <div class="flex-1 flex flex-col justify-center">
-        <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">
-          {{ label }}
+        <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">{{ label }}</div>
+        <input
+          class="w-full"
+          :class="!withSelect && isLoading && 'hidden'"
+          v-bind="$attrs"
+          v-on="$listeners"
+        />
+        <div v-if="!withSelect && isLoading" class="flex items-center" style="height: 30px">
+          <Loader />
         </div>
-        <input class="w-full" v-bind="$attrs" v-on="$listeners" />
-        <div class="label sm:text-sm font-light w-full">
-          {{ subLabel }}
-        </div>
+        <div class="label sm:text-sm font-light w-full">{{ subLabel }}</div>
       </div>
 
       <div v-if="withSelect" class="append flex">
@@ -55,9 +59,7 @@
             @click.native="selectToken(token)"
           />
         </template>
-        <div v-else class="text-center py-4 text-xl">
-          Not Found...
-        </div>
+        <div v-else class="text-center py-4 text-xl">Not Found...</div>
       </div>
     </div>
   </div>
@@ -97,7 +99,7 @@ export default class FormField extends Vue {
           name: "Tezos",
           type: "xtz",
           symbol: "Tezos",
-          exchange: null,
+          exchange: "",
           imgUrl:
             "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xB6eD7644C69416d67B522e20bC294A9a9B405B31/logo.png",
         },
@@ -121,7 +123,7 @@ export default class FormField extends Vue {
         name: "Tezos",
         type: "xtz",
         symbol: "Tezos",
-        exchange: null,
+        exchange: "",
         imgUrl:
           "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xB6eD7644C69416d67B522e20bC294A9a9B405B31/logo.png",
       };
@@ -130,7 +132,9 @@ export default class FormField extends Vue {
 
   toggleSearch() {
     this.isSearchOpened = !this.isSearchOpened;
-    this.$nextTick(() => this.isSearchOpened && !this.onlyTezos && this.searchInput.focus());
+    this.$nextTick(
+      () => this.isSearchOpened && !this.onlyTezos && this.searchInput.focus()
+    );
   }
 
   selectToken(token: ITokenItem) {

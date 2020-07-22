@@ -1,10 +1,10 @@
 <template>
   <div class="flex">
-    <div class="w-1/2 text-center ">
+    <div class="w-1/2 text-center">
       <router-link
         to="/invest/add-liquidity"
         active-class="active"
-        class="flex flex-col  leading-tight"
+        class="flex flex-col leading-tight"
       >
         <span class="text-base xs:text-xl">Add</span>
         <span class="text-xs">Liquidity</span>
@@ -29,9 +29,16 @@
         <span class="text-base xs:text-xl">Create</span>
         <span class="text-xs">Exchange</span>
       </router-link>
-    </div> -->
+    </div>-->
   </div>
 </template>
+
+<script lang="ts">
+import { Vue, Component } from "vue-property-decorator";
+
+@Component
+export default class NavInvest extends Vue {}
+</script>
 
 <style lang="postcss" scoped>
 a {

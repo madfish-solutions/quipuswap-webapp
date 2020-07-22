@@ -7,6 +7,9 @@
     <router-link class="nav-item" active-class="active" to="/invest"
       ><span>Invest</span></router-link
     >
+    <router-link class="nav-item" active-class="active" to="/governance"
+      ><span>Governance</span></router-link
+    >
   </div>
 </template>
 

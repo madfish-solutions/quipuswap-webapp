@@ -26,7 +26,7 @@ export default async function initContract(contractAddress: string) {
 
 export async function getStorage(contractAddress: string) {
   const contract = await initContract(contractAddress);
-  const storage = await contract.storage<any>();
+  const storage = await contract.storage<any>().then(s => s.storage);
   return storage;
 }
 
@@ -35,9 +35,16 @@ export async function getTezosBalance(pkh: string) {
   return balance;
 }
 
+export async function getTokenStorage(contractAddress: string) {
+  const contract = await initContract(contractAddress);
+  const storage = await contract.storage<any>();
+  return storage;
+}
+
 export async function getTokenBalance(contractAddress: string, pkh: string) {
-  const storage = await getStorage(contractAddress);
-  return storage.ledger.get(pkh) ? Number(storage.ledger.get(pkh).balance) : 0;
+  const storage = await getTokenStorage(contractAddress);
+  const val = await storage.ledger.get(pkh);
+  return val ? Number(val.balance) : 0;
 }
 
 export async function isCorrectAddress(address: string) {
@@ -45,9 +52,14 @@ export async function isCorrectAddress(address: string) {
   return isAddress === ValidationResult.VALID;
 }
 
+export function isAddressValid(address: any) {
+  return validateAddress(address) === ValidationResult.VALID;
+}
+
 export async function useThanosWallet(forcePermission: boolean = false) {
   const wallet = new ThanosWallet("Quipuswap");
-  const network: ThanosDAppNetwork = localStorage.getItem("network") as ThanosDAppNetwork;
+  const network: ThanosDAppNetwork =
+    (localStorage.getItem("network") as ThanosDAppNetwork) || "carthagenet";
   await wallet.connect(network, { forcePermission });
   const thanosWallet = wallet.toTezos();
   return thanosWallet;

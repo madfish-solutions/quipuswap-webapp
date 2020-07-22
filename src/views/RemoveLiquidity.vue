@@ -40,9 +40,7 @@
     <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal"></div>
     <div class="flex justify-center text-center">
       <SubmitBtn :disabled="!isRemoveLiquid" @click="handleDivestLiquidity">
-        <template v-if="!loading">
-          Remove Liquidity
-        </template>
+        <template v-if="!loading">{{ remLiqStatus }}</template>
         <template v-if="loading">
           <Loader size="large" />
         </template>
@@ -53,6 +51,7 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
+import BigNumber from "bignumber.js";
 import NavTabs from "@/components/NavTabs.vue";
 import NavInvest from "@/components/NavInvest.vue";
 import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
@@ -60,16 +59,34 @@ import Loader from "@/components/Loader.vue";
 import SubmitBtn from "@/components/SubmitBtn.vue";
 import { getStorage, useThanosWallet } from "@/taquito/tezos";
 import { ITokenItem } from "@/api/getTokens";
-import { calcTezToToken, calcTokenToTez, round } from "@/helpers/calc";
+import {
+  calcTezToToken,
+  calcTokenToTez,
+  round,
+  tzToMutez,
+  mutezToTz,
+  estimateTezosToToken,
+  estimateTokenToTezos,
+} from "@/helpers/calc";
 import store from "@/store";
 
 @Component({
-  components: { NavTabs, NavInvest, Form, FormField, FormIcon, FormInfo, SubmitBtn, Loader },
+  components: {
+    NavTabs,
+    NavInvest,
+    Form,
+    FormField,
+    FormIcon,
+    FormInfo,
+    SubmitBtn,
+    Loader,
+  },
 })
 export default class RemoveLiquidity extends Vue {
   isRemoveLiquid: boolean = false;
   outputAmount: string = "";
   loading: boolean = false;
+  remLiqStatus: string = "Remove Liquidity";
   private selectedToken: any = {
     token: {},
     storage: {},
@@ -119,7 +136,10 @@ export default class RemoveLiquidity extends Vue {
   onInputAmount(value: string) {
     this.selectedToken.setAmount = value;
     if (value && Object.keys(this.selectedToken.token).length) {
-      this.outputAmount = calcTokenToTez(this.selectedToken.storage, this.selectedToken.amount);
+      this.outputAmount = estimateTokenToTezos(
+        this.selectedToken.storage,
+        this.selectedToken.amount
+      );
       this.calcExchangePair();
       return;
     }
@@ -132,7 +152,10 @@ export default class RemoveLiquidity extends Vue {
   onOutputAmount(value: string) {
     this.outputAmount = value;
     if (value && Object.keys(this.selectedToken.token).length) {
-      this.selectedToken.setAmount = calcTezToToken(this.selectedToken.storage, this.outputAmount);
+      this.selectedToken.setAmount = estimateTezosToToken(
+        this.selectedToken.storage,
+        this.outputAmount
+      );
       this.calcExchangePair();
       return;
     }
@@ -147,21 +170,44 @@ export default class RemoveLiquidity extends Vue {
     try {
       const tezos = await useThanosWallet();
       const contract = await tezos.wallet.at(this.selectedToken.token.exchange);
+      const { storage } = this.selectedToken;
+      const tezPerShare = new BigNumber(storage.tezPool)
+        .div(storage.totalShares)
+        .integerValue(BigNumber.ROUND_DOWN);
+      const shares = new BigNumber("10")
+        .div(mutezToTz(tezPerShare))
+        .integerValue(BigNumber.ROUND_DOWN);
+
       const divestLiquidity = await contract.methods
-        .divestLiquidity(1, this.outputAmount, this.selectedToken.amount)
+        .use(
+          5,
+          "divestLiquidity",
+          shares.toNumber(),
+          this.outputAmount,
+          this.selectedToken.amount
+        )
         .send();
       await divestLiquidity.confirmation();
-    } catch (e) {
-      console.error(e);
+      this.remLiqStatus = "Done!";
+    } catch (err) {
+      console.error(err);
+
+      const msg = err.message;
+      this.remLiqStatus = msg.startsWith("Dex/")
+        ? msg.replace("Dex/", "Failed: ")
+        : "Failed";
     }
     this.loading = false;
+    await new Promise(r => setTimeout(r, 5000));
+    this.remLiqStatus = "Add Liquidity";
   }
 
   onSelectToken = async (token: any) => {
     this.selectedToken.setToken = token;
     this.selectedToken.setLoading = true;
     const newStorage = getStorage(token.exchange);
-    const storage: any = store.state.tokensStorage[token.exchange] || (await newStorage);
+    const storage: any =
+      store.state.tokensStorage[token.exchange] || (await newStorage);
     this.selectedToken.setStorage = storage;
     store.commit("tokensStorage", { key: token.exchange, value: storage });
     this.selectedToken.setLoading = false;
@@ -177,14 +223,16 @@ export default class RemoveLiquidity extends Vue {
       selectedToken: { storage },
     } = this;
 
-    const amount: any = parseFloat(this.selectedToken.amount) > 0 ? this.selectedToken.amount : 1;
+    const amount: any =
+      parseFloat(this.selectedToken.amount) > 0 ? this.selectedToken.amount : 1;
     const tokenAmount: any = `${calcTezToToken(storage, amount)}`;
     const pricePerToken = round(amount / tokenAmount);
     this.stat.setExchangeRate = `1 ${this.selectedToken.token.name} = ${pricePerToken} Tezos`;
     this.stat.setPoolSize = `${storage.tokenPool}`;
-    this.stat.setPoolShare = `${((this.selectedToken.amount / storage.tokenPool) * 100).toFixed(
-      2
-    )} %`;
+    this.stat.setPoolShare = `${(
+      (this.selectedToken.amount / storage.tokenPool) *
+      100
+    ).toFixed(2)} %`;
   }
 
   async validate() {
@@ -194,7 +242,11 @@ export default class RemoveLiquidity extends Vue {
       selectedToken,
     } = this;
 
-    if (inputAmount && outputAmount && Object.keys(selectedToken.token).length) {
+    if (
+      inputAmount &&
+      outputAmount &&
+      Object.keys(selectedToken.token).length
+    ) {
       this.isRemoveLiquid = true;
     } else {
       this.isRemoveLiquid = false;
