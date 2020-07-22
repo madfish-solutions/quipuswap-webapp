@@ -170,7 +170,7 @@ export default class SwapOrSend extends Vue {
     const inAndOutValid =
       this.inputToken &&
       this.outputToken &&
-      [this.inputAmount, this.outputAmount].every(a => a && +a > 0);
+      [this.inputAmount, this.outputAmount].every((a) => a && +a > 0);
     return this.send
       ? inAndOutValid && isAddressValid(this.recipientAddress)
       : inAndOutValid;
@@ -379,7 +379,50 @@ export default class SwapOrSend extends Vue {
         const operation = await batch.send();
         await operation.confirmation();
       } else if (inTk.type === "token" && outTk.type === "token") {
-        throw new Error("Not implemented");
+        const [
+          inTokenContract,
+          inDexContract,
+          outDexContract,
+        ] = await Promise.all([
+          tezos.wallet.at(inTk.id),
+          tezos.wallet.at(inTk.exchange),
+          tezos.wallet.at(outTk.exchange),
+        ]);
+
+        const tezAmount = estimateTokenToTez(
+          this.inputAmount,
+          await getDexStorage(inTk.exchange)
+        )
+          .times(100 - this.activeSlippagePercentage / 2)
+          .div(100)
+          .integerValue(BigNumber.ROUND_DOWN);
+
+        const batch = tezos.wallet
+          .batch([])
+          .withTransfer(
+            inTokenContract.methods
+              .approve(inTk.exchange, inpAmn)
+              .toTransferParams()
+          )
+          .withTransfer(
+            inDexContract.methods
+              .use(
+                2,
+                "tokenToTezPayment",
+                inpAmn,
+                tzToMutez(tezAmount).toNumber(),
+                recipient
+              )
+              .toTransferParams()
+          )
+          .withTransfer(
+            outDexContract.methods
+              .use(1, "tezToTokenPayment", minOut, recipient)
+              .toTransferParams({ amount: tezAmount.toNumber() })
+          );
+
+        const operation = await batch.send();
+        await operation.confirmation();
       }
 
       this.swapStatus = "Success!";
@@ -389,7 +432,7 @@ export default class SwapOrSend extends Vue {
     }
     this.swapping = false;
 
-    await new Promise(res => setTimeout(res, 5000));
+    await new Promise((res) => setTimeout(res, 5000));
     this.swapStatus = this.defaultSwapStatus;
   }
 }
@@ -413,7 +456,7 @@ async function getBalance(accountPkh: string, token: ITokenItem) {
 }
 
 const getDexStorage = (contractAddress: string) =>
-  getStorage(contractAddress).then(s => s.storage);
+  getStorage(contractAddress).then((s) => s.storage);
 
 const getStorage = mem(getStoragePure, { maxAge: 30000 });
 
