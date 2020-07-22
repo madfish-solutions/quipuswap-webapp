@@ -36,7 +36,7 @@
       </div>
     </div>
     <div class="field-search rounded-b-3px" v-if="isSearchOpened">
-      <div class="px-3 xs:px-6 py-3 text-sm shadow">
+      <div class="px-3 xs:px-6 py-3 text-sm border-b border-gray-800">
         <input
           v-model="searchValue"
           @keydown="searchValue = $event.target.value"
@@ -55,16 +55,17 @@
             <div class="flex-1">
               <div class="flex items-stretch">
                 <img class="w-8 h-8 xs:w-10 xs:h-10 mr-3 bg-white rounded-3px" :src="baker.logo" />
-                <div className="flex-1 flex flex-col">
+                <div class="flex-1 flex flex-col">
                   <div class="text-sm xs:text-base text-gray-300">{{ baker.name }}</div>
                   <div class="flex-1 flex items-center text-gray-400 text-xs">
-                    <span class="mr-1"
-                      ><span class="font-light">Fee:</span> {{ baker.fee * 100 }}%</span
-                    >
-                    <span
-                      ><span class="font-light">Space:</span>
-                      {{ Math.floor(baker.freeSpace) }} XTZ</span
-                    >
+                    <span class="mr-1">
+                      <span class="font-light">Fee:</span>
+                      {{ baker.fee * 100 }}%
+                    </span>
+                    <span>
+                      <span class="font-light">Space:</span>
+                      {{ Math.floor(baker.freeSpace) }} XTZ
+                    </span>
                   </div>
                 </div>
               </div>
@@ -130,7 +131,9 @@ export default class BakerFormField extends Vue {
     try {
       const list = await getAllKnownBakersMemoized();
       this.allKnownBakers = list.filter(b =>
-        this.searchValue ? b.name.toLowerCase().includes(this.searchValue.toLowerCase()) : true
+        this.searchValue
+          ? b.name.toLowerCase().includes(this.searchValue.toLowerCase())
+          : true
       );
     } catch (err) {
       console.error(err);

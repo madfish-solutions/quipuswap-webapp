@@ -1,6 +1,6 @@
 import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
-import Swap from "@/views/Swap.vue";
+// import Swap from "@/views/Swap.vue";
 import Send from "@/views/Send.vue";
 import AddLiquidity from "@/views/AddLiquidity.vue";
 import RemoveLiquidity from "@/views/RemoveLiquidity.vue";
@@ -9,11 +9,12 @@ import VoteBaker from "@/views/VoteBaker.vue";
 import DelegateVote from "@/views/DelegateVote.vue";
 import Veta from "@/views/Veta.vue";
 import Rewards from "@/views/Rewards.vue";
+import SwapOrSend from "@/components/SwapOrSend.vue";
 
 Vue.use(VueRouter);
 
 const routes: RouteConfig[] = [
-  { path: "/", name: "Swap", component: Swap },
+  { path: "/", name: "Swap", component: SwapOrSend },
   { path: "/send", name: "Send", component: Send },
   { path: "/invest", redirect: "/invest/add-liquidity" },
   { path: "/invest/add-liquidity", name: "AddLiquidity", component: AddLiquidity },

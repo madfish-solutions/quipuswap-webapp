@@ -11,7 +11,7 @@
         <div class="w-full flex items-center">
           <template v-if="selectedToken">
             <img class="w-5 h-5 mr-2" :src="selectedToken.imgUrl" />
-            <span class="truncate">{{ selectedToken.symbol }}</span>
+            <span class="truncate">{{ formattedSelectedTokenSymbol }}</span>
           </template>
           <span v-if="!selectedToken">-</span>
         </div>
@@ -23,7 +23,7 @@
     </button>
 
     <div class="field-search rounded-b-3px" v-if="isSearchOpened">
-      <div class="px-3 xs:px-6 py-3 text-sm">
+      <div class="px-3 xs:px-6 py-3 text-sm border-b border-gray-800">
         <input
           v-model="searchValue"
           @keydown="searchValue = $event.target.value"
@@ -36,6 +36,7 @@
           <TokenItem
             v-for="token in filteredTokens"
             :key="token.id"
+            :token="token"
             :symbol="token.symbol"
             :name="token.name"
             class="token-item"
@@ -50,6 +51,7 @@
 <script lang="ts">
 import { Vue, Component, Prop, Ref } from "vue-property-decorator";
 import { ITokenItem } from "@/api/getTokens";
+import { isAddressValid } from "@/taquito/tezos";
 import store from "@/store";
 import TokenItem from "@/components/Form/TokenItem.vue";
 import Loader from "@/components/Loader.vue";
@@ -76,6 +78,15 @@ export default class GovernancePairSelect extends Vue {
         }
       }
     );
+  }
+
+  get formattedSelectedTokenSymbol() {
+    if (!this.selectedToken) return "";
+    const term = this.selectedToken.symbol;
+    if (isAddressValid(term)) {
+      const ln = term.length;
+      return [term.slice(0, 7), "...", term.slice(ln - 4, ln)].join("");
+    } else return term;
   }
 
   get filteredTokens(): ITokenItem[] {

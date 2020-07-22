@@ -44,13 +44,20 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
+import BigNumber from "bignumber.js";
 import NavTabs from "@/components/NavTabs.vue";
 import Form, { FormIcon, FormField, FormInfo } from "@/components/Form";
 import SubmitBtn from "@/components/SubmitBtn.vue";
 import Loader from "@/components/Loader.vue";
 import { ITokenItem } from "@/api/getTokens";
 import { getStorage, getTokenBalance, useThanosWallet } from "@/taquito/tezos";
-import { calcTezToToken, calcTokenToTez, round } from "@/helpers/calc";
+import {
+  calcTezToToken,
+  calcTokenToTez,
+  round,
+  tzToMutez,
+  mutezToTz,
+} from "@/helpers/calc";
 import sleep from "@/helpers/sleep";
 import store, { getAccount } from "@/store";
 import bus from "@/store/bus";
@@ -205,27 +212,28 @@ export default class Swap extends Vue {
     this.swap.setSwapStatus = "Swap";
   };
 
-  onInputTokenAmount = async (amount: string) => {
+  onInputTokenAmount = (amount: string) => {
+    const isNum = /^[0-9.]*$/g.test(amount);
     this.inputToken.setAmount = amount;
-    if (amount.length) {
-      this.calcOutputAmount(parseFloat(amount));
+    if (isNum) {
+      this.calcOutputAmount(amount);
       return;
     }
     this.outputToken.setAmount = "";
   };
 
-  onOutputTokenAmount = async (amount: string) => {
+  onOutputTokenAmount = (amount: string) => {
     const isNum = /^[0-9]*$/g.test(amount);
     if (isNum) {
       this.outputToken.setAmount = amount;
-      this.calcInputAmount(parseFloat(amount));
+      this.calcInputAmount(amount);
       return;
     }
     this.outputToken.setAmount = this.outputToken.amount;
     this.inputToken.setAmount = "";
   };
 
-  calcOutputAmount(amount: number) {
+  calcOutputAmount(amount: any) {
     const {
       inputToken: {
         token: { type: inputType },
@@ -237,18 +245,18 @@ export default class Swap extends Vue {
       },
     } = this;
     if (inputType === "xtz" && outputType === "token") {
-      const tokenAmount: any = `${calcTezToToken(outputStorage, amount)}`;
+      const tokenAmount: any = getTezToToken(outputStorage, amount); // `${calcTezToToken(outputStorage, amount)}`;
       this.outputToken.setAmount = amount && tokenAmount;
       this.calcExchangePair();
     }
     if (inputType === "token" && outputType === "xtz") {
-      const xtzInput: any = `${calcTokenToTez(inputStorage, amount)}`;
+      const xtzInput: any = getTokenToTez(inputStorage, amount); // `${calcTokenToTez(inputStorage, amount)}`;
       this.outputToken.setAmount = amount && xtzInput;
       this.calcExchangePair();
     }
   }
 
-  calcInputAmount(amount: number) {
+  calcInputAmount(amount: any) {
     const {
       inputToken: {
         token: { type: inputType },
@@ -259,13 +267,14 @@ export default class Swap extends Vue {
         storage: outputStorage,
       },
     } = this;
+    console.info(inputType, outputType);
     if (inputType === "xtz" && outputType === "token" && amount) {
-      const tokenAmount: any = `${calcTokenToTez(outputStorage, amount)}`;
+      const tokenAmount: any = getTokenToTez(outputStorage, amount); // `${calcTokenToTez(outputStorage, amount)}`;
       this.inputToken.setAmount = tokenAmount;
       this.calcExchangePair();
     }
     if (inputType === "token" && outputType === "xtz" && amount) {
-      const xtzOutput: any = `${calcTezToToken(inputStorage, amount)}`;
+      const xtzOutput: any = getTezToTokenInverse(inputStorage, amount); // `${calcTezToToken(inputStorage, amount)}`;
       this.inputToken.setAmount = xtzOutput;
       this.calcExchangePair();
     }
@@ -374,5 +383,94 @@ export default class Swap extends Vue {
     }
     return true;
   }
+}
+
+function getTezToToken(storage: any, tezAmount: any) {
+  if (!tezAmount) return 0;
+  const mutezAmount = tzToMutez(tezAmount);
+  const fee = mutezAmount
+    .div(storage.feeRate)
+    .integerValue(BigNumber.ROUND_DOWN);
+
+  const newTezPool = mutezAmount.plus(storage.tezPool);
+  const tempTezPool = newTezPool.minus(fee);
+  const newTokenPool = new BigNumber(storage.invariant)
+    .div(tempTezPool)
+    .integerValue(BigNumber.ROUND_DOWN);
+  const tokenAmount = new BigNumber(storage.tokenPool).minus(newTokenPool);
+  // console.info(
+  //   JSON.parse(
+  //     JSON.stringify({
+  //       storage,
+  //       mutezAmount,
+  //       fee,
+  //       newTezPool,
+  //       tempTezPool,
+  //       newTokenPool,
+  //       minTokens,
+  //       tokenAmount,
+  //     })
+  //   )
+  // );
+  return tokenAmount.toString();
+}
+
+function getTezToTokenInverse(storage: any, tokenAmount: any) {
+  if (!tokenAmount) return 0;
+
+  const newTokenPool = new BigNumber(storage.tokenPool).minus(tokenAmount);
+  const tempTezPool = new BigNumber(storage.invariant)
+    .div(newTokenPool)
+    .integerValue(BigNumber.ROUND_DOWN);
+  const fee = tempTezPool
+    .minus(storage.tezPool)
+    .div(new BigNumber(storage.feeRate).minus(1))
+    .integerValue(BigNumber.ROUND_DOWN);
+  const tezAmount = mutezToTz(fee.times(storage.feeRate));
+
+  // console.info(
+  //   JSON.parse(
+  //     JSON.stringify({
+  //       storage,
+  //       mutezAmount,
+  //       fee,
+  //       newTezPool,
+  //       tempTezPool,
+  //       newTokenPool,
+  //       minTokens,
+  //       tokenAmount,
+  //     })
+  //   )
+  // );
+  return tezAmount.toString();
+}
+
+function getTokenToTez(storage: any, tokenAmount: any) {
+  if (!tokenAmount) return 0;
+  const fee = new BigNumber(tokenAmount)
+    .div(storage.feeRate)
+    .integerValue(BigNumber.ROUND_DOWN);
+  const newTokenPool = new BigNumber(storage.tokenPool).plus(tokenAmount);
+  const tempTokenPool = newTokenPool.minus(fee);
+  const newTezPool = new BigNumber(storage.invariant)
+    .div(tempTokenPool)
+    .integerValue(BigNumber.ROUND_DOWN);
+  const minTezOut = new BigNumber(storage.tezPool).minus(newTezPool);
+  const tezAmount = mutezToTz(minTezOut).toString();
+  console.info(
+    JSON.parse(
+      JSON.stringify({
+        tokenAmount,
+        storage,
+        fee,
+        newTokenPool,
+        tempTokenPool,
+        newTezPool,
+        minTezOut,
+        tezAmount,
+      })
+    )
+  );
+  return tezAmount;
 }
 </script>
