@@ -1,47 +1,93 @@
 <template>
   <div class="max-w-xl mx-auto">
     <NavTabs class="mb-6" />
-    <Form>
+
+    <Form :style="processing && 'pointer-events:none'">
       <NavInvest />
+
       <FormField
-        label="Pool tokens"
         placeholder="0.0"
+        label="Shares to remove"
         :withTezos="false"
-        v-model="selectedToken.amount"
-        @input="e => onInputAmount(e.target.value)"
-        @selectToken="onSelectToken"
+        :subLabel="myShares ? `Your shares: ${myShares}` : ''"
+        :isLoading="tokenLoading"
+        v-model="sharesToRemove"
+        @input="e => handleSharesToRemoveChange(e.target.value)"
+        @selectToken="handleTokenSelect"
+        :selectedToken="selectedToken"
       />
+
       <FormIcon>
-        <img src="@/assets/arrow-down.svg" />
+        <img :src="require('@/assets/arrow-down.svg')" />
       </FormIcon>
-      <FormField
-        label="Output"
-        :onlyTezos="true"
-        placeholder="0.0"
-        v-model="outputAmount"
-        @input="e => onOutputAmount(e.target.value)"
-      />
+
+      <div class="-mx-3 xs:-mx-4 shadow-lg">
+        <div class="field rounded-3px relative">
+          <div class="py-6 flex-1 flex flex-col justify-start">
+            <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">
+              Output <span class="text-sm">(estimated)</span>
+            </div>
+
+            <div v-if="inTokens" class="flex flex-col fieldval">
+              <div class="mb-1">
+                <span class="opacity-75 mr-1">+</span>
+                <span class="tracking-wide">{{
+                  formatNum(inTokens.tezos, 6)
+                }}</span>
+                <span class="ml-1 text-sm opacity-90">XTZ</span>
+              </div>
+
+              <div class="mb-1">
+                <span class="opacity-75 mr-1">+</span>
+                <span class="tracking-wide">{{
+                  formatNum(inTokens.token, 0)
+                }}</span>
+                <span class="ml-1 text-sm opacity-90">Token</span>
+              </div>
+            </div>
+
+            <div v-else>
+              -
+            </div>
+          </div>
+        </div>
+      </div>
+
       <FormInfo>
         <div class="flex justify-between mb-1">
           <span>Exchange rate</span>
-          <span>{{ stat.exchangeRate }}</span>
+          <span>{{ exchangeRate || "-" }}</span>
         </div>
+
         <div class="flex justify-between mb-1">
-          <span>Current pool size</span>
-          <span>{{ stat.poolSize }}</span>
+          <span>Pooled Tokens</span>
+          <span>{{ poolMeta ? poolMeta.tokenFull : "-" }}</span>
         </div>
-        <div class="flex justify-between">
-          <span>Your Pool Share (%)</span>
-          <span>{{ stat.poolShare }}</span>
+
+        <div class="flex justify-between mb-1">
+          <span>Pooled XTZ</span>
+          <span>{{ poolMeta ? poolMeta.tezFull : "-" }}</span>
+        </div>
+
+        <div class="flex justify-between mb-1">
+          <span>Your pool tokens</span>
+          <span>{{ poolMeta ? poolMeta.myTokens : "-" }}</span>
+        </div>
+
+        <div class="flex justify-between mb-1">
+          <span>Your pool share</span>
+          <span>{{ poolMeta ? poolMeta.myShare : "-" }}</span>
         </div>
       </FormInfo>
     </Form>
 
-    <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal"></div>
+    <div
+      class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal"
+    ></div>
     <div class="flex justify-center text-center">
-      <SubmitBtn :disabled="!isRemoveLiquid" @click="handleDivestLiquidity">
-        <template v-if="!loading">{{ remLiqStatus }}</template>
-        <template v-if="loading">
+      <SubmitBtn @click="removeLiquidity" :disabled="!valid">
+        <template v-if="!processing">{{ remLiqStatus }}</template>
+        <template v-if="processing">
           <Loader size="large" />
         </template>
       </SubmitBtn>
@@ -50,25 +96,45 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
-import BigNumber from "bignumber.js";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import NavTabs from "@/components/NavTabs.vue";
 import NavInvest from "@/components/NavInvest.vue";
-import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
 import Loader from "@/components/Loader.vue";
+import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
 import SubmitBtn from "@/components/SubmitBtn.vue";
-import { getStorage, useThanosWallet } from "@/taquito/tezos";
-import { ITokenItem } from "@/api/getTokens";
+
+import BigNumber from "bignumber.js";
+import { getAccount } from "@/store";
 import {
-  calcTezToToken,
-  calcTokenToTez,
-  round,
+  QSAsset,
+  isAddressValid,
+  toValidAmount,
+  getBalance,
+  getDexStorage,
+  getContract,
+  estimateTezToToken,
+  estimateTezToTokenInverse,
+  estimateTokenToTez,
+  estimateTokenToTezInverse,
   tzToMutez,
   mutezToTz,
-  estimateTezosToToken,
-  estimateTokenToTezos,
-} from "@/helpers/calc";
-import store from "@/store";
+  estimatePrice,
+  estimatePriceInverse,
+} from "@/core";
+import { TEZOS_TOKEN } from "@/defaults";
+import { useThanosWallet } from "@/taquito/tezos";
+
+type InTokens = {
+  tezos: string;
+  token: string;
+};
+
+type PoolMeta = {
+  tezFull: string;
+  tokenFull: string;
+  myShare: string;
+  myTokens: string;
+};
 
 @Component({
   components: {
@@ -83,174 +149,215 @@ import store from "@/store";
   },
 })
 export default class RemoveLiquidity extends Vue {
-  isRemoveLiquid: boolean = false;
-  outputAmount: string = "";
-  loading: boolean = false;
-  remLiqStatus: string = "Remove Liquidity";
-  private selectedToken: any = {
-    token: {},
-    storage: {},
-    loading: false,
-    amount: null,
-    set setToken(token: ITokenItem) {
-      this.token = token;
-    },
+  selectedToken: QSAsset | null = null;
+  sharesToRemove = "";
+  myShares: string | null = null;
+  tokenLoading = false;
 
-    set setAmount(amount: any) {
-      if (amount) this.amount = amount;
-      else this.amount = null;
-    },
-    set setStorage(storage: object) {
-      this.storage = storage;
-    },
-    set setLoading(loading: boolean) {
-      this.loading = loading;
-    },
-  };
+  inTokens: InTokens | null = null;
+  poolMeta: PoolMeta | null = null;
 
-  stat: any = {
-    exchangeRate: "-",
-    poolSize: "-",
-    poolShare: "-",
+  processing = false;
+  remLiqStatus = this.defaultRemLiqStatus;
 
-    set setExchangeRate(exchangeRate: string) {
-      this.exchangeRate = exchangeRate;
-    },
+  get defaultRemLiqStatus() {
+    return "Remove Liquidity";
+  }
 
-    set setPoolSize(poolSize: string) {
-      this.poolSize = poolSize;
-    },
+  get account() {
+    return getAccount();
+  }
 
-    set setPoolShare(poolShare: string) {
-      this.poolShare = poolShare;
-    },
-  };
-
-  mounted() {
-    this.$watch(
-      (vm?) => [vm.outputAmount],
-      () => this.validate()
+  get valid() {
+    return (
+      this.selectedToken &&
+      this.sharesToRemove &&
+      +this.sharesToRemove > 0 &&
+      this.inTokens
     );
   }
 
-  onInputAmount(value: string) {
-    this.selectedToken.setAmount = value;
-    if (value && Object.keys(this.selectedToken.token).length) {
-      this.outputAmount = estimateTokenToTezos(
-        this.selectedToken.storage,
-        this.selectedToken.amount
-      );
-      this.calcExchangePair();
-      return;
+  get exchangeRate() {
+    if (!this.selectedToken || !this.inTokens) {
+      return null;
     }
-    this.outputAmount = "";
-    this.selectedToken.setAmount = "";
 
-    this.resetStats();
+    const price = new BigNumber(this.inTokens.tezos)
+      .div(this.inTokens.token)
+      .toFormat(6);
+
+    return `1 ${this.selectedToken.name} = ${price} XTZ`;
   }
 
-  onOutputAmount(value: string) {
-    this.outputAmount = value;
-    if (value && Object.keys(this.selectedToken.token).length) {
-      this.selectedToken.setAmount = estimateTezosToToken(
-        this.selectedToken.storage,
-        this.outputAmount
-      );
-      this.calcExchangePair();
-      return;
-    }
-    this.selectedToken.setAmount = "";
-    this.outputAmount = "";
-
-    this.resetStats();
+  formatNum(val: string, dec: number) {
+    return new BigNumber(val).toFormat(dec);
   }
 
-  async handleDivestLiquidity() {
-    this.loading = true;
+  @Watch("selectedToken")
+  onSelectedTokenChange() {
+    this.loadMyShares();
+    this.loadPoolMetadata();
+  }
+
+  @Watch("account")
+  onAccountChange() {
+    this.loadMyShares();
+    this.loadPoolMetadata();
+  }
+
+  async loadMyShares() {
+    this.myShares = null;
+    try {
+      this.tokenLoading = true;
+      if (this.selectedToken && this.account.pkh) {
+        const dexStorage = await getDexStorage(this.selectedToken.exchange);
+        const shares = await dexStorage.shares.get(this.account.pkh);
+        this.myShares = shares ? shares.toString() : "0";
+      }
+    } catch (err) {
+      if (process.env.NODE_ENV === "development") {
+        console.error(err);
+      }
+    } finally {
+      this.tokenLoading = false;
+    }
+  }
+
+  async loadPoolMetadata() {
+    this.poolMeta = null;
+
+    if (this.selectedToken && this.account.pkh) {
+      const dexStorage = await getDexStorage(this.selectedToken.exchange);
+      const myShares = await dexStorage.shares.get(this.account.pkh);
+
+      const myShare =
+        myShares && new BigNumber(myShares).div(dexStorage.totalShares);
+      const myTokens =
+        myShare &&
+        new BigNumber(dexStorage.tokenPool)
+          .times(myShare)
+          .integerValue(BigNumber.ROUND_DOWN);
+
+      this.poolMeta = {
+        tezFull: `${mutezToTz(dexStorage.tezPool)} XTZ`,
+        tokenFull: `${dexStorage.tokenPool} Token`,
+        myShare: myShare ? `${myShare.times(100).toFormat(2)}%` : "-",
+        myTokens: myTokens ? `${myTokens} Token` : "-",
+      };
+    }
+  }
+
+  async handleTokenSelect(token: QSAsset) {
+    this.selectedToken = token;
+
+    if (!this.sharesToRemove) {
+      this.sharesToRemove = "1";
+    }
+    this.calcInTokens();
+  }
+
+  handleSharesToRemoveChange(amount: string) {
+    this.sharesToRemove = amount;
+    const isNum = /^[0-9]*$/g.test(amount);
+    if (isNum) {
+      this.calcInTokens();
+    } else {
+      this.inTokens = null;
+    }
+  }
+
+  async calcInTokens() {
+    this.inTokens = null;
+    if (!this.selectedToken || !this.sharesToRemove) return;
+
+    const dexStorage = await getDexStorage(this.selectedToken.exchange);
+    const tokenPerShare = new BigNumber(dexStorage.tokenPool)
+      .div(dexStorage.totalShares)
+      .integerValue(BigNumber.ROUND_DOWN);
+    const tezPerShare = new BigNumber(dexStorage.tezPool)
+      .div(dexStorage.totalShares)
+      .integerValue(BigNumber.ROUND_DOWN);
+
+    const tezAmount = mutezToTz(tezPerShare.times(this.sharesToRemove));
+    const tokenAmount = tokenPerShare.times(this.sharesToRemove);
+    const tezos = toValidAmount(tezAmount);
+    const token = toValidAmount(tokenAmount);
+    this.inTokens = tezos && token ? { tezos, token } : null;
+  }
+
+  async removeLiquidity() {
+    this.processing = true;
+
     try {
       const tezos = await useThanosWallet();
-      const contract = await tezos.wallet.at(this.selectedToken.token.exchange);
-      const { storage } = this.selectedToken;
-      const tezPerShare = new BigNumber(storage.tezPool)
-        .div(storage.totalShares)
-        .integerValue(BigNumber.ROUND_DOWN);
-      const shares = new BigNumber("10")
-        .div(mutezToTz(tezPerShare))
-        .integerValue(BigNumber.ROUND_DOWN);
+      const me = await tezos.wallet.pkh();
 
-      const divestLiquidity = await contract.methods
+      const shares = new BigNumber(this.sharesToRemove!);
+      const selTk = this.selectedToken!;
+
+      const dexStorage = await getDexStorage(selTk.exchange);
+      const myShares = await dexStorage.shares.get(this.account.pkh);
+
+      if (!myShares && shares.isGreaterThan(myShares)) {
+        throw new Error("Not Enough Shares");
+      }
+
+      const minTezos = tzToMutez(this.inTokens!.tezos);
+      const minToken = new BigNumber(this.inTokens!.token);
+
+      const dexContract = await tezos.wallet.at(selTk.exchange);
+      const operation = await dexContract.methods
         .use(
           5,
           "divestLiquidity",
           shares.toNumber(),
-          this.outputAmount,
-          this.selectedToken.amount
+          minTezos.toNumber(),
+          minToken.toNumber()
         )
         .send();
-      await divestLiquidity.confirmation();
-      this.remLiqStatus = "Done!";
+      await operation.confirmation();
+
+      this.remLiqStatus = "Success!";
     } catch (err) {
       console.error(err);
-
-      const msg = err.message;
-      this.remLiqStatus = msg.startsWith("Dex/")
-        ? msg.replace("Dex/", "Failed: ")
-        : "Failed";
+      this.remLiqStatus =
+        err.message && err.message.length < 25
+          ? err.message
+          : "Something went wrong";
     }
-    this.loading = false;
-    await new Promise(r => setTimeout(r, 5000));
-    this.remLiqStatus = "Add Liquidity";
-  }
+    this.processing = false;
 
-  onSelectToken = async (token: any) => {
-    this.selectedToken.setToken = token;
-    this.selectedToken.setLoading = true;
-    const newStorage = getStorage(token.exchange);
-    const storage: any =
-      store.state.tokensStorage[token.exchange] || (await newStorage);
-    this.selectedToken.setStorage = storage;
-    store.commit("tokensStorage", { key: token.exchange, value: storage });
-    this.selectedToken.setLoading = false;
-    this.calcExchangePair();
-  };
-
-  resetStats() {
-    this.stat.setPoolShare = "-";
-  }
-
-  calcExchangePair() {
-    const {
-      selectedToken: { storage },
-    } = this;
-
-    const amount: any =
-      parseFloat(this.selectedToken.amount) > 0 ? this.selectedToken.amount : 1;
-    const tokenAmount: any = `${calcTezToToken(storage, amount)}`;
-    const pricePerToken = round(amount / tokenAmount);
-    this.stat.setExchangeRate = `1 ${this.selectedToken.token.name} = ${pricePerToken} Tezos`;
-    this.stat.setPoolSize = `${storage.tokenPool}`;
-    this.stat.setPoolShare = `${(
-      (this.selectedToken.amount / storage.tokenPool) *
-      100
-    ).toFixed(2)} %`;
-  }
-
-  async validate() {
-    const {
-      outputAmount,
-      selectedToken: { amount: inputAmount },
-      selectedToken,
-    } = this;
-
-    if (
-      inputAmount &&
-      outputAmount &&
-      Object.keys(selectedToken.token).length
-    ) {
-      this.isRemoveLiquid = true;
-    } else {
-      this.isRemoveLiquid = false;
-    }
+    await new Promise(res => setTimeout(res, 5000));
+    this.remLiqStatus = this.defaultRemLiqStatus;
   }
 }
 </script>
+
+<style lang="postcss" scoped>
+.field {
+  @apply h-20 px-3 flex items-stretch;
+  background: #2a3248;
+}
+
+.fieldval {
+  @apply text-base font-light;
+}
+
+@screen xs {
+  .field {
+    @apply px-6 h-32;
+  }
+
+  .field-extend {
+    @apply px-6 h-32;
+  }
+
+  .fieldval {
+    @apply text-lg;
+  }
+}
+
+.label {
+  color: #f6cc5b;
+}
+</style>
