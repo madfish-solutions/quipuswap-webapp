@@ -1,6 +1,7 @@
 <template>
   <div class="max-w-xl mx-auto">
     <NavTabs class="mb-6" />
+
     <Form :style="swapping && 'pointer-events:none'">
       <FormField
         placeholder="0.0"
@@ -37,7 +38,7 @@
           placeholder="tz1v7h3s..."
           :withSelect="false"
           v-model="recipientAddress"
-          @input="e => recipientAddress = e.target.value"
+          @input="e => (recipientAddress = e.target.value)"
           :spellcheck="false"
         />
       </template>
@@ -55,7 +56,9 @@
             v-for="percentage in slippagePercentages"
             :key="percentage"
             class="py-px px-2 ml-2 text-xs rounded-md shadow-xs focus:outline-none"
-            :class="activeSlippagePercentage === percentage ? 'bg-alphawhite' : ''"
+            :class="
+              activeSlippagePercentage === percentage ? 'bg-alphawhite' : ''
+            "
             v-on:click="activeSlippagePercentage = percentage"
           >
             {{ percentage }}
@@ -65,7 +68,9 @@
 
         <div class="flex justify-between mb-1">
           <span>Minimum received</span>
-          <span>{{ minimumReceived ? `${minimumReceived} ${outputToken.name}` : "-" }}</span>
+          <span>{{
+            minimumReceived ? `${minimumReceived} ${outputToken.name}` : "-"
+          }}</span>
         </div>
       </FormInfo>
     </Form>
@@ -83,19 +88,29 @@
 
 <script lang="ts">
 import { Component, Vue, Prop, Watch } from "vue-property-decorator";
-import BigNumber from "bignumber.js";
-import mem from "mem";
-import { Tezos } from "@taquito/taquito";
-import { useThanosWallet } from "@/taquito/tezos";
-import { ITokenItem } from "@/api/getTokens";
-import { tzToMutez, mutezToTz } from "@/helpers/calc";
 import NavTabs from "@/components/NavTabs.vue";
 import Form, { FormIcon, FormField, FormInfo } from "@/components/Form";
 import SubmitBtn from "@/components/SubmitBtn.vue";
 import Loader from "@/components/Loader.vue";
+
+import BigNumber from "bignumber.js";
 import { getAccount } from "@/store";
+import {
+  QSAsset,
+  isAddressValid,
+  toValidAmount,
+  getBalance,
+  getDexStorage,
+  getContract,
+  estimateTezToToken,
+  estimateTezToTokenInverse,
+  estimateTokenToTez,
+  estimateTokenToTezInverse,
+  tzToMutez,
+  mutezToTz,
+} from "@/core";
 import { TEZOS_TOKEN } from "@/defaults";
-import { isAddressValid } from "../taquito/tezos";
+import { useThanosWallet } from "@/taquito/tezos";
 
 @Component({
   components: {
@@ -111,12 +126,12 @@ import { isAddressValid } from "../taquito/tezos";
 export default class SwapOrSend extends Vue {
   @Prop({ default: false }) send?: boolean;
 
-  inputToken: ITokenItem | null = TEZOS_TOKEN;
+  inputToken: QSAsset | null = TEZOS_TOKEN;
   inputAmount = "";
   inputBalance: string | null = null;
   inputLoading = false;
 
-  outputToken: ITokenItem | null = null;
+  outputToken: QSAsset | null = null;
   outputAmount = "";
   outputLoading = false;
 
@@ -149,9 +164,7 @@ export default class SwapOrSend extends Vue {
     const price = new BigNumber(this.inputAmount)
       .div(this.outputAmount)
       .toFormat(6);
-    return (
-      price && `1 ${this.outputToken.name} = ${price} ${this.inputToken.name}`
-    );
+    return `1 ${this.outputToken.name} = ${price} ${this.inputToken.name}`;
   }
 
   get minimumReceived() {
@@ -170,7 +183,7 @@ export default class SwapOrSend extends Vue {
     const inAndOutValid =
       this.inputToken &&
       this.outputToken &&
-      [this.inputAmount, this.outputAmount].every((a) => a && +a > 0);
+      [this.inputAmount, this.outputAmount].every(a => a && +a > 0);
     return this.send
       ? inAndOutValid && isAddressValid(this.recipientAddress)
       : inAndOutValid;
@@ -204,7 +217,7 @@ export default class SwapOrSend extends Vue {
     }
   }
 
-  async handleInputSelect(token: ITokenItem) {
+  async handleInputSelect(token: QSAsset) {
     this.inputToken = token;
 
     if (this.outputToken && token.id === this.outputToken.id) {
@@ -221,7 +234,7 @@ export default class SwapOrSend extends Vue {
     this.calcOutputAmount();
   }
 
-  async handleOutputSelect(token: ITokenItem) {
+  async handleOutputSelect(token: QSAsset) {
     this.outputToken = token;
 
     if (this.inputToken) {
@@ -449,101 +462,8 @@ export default class SwapOrSend extends Vue {
     }
     this.swapping = false;
 
-    await new Promise((res) => setTimeout(res, 5000));
+    await new Promise(res => setTimeout(res, 5000));
     this.swapStatus = this.defaultSwapStatus;
   }
-}
-
-function toValidAmount(amount?: BigNumber) {
-  return amount && amount.isFinite() && amount.isGreaterThan(0)
-    ? amount.toString()
-    : "";
-}
-
-Tezos.setProvider({ rpc: "https://testnet-tezos.giganode.io" });
-
-async function getBalance(accountPkh: string, token: ITokenItem) {
-  if (token.type === "xtz") {
-    return mutezToTz(await Tezos.tz.getBalance(accountPkh));
-  } else {
-    const storage = await getStoragePure(token.id);
-    const val = await storage.ledger.get(accountPkh);
-    return new BigNumber(val ? val.balance : 0);
-  }
-}
-
-const getDexStorage = (contractAddress: string) =>
-  getStorage(contractAddress).then((s) => s.storage);
-
-const getStorage = mem(getStoragePure, { maxAge: 30000 });
-
-async function getStoragePure(contractAddress: string) {
-  const contract = await getContract(contractAddress);
-  return contract.storage<any>();
-}
-
-const getContract = mem(getContractPure);
-
-function getContractPure(address: string) {
-  return Tezos.contract.at(address);
-}
-
-function estimateTezToToken(tezAmount: any, dexStorage: any) {
-  if (!tezAmount) return new BigNumber(0);
-
-  const mutezAmount = tzToMutez(tezAmount);
-  const fee = mutezAmount
-    .div(dexStorage.feeRate)
-    .integerValue(BigNumber.ROUND_DOWN);
-  const newTezPool = mutezAmount.plus(dexStorage.tezPool);
-  const tempTezPool = newTezPool.minus(fee);
-  const newTokenPool = new BigNumber(dexStorage.invariant)
-    .div(tempTezPool)
-    .integerValue(BigNumber.ROUND_DOWN);
-  return new BigNumber(dexStorage.tokenPool).minus(newTokenPool);
-}
-
-function estimateTezToTokenInverse(tokenAmount: any, dexStorage: any) {
-  if (!tokenAmount) return new BigNumber(0);
-
-  const newTokenPool = new BigNumber(dexStorage.tokenPool).minus(tokenAmount);
-  const tempTezPool = new BigNumber(dexStorage.invariant)
-    .div(newTokenPool)
-    .integerValue(BigNumber.ROUND_DOWN);
-  const fee = tempTezPool
-    .minus(dexStorage.tezPool)
-    .div(new BigNumber(dexStorage.feeRate).minus(1))
-    .integerValue(BigNumber.ROUND_DOWN);
-  return mutezToTz(fee.times(dexStorage.feeRate));
-}
-
-function estimateTokenToTez(tokenAmount: any, dexStorage: any) {
-  if (!tokenAmount) return new BigNumber(0);
-
-  const fee = new BigNumber(tokenAmount)
-    .div(dexStorage.feeRate)
-    .integerValue(BigNumber.ROUND_DOWN);
-  const newTokenPool = new BigNumber(dexStorage.tokenPool).plus(tokenAmount);
-  const tempTokenPool = newTokenPool.minus(fee);
-  const newTezPool = new BigNumber(dexStorage.invariant)
-    .div(tempTokenPool)
-    .integerValue(BigNumber.ROUND_DOWN);
-  const minTezOut = new BigNumber(dexStorage.tezPool).minus(newTezPool);
-  return mutezToTz(minTezOut);
-}
-
-function estimateTokenToTezInverse(tezAmount: any, dexStorage: any) {
-  if (!tezAmount) return new BigNumber(0);
-
-  const mutezAmount = tzToMutez(tezAmount);
-  const newTezPool = new BigNumber(dexStorage.tezPool).minus(mutezAmount);
-  const tempTokenPool = new BigNumber(dexStorage.invariant)
-    .div(newTezPool)
-    .integerValue(BigNumber.ROUND_DOWN);
-  const fee = tempTokenPool
-    .minus(dexStorage.tokenPool)
-    .div(new BigNumber(dexStorage.feeRate).minus(1))
-    .integerValue(BigNumber.ROUND_DOWN);
-  return fee.times(dexStorage.feeRate);
 }
 </script>
