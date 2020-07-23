@@ -40,7 +40,7 @@
         </div>
 
         <div class="flex justify-between mb-1">
-          <span>Pooled Token</span>
+          <span>Pooled Tokens</span>
           <span>{{ poolMeta ? poolMeta.tokenFull : "-" }}</span>
         </div>
 
@@ -169,7 +169,7 @@ export default class AddLiquidity extends Vue {
       .div(this.tokenAmount)
       .toFormat(6);
 
-    return `1 ${this.selectedToken.name} = ${price} ${this.tezToken.name}`;
+    return `1 ${this.selectedToken.name} = ${price} XTZ`;
   }
 
   created() {
@@ -238,7 +238,7 @@ export default class AddLiquidity extends Vue {
           .integerValue(BigNumber.ROUND_DOWN);
 
       this.poolMeta = {
-        tezFull: `${mutezToTz(dexStorage.tezPool)} Tezos`,
+        tezFull: `${mutezToTz(dexStorage.tezPool)} XTZ`,
         tokenFull: `${dexStorage.tokenPool} Token`,
         myShare: myShare ? `${myShare.times(100).toFormat(2)}%` : "-",
         myTokens: myTokens ? `${myTokens} Token` : "-",
@@ -266,7 +266,7 @@ export default class AddLiquidity extends Vue {
     if (isNum) {
       this.calcTokenAmount();
     } else {
-      this.tezAmount = "";
+      this.tokenAmount = "";
     }
   }
 
@@ -276,7 +276,7 @@ export default class AddLiquidity extends Vue {
     if (isNum) {
       this.calcTezAmount();
     } else {
-      this.tokenAmount = "";
+      this.tezAmount = "";
     }
   }
 
