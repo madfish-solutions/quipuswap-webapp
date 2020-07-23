@@ -298,7 +298,7 @@ export default class RemoveLiquidity extends Vue {
       const dexStorage = await getDexStorage(selTk.exchange);
       const myShares = await dexStorage.shares.get(this.account.pkh);
 
-      if (!myShares && shares.isGreaterThan(myShares)) {
+      if (!myShares || shares.isGreaterThan(myShares)) {
         throw new Error("Not Enough Shares");
       }
 

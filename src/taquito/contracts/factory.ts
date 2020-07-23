@@ -3,7 +3,9 @@ import initContract from "@/taquito/tezos";
 // launchExchange: {0: "address", 1: "address"}
 // tokenToExchangeLookup: {1: "address", 2: "address", 3: "nat"}
 
-export async function getStorage(contractAddress: string = "KT1FyLRcRpBXWfBzjPPvjHic4nqnWyqhiGje") {
+export async function getStorage(
+  contractAddress: string = "KT1DdaiHsoWxbwkr7Mv4LQ1NQZHeYD55NWhQ"
+) {
   const contract = await initContract(contractAddress);
   const op = await contract
     .storage()
@@ -12,7 +14,11 @@ export async function getStorage(contractAddress: string = "KT1FyLRcRpBXWfBzjPPv
   return op;
 }
 
-export async function launchExchange(contractAddress: string, address1: string, address2: string) {
+export async function launchExchange(
+  contractAddress: string,
+  address1: string,
+  address2: string
+) {
   const contract = await initContract(contractAddress);
   const op = await contract.methods.launchExchange(address1, address2).send();
   await op.confirmation(1);
