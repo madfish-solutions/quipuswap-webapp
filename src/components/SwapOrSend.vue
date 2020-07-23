@@ -407,10 +407,7 @@ export default class SwapOrSend extends Vue {
         const tezAmount = estimateTokenToTez(
           this.inputAmount,
           await getDexStorage(inTk.exchange)
-        )
-          .times(100 - this.activeSlippagePercentage / 2)
-          .div(100)
-          .integerValue(BigNumber.ROUND_DOWN);
+        );
 
         const batch = tezos.wallet
           .batch([])
@@ -425,7 +422,9 @@ export default class SwapOrSend extends Vue {
                 2,
                 "tokenToTezPayment",
                 inpAmn,
-                tzToMutez(tezAmount).toNumber(),
+                tzToMutez(tezAmount)
+                  .integerValue(BigNumber.ROUND_DOWN)
+                  .toNumber(),
                 recipient
               )
               .toTransferParams()
