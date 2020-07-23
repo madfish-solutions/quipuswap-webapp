@@ -1,7 +1,7 @@
 <template>
   <div class="-mx-3 xs:-mx-4 shadow-lg">
     <div :class="isSearchOpened ? 'field rounded-t-3px' : ' field rounded-3px relative'">
-      <div class="flex-1 flex flex-col justify-center">
+      <div class="py-6 flex-1 flex flex-col justify-start">
         <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">{{ label }}</div>
         <input
           class="w-full"
@@ -12,35 +12,38 @@
         <div v-if="!withSelect && isLoading" class="flex items-center" style="height: 30px">
           <Loader />
         </div>
+        <div class="flex-1" />
         <div class="label sm:text-sm font-light w-full">{{ subLabel }}</div>
       </div>
 
-      <div v-if="withSelect" class="append flex">
-        <button
-          @click="toggleSearch"
-          class="flex text-white border-accent border-2 items-center rounded-3px py-2 px-3 text-sm sm:text-base whitespace-no-wrap flex-shrink-0"
-        >
-          <template v-if="!isLoading">
-            <template v-if="selectedToken">
-              <img class="w-5 h-5 mr-2" :src="selectedToken.imgUrl" />
-              <span class="truncate">{{ selectedToken.symbol }}</span>
+      <div class="flex items-center">
+        <div v-if="withSelect" class="append flex">
+          <button
+            @click="toggleSearch"
+            class="flex text-white border-accent border-2 items-center rounded-3px py-2 px-3 text-sm sm:text-base whitespace-no-wrap flex-shrink-0 focus:outline-none"
+          >
+            <template v-if="!isLoading">
+              <template v-if="localToken">
+                <img class="w-5 h-5 mr-2" :src="localToken.imgUrl" />
+                <span class="truncate">{{ formattedLocalTokenSymbol }}</span>
+              </template>
+              <span v-else>Select a token</span>
             </template>
-            <span v-else>Select a token</span>
-          </template>
-          <template v-if="isLoading">
-            <Loader />
-          </template>
-          <img
-            class="w-3 ml-2"
-            style="margin-top: -2px"
-            src="@/assets/chevron-white.svg"
-            v-if="!onlyTezos"
-          />
-        </button>
+            <template v-if="isLoading">
+              <Loader />
+            </template>
+            <img
+              class="w-3 ml-2"
+              style="margin-top: -2px"
+              src="@/assets/chevron-white.svg"
+              v-if="!onlyTezos"
+            />
+          </button>
+        </div>
       </div>
     </div>
     <div class="field-search rounded-b-3px" v-if="isSearchOpened && !onlyTezos">
-      <div class="px-3 xs:px-6 py-3 text-sm">
+      <div class="px-3 xs:px-6 py-3 text-sm border-b border-gray-800">
         <input
           v-model="searchValue"
           @keydown="searchValue = $event.target.value"
@@ -53,6 +56,7 @@
           <TokenItem
             v-for="token in filteredTokens"
             :key="token.id"
+            :token="token"
             :symbol="token.symbol"
             :name="token.name"
             class="token-item"
@@ -66,11 +70,13 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop, Ref } from "vue-property-decorator";
+import { Vue, Component, Prop, Ref, Watch } from "vue-property-decorator";
 import Loader from "@/components/Loader.vue";
 import { ITokenItem } from "@/api/getTokens";
+import { isAddressValid } from "@/taquito/tezos";
 import store from "@/store";
 import TokenItem from "@/components/Form/TokenItem.vue";
+import { TEZOS_TOKEN } from "@/defaults";
 
 @Component({
   components: { TokenItem, Loader },
@@ -83,31 +89,27 @@ export default class FormField extends Vue {
   @Prop({ default: true }) showSearch?: boolean;
   @Prop({ default: true }) withTezos?: boolean;
   @Prop({ default: false }) onlyTezos?: boolean;
+  @Prop({ default: null }) selectedToken?: ITokenItem | null;
   @Ref("searchInput") readonly searchInput!: HTMLInputElement;
 
   value: string = "0.0";
 
   searchValue: string = "";
   isSearchOpened: boolean = false;
-  selectedToken: ITokenItem | null = null;
+  localToken: ITokenItem | null = null;
+
+  get formattedLocalTokenSymbol() {
+    if (!this.localToken) return "";
+    const term = this.localToken.symbol;
+    if (isAddressValid(term)) {
+      const ln = term.length;
+      return [term.slice(0, 7), "...", term.slice(ln - 4, ln)].join("");
+    } else return term;
+  }
 
   get filteredTokens(): ITokenItem[] {
-    const tokens =
-      (this.withTezos && [
-        {
-          id: "Tezos",
-          name: "Tezos",
-          type: "xtz",
-          symbol: "Tezos",
-          exchange: "",
-          imgUrl:
-            "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xB6eD7644C69416d67B522e20bC294A9a9B405B31/logo.png",
-        },
-      ]) ||
-      [];
-
     return [
-      ...tokens,
+      ...(this.withTezos ? [TEZOS_TOKEN] : []),
       ...store.state.tokens.filter(
         (t: ITokenItem) =>
           t.name.toLowerCase().includes(this.searchValue.toLowerCase()) ||
@@ -118,15 +120,16 @@ export default class FormField extends Vue {
 
   created() {
     if (this.onlyTezos) {
-      this.selectedToken = {
-        id: "Tezos",
-        name: "Tezos",
-        type: "xtz",
-        symbol: "Tezos",
-        exchange: "",
-        imgUrl:
-          "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xB6eD7644C69416d67B522e20bC294A9a9B405B31/logo.png",
-      };
+      this.localToken = TEZOS_TOKEN;
+    } else if (this.selectedToken) {
+      this.localToken = this.selectedToken;
+    }
+  }
+
+  @Watch("selectedToken")
+  onSelectedTokenChanged() {
+    if (this.selectedToken !== undefined) {
+      this.localToken = this.selectedToken;
     }
   }
 
@@ -139,7 +142,7 @@ export default class FormField extends Vue {
 
   selectToken(token: ITokenItem) {
     this.searchValue = "";
-    this.selectedToken = token;
+    this.localToken = token;
     this.isSearchOpened = false;
     this.$emit("selectToken", token);
   }
@@ -156,7 +159,7 @@ export default class FormField extends Vue {
 }
 
 .field {
-  @apply h-20 px-3 flex items-center;
+  @apply h-20 px-3 flex items-stretch;
   background: #2a3248;
 }
 
