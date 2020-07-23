@@ -80,7 +80,7 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop, Ref } from "vue-property-decorator";
+import { Vue, Component, Prop, Ref, Watch } from "vue-property-decorator";
 import { getAllKnownBakersMemoized, BBKnownBaker } from "@/baking-bad";
 import Loader from "@/components/Loader.vue";
 
@@ -106,31 +106,27 @@ export default class BakerFormField extends Vue {
     this.loadData();
   }
 
-  mounted() {
-    this.$watch(
-      (vm?) => [vm.selectedBaker],
-      () => {
-        if (this.selectedBaker) {
-          this.isSearchOpened = false;
-        }
-      }
-    );
+  @Watch("selectedBaker")
+  onSelectedBakerChange() {
+    if (this.selectedBaker) {
+      this.isSearchOpened = false;
+    }
+  }
 
-    this.$watch(
-      (vm?) => [vm.searchValue],
-      () => this.loadData()
-    );
+  @Watch("searchValue")
+  onSearchValueChange() {
+    this.loadData();
+  }
 
-    this.$watch(
-      (vm?) => [vm.value],
-      () => this.selectBakerByAddress()
-    );
+  @Watch("value")
+  onValueChange() {
+    this.selectBakerByAddress();
   }
 
   async loadData() {
     try {
       const list = await getAllKnownBakersMemoized();
-      this.allKnownBakers = list.filter(b =>
+      this.allKnownBakers = list.filter((b) =>
         this.searchValue
           ? b.name.toLowerCase().includes(this.searchValue.toLowerCase())
           : true
@@ -156,7 +152,7 @@ export default class BakerFormField extends Vue {
 
   async selectBakerByAddress() {
     const list = await getAllKnownBakersMemoized();
-    const baker = list.find(b => b.address === this.value);
+    const baker = list.find((b) => b.address === this.value);
     if (baker) {
       this.selectBaker(baker);
     }

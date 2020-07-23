@@ -82,7 +82,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { Component, Vue, Prop, Watch } from "vue-property-decorator";
 import BigNumber from "bignumber.js";
 import mem from "mem";
 import { Tezos } from "@taquito/taquito";
@@ -176,11 +176,18 @@ export default class SwapOrSend extends Vue {
       : inAndOutValid;
   }
 
-  mounted() {
-    this.$watch(
-      (vm?) => [vm.inputToken, vm.account],
-      () => this.loadInputBalance()
-    );
+  created() {
+    this.loadInputBalance();
+  }
+
+  @Watch("inputToken")
+  onInputTokenChange() {
+    this.loadInputBalance();
+  }
+
+  @Watch("account")
+  onAccountChange() {
+    this.loadInputBalance();
   }
 
   async loadInputBalance() {
@@ -330,14 +337,22 @@ export default class SwapOrSend extends Vue {
 
     try {
       const tezos = await useThanosWallet();
-      const recipient = this.send
-        ? this.recipientAddress
-        : await tezos.wallet.pkh();
+      const me = await tezos.wallet.pkh();
+
+      const recipient = this.send ? this.recipientAddress : me;
 
       const inTk = this.inputToken!;
       const outTk = this.outputToken!;
       const inpAmn = +this.inputAmount!;
       const minOut = +this.minimumReceived!;
+
+      let bal: BigNumber | undefined;
+      try {
+        bal = await getBalance(me, inTk);
+      } catch (_err) {}
+      if (bal && bal.isLessThan(inpAmn)) {
+        throw new Error("Not Enough Funds");
+      }
 
       if (inTk.type === "xtz" && outTk.type === "token") {
         const contract = await tezos.wallet.at(outTk.exchange);
@@ -428,7 +443,10 @@ export default class SwapOrSend extends Vue {
       this.swapStatus = "Success!";
     } catch (err) {
       console.error(err);
-      this.swapStatus = "Something went wrong";
+      this.swapStatus =
+        err.message && err.message.length < 25
+          ? err.message
+          : "Something went wrong";
     }
     this.swapping = false;
 

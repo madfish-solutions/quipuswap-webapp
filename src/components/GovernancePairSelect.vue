@@ -49,7 +49,7 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop, Ref } from "vue-property-decorator";
+import { Vue, Component, Prop, Ref, Watch } from "vue-property-decorator";
 import { ITokenItem } from "@/api/getTokens";
 import { isAddressValid } from "@/taquito/tezos";
 import store from "@/store";
@@ -69,15 +69,11 @@ export default class GovernancePairSelect extends Vue {
   isSearchOpened: boolean = !Boolean(this.selectedToken);
   isLoading: boolean = false;
 
-  mounted() {
-    this.$watch(
-      (vm?) => [vm.selectedToken],
-      () => {
-        if (this.selectedToken) {
-          this.isSearchOpened = false;
-        }
-      }
-    );
+  @Watch("selectedToken")
+  onSelectedTokenChanged() {
+    if (this.selectedToken) {
+      this.isSearchOpened = false;
+    }
   }
 
   get formattedSelectedTokenSymbol() {

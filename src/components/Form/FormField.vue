@@ -1,7 +1,7 @@
 <template>
   <div class="-mx-3 xs:-mx-4 shadow-lg">
     <div :class="isSearchOpened ? 'field rounded-t-3px' : ' field rounded-3px relative'">
-      <div class="flex-1 flex flex-col justify-center">
+      <div class="py-6 flex-1 flex flex-col justify-start">
         <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">{{ label }}</div>
         <input
           class="w-full"
@@ -12,31 +12,34 @@
         <div v-if="!withSelect && isLoading" class="flex items-center" style="height: 30px">
           <Loader />
         </div>
+        <div class="flex-1" />
         <div class="label sm:text-sm font-light w-full">{{ subLabel }}</div>
       </div>
 
-      <div v-if="withSelect" class="append flex">
-        <button
-          @click="toggleSearch"
-          class="flex text-white border-accent border-2 items-center rounded-3px py-2 px-3 text-sm sm:text-base whitespace-no-wrap flex-shrink-0 focus:outline-none"
-        >
-          <template v-if="!isLoading">
-            <template v-if="localToken">
-              <img class="w-5 h-5 mr-2" :src="localToken.imgUrl" />
-              <span class="truncate">{{ formattedLocalTokenSymbol }}</span>
+      <div class="flex items-center">
+        <div v-if="withSelect" class="append flex">
+          <button
+            @click="toggleSearch"
+            class="flex text-white border-accent border-2 items-center rounded-3px py-2 px-3 text-sm sm:text-base whitespace-no-wrap flex-shrink-0 focus:outline-none"
+          >
+            <template v-if="!isLoading">
+              <template v-if="localToken">
+                <img class="w-5 h-5 mr-2" :src="localToken.imgUrl" />
+                <span class="truncate">{{ formattedLocalTokenSymbol }}</span>
+              </template>
+              <span v-else>Select a token</span>
             </template>
-            <span v-else>Select a token</span>
-          </template>
-          <template v-if="isLoading">
-            <Loader />
-          </template>
-          <img
-            class="w-3 ml-2"
-            style="margin-top: -2px"
-            src="@/assets/chevron-white.svg"
-            v-if="!onlyTezos"
-          />
-        </button>
+            <template v-if="isLoading">
+              <Loader />
+            </template>
+            <img
+              class="w-3 ml-2"
+              style="margin-top: -2px"
+              src="@/assets/chevron-white.svg"
+              v-if="!onlyTezos"
+            />
+          </button>
+        </div>
       </div>
     </div>
     <div class="field-search rounded-b-3px" v-if="isSearchOpened && !onlyTezos">
@@ -67,7 +70,7 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop, Ref } from "vue-property-decorator";
+import { Vue, Component, Prop, Ref, Watch } from "vue-property-decorator";
 import Loader from "@/components/Loader.vue";
 import { ITokenItem } from "@/api/getTokens";
 import { isAddressValid } from "@/taquito/tezos";
@@ -123,15 +126,11 @@ export default class FormField extends Vue {
     }
   }
 
-  mounted() {
-    this.$watch(
-      (vm?) => [vm.selectedToken],
-      () => {
-        if (this.selectedToken !== undefined) {
-          this.localToken = this.selectedToken;
-        }
-      }
-    );
+  @Watch("selectedToken")
+  onSelectedTokenChanged() {
+    if (this.selectedToken !== undefined) {
+      this.localToken = this.selectedToken;
+    }
   }
 
   toggleSearch() {
@@ -160,7 +159,7 @@ export default class FormField extends Vue {
 }
 
 .field {
-  @apply h-20 px-3 flex items-center;
+  @apply h-20 px-3 flex items-stretch;
   background: #2a3248;
 }
 
