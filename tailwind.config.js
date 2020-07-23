@@ -15,6 +15,7 @@ module.exports = {
 
       black: "#000",
       white: "#fff",
+      alphawhite: "rgba(255, 255, 255, 0.05)",
 
       text: "#EDEDEE",
       primary: "#5B61F6",

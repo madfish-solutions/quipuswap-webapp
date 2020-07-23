@@ -36,7 +36,7 @@
       </div>
     </div>
     <div class="field-search rounded-b-3px" v-if="isSearchOpened">
-      <div class="px-3 xs:px-6 py-3 text-sm shadow">
+      <div class="px-3 xs:px-6 py-3 text-sm border-b border-gray-800">
         <input
           v-model="searchValue"
           @keydown="searchValue = $event.target.value"
@@ -55,16 +55,17 @@
             <div class="flex-1">
               <div class="flex items-stretch">
                 <img class="w-8 h-8 xs:w-10 xs:h-10 mr-3 bg-white rounded-3px" :src="baker.logo" />
-                <div className="flex-1 flex flex-col">
+                <div class="flex-1 flex flex-col">
                   <div class="text-sm xs:text-base text-gray-300">{{ baker.name }}</div>
                   <div class="flex-1 flex items-center text-gray-400 text-xs">
-                    <span class="mr-1"
-                      ><span class="font-light">Fee:</span> {{ baker.fee * 100 }}%</span
-                    >
-                    <span
-                      ><span class="font-light">Space:</span>
-                      {{ Math.floor(baker.freeSpace) }} XTZ</span
-                    >
+                    <span class="mr-1">
+                      <span class="font-light">Fee:</span>
+                      {{ baker.fee * 100 }}%
+                    </span>
+                    <span>
+                      <span class="font-light">Space:</span>
+                      {{ Math.floor(baker.freeSpace) }} XTZ
+                    </span>
                   </div>
                 </div>
               </div>
@@ -79,7 +80,7 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop, Ref } from "vue-property-decorator";
+import { Vue, Component, Prop, Ref, Watch } from "vue-property-decorator";
 import { getAllKnownBakersMemoized, BBKnownBaker } from "@/baking-bad";
 import Loader from "@/components/Loader.vue";
 
@@ -105,32 +106,30 @@ export default class BakerFormField extends Vue {
     this.loadData();
   }
 
-  mounted() {
-    this.$watch(
-      (vm?) => [vm.selectedBaker],
-      () => {
-        if (this.selectedBaker) {
-          this.isSearchOpened = false;
-        }
-      }
-    );
+  @Watch("selectedBaker")
+  onSelectedBakerChange() {
+    if (this.selectedBaker) {
+      this.isSearchOpened = false;
+    }
+  }
 
-    this.$watch(
-      (vm?) => [vm.searchValue],
-      () => this.loadData()
-    );
+  @Watch("searchValue")
+  onSearchValueChange() {
+    this.loadData();
+  }
 
-    this.$watch(
-      (vm?) => [vm.value],
-      () => this.selectBakerByAddress()
-    );
+  @Watch("value")
+  onValueChange() {
+    this.selectBakerByAddress();
   }
 
   async loadData() {
     try {
       const list = await getAllKnownBakersMemoized();
-      this.allKnownBakers = list.filter(b =>
-        this.searchValue ? b.name.toLowerCase().includes(this.searchValue.toLowerCase()) : true
+      this.allKnownBakers = list.filter((b) =>
+        this.searchValue
+          ? b.name.toLowerCase().includes(this.searchValue.toLowerCase())
+          : true
       );
     } catch (err) {
       console.error(err);
@@ -153,7 +152,7 @@ export default class BakerFormField extends Vue {
 
   async selectBakerByAddress() {
     const list = await getAllKnownBakersMemoized();
-    const baker = list.find(b => b.address === this.value);
+    const baker = list.find((b) => b.address === this.value);
     if (baker) {
       this.selectBaker(baker);
     }
