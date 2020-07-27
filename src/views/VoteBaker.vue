@@ -99,7 +99,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import * as NP from "number-precision";
 import { ITokenItem } from "@/api/getTokens";
 import { getStorage, isAddressValid, useThanosWallet } from "@/taquito/tezos";
@@ -161,21 +161,21 @@ export default class VoteBaker extends Vue {
     this.loadData();
   }
 
-  mounted() {
-    this.$watch(
-      (vm?) => [vm.selectedToken, vm.account],
-      () => this.loadData()
-    );
+  @Watch("selectedToken")
+  onSelectedTokenChange() {
+    this.loadData();
+  }
 
-    this.$watch(
-      (vm?) => [vm.bakerAddress],
-      () => this.bakerAddressChanged()
-    );
+  @Watch("account")
+  onAccountChange() {
+    this.loadData();
+  }
 
-    this.$watch(
-      (vm?) => [vm.bakerAddress, vm.voter],
-      () => this.validateVote()
-    );
+  @Watch("bakerAddress")
+  onBakerAddressChange() {
+    if (this.selectedBaker && !isAddressValid(this.bakerAddress)) {
+      this.selectedBaker = null;
+    }
   }
 
   async loadData() {
@@ -219,12 +219,6 @@ export default class VoteBaker extends Vue {
     this.bakerAddress = baker.address;
   }
 
-  bakerAddressChanged() {
-    if (this.selectedBaker && !isAddressValid(this.bakerAddress)) {
-      this.selectedBaker = null;
-    }
-  }
-
   validateVote() {
     this.readyToVote =
       isAddressValid(this.bakerAddress) && isAddressValid(this.voter);
@@ -254,7 +248,7 @@ export default class VoteBaker extends Vue {
         : "Failed";
     } finally {
       this.voting = false;
-      await new Promise(r => setTimeout(r, 5000));
+      await new Promise((r) => setTimeout(r, 5000));
       this.voteStatus = "Vote";
     }
   }

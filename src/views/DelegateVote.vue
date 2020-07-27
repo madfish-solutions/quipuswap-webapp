@@ -43,7 +43,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import { ITokenItem } from "@/api/getTokens";
 import { getStorage, isAddressValid, useThanosWallet } from "@/taquito/tezos";
 import store, { getAccount } from "@/store";
@@ -91,16 +91,19 @@ export default class DelegateVote extends Vue {
     this.loadData();
   }
 
-  mounted() {
-    this.$watch(
-      (vm?) => [vm.selectedToken, vm.account],
-      () => this.loadData()
-    );
+  @Watch("selectedToken")
+  onSelectedTokenChange() {
+    this.loadData();
+  }
 
-    this.$watch(
-      (vm?) => [vm.deputy],
-      () => this.validateDeputy()
-    );
+  @Watch("account")
+  onAccountChange() {
+    this.loadData();
+  }
+
+  @Watch("deputy")
+  onDeputyChange() {
+    this.validateDeputy();
   }
 
   async loadData() {
@@ -154,7 +157,7 @@ export default class DelegateVote extends Vue {
       this.addStatus = "Failed";
     } finally {
       this.adding = false;
-      await new Promise(r => setTimeout(r, 5000));
+      await new Promise((r) => setTimeout(r, 5000));
       this.addStatus = "Add Deputy";
     }
   }
