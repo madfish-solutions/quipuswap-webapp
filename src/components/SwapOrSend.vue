@@ -459,9 +459,12 @@ export default class SwapOrSend extends Vue {
       this.refresh();
     } catch (err) {
       console.error(err);
+      const msg = err.message;
       this.swapStatus =
-        err.message && err.message.length < 25
-          ? err.message
+        msg && msg.length < 30
+          ? msg.startsWith("Dex/")
+            ? msg.replace("Dex/", "")
+            : msg
           : "Something went wrong";
     }
     this.swapping = false;

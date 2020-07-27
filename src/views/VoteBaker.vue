@@ -241,9 +241,12 @@ export default class VoteBaker extends Vue {
     } catch (err) {
       console.error(err);
       const msg = err.message;
-      this.voteStatus = msg.startsWith("Dex/")
-        ? msg.replace("Dex/", "Failed: ")
-        : "Failed";
+      this.voteStatus =
+        msg && msg.length < 30
+          ? msg.startsWith("Dex/")
+            ? msg.replace("Dex/", "")
+            : msg
+          : "Something went wrong";
     } finally {
       this.processing = false;
       await new Promise((r) => setTimeout(r, 5000));

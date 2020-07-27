@@ -178,7 +178,13 @@ export default class DelegateVote extends Vue {
       this.refresh();
     } catch (err) {
       console.error(err);
-      this.addStatus = "Failed";
+      const msg = err.message;
+      this.addStatus =
+        msg && msg.length < 30
+          ? msg.startsWith("Dex/")
+            ? msg.replace("Dex/", "")
+            : msg
+          : "Something went wrong";
     } finally {
       this.processing = false;
       await new Promise((r) => setTimeout(r, 5000));

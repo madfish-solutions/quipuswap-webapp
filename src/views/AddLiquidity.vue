@@ -368,9 +368,12 @@ export default class AddLiquidity extends Vue {
       this.refresh();
     } catch (err) {
       console.error(err);
+      const msg = err.message;
       this.addLiqStatus =
-        err.message && err.message.length < 25
-          ? err.message
+        msg && msg.length < 30
+          ? msg.startsWith("Dex/")
+            ? msg.replace("Dex/", "")
+            : msg
           : "Something went wrong";
     }
     this.processing = false;
