@@ -74,7 +74,7 @@
 import { Component, Vue, Watch } from "vue-property-decorator";
 import { useThanosWallet } from "@/taquito/tezos";
 import store, { getAccount } from "@/store";
-import { QSAsset, isAddressValid, getDexStorage } from "@/core";
+import { QSAsset, isAddressValid, getDexStorage, clearMem } from "@/core";
 import NavTabs from "@/components/NavTabs.vue";
 import NavGovernance from "@/components/NavGovernance.vue";
 import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
@@ -175,7 +175,7 @@ export default class DelegateVote extends Vue {
       await operation.confirmation();
 
       this.addStatus = "Success";
-      this.loadData();
+      this.refresh();
     } catch (err) {
       console.error(err);
       this.addStatus = "Failed";
@@ -184,6 +184,11 @@ export default class DelegateVote extends Vue {
       await new Promise((r) => setTimeout(r, 5000));
       this.addStatus = "Add Deputy";
     }
+  }
+
+  refresh() {
+    clearMem();
+    this.loadData();
   }
 }
 </script>

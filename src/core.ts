@@ -30,6 +30,11 @@ export async function getBalance(accountPkh: string, token: QSAsset) {
   }
 }
 
+export function clearMem() {
+  mem.clear(getStorage);
+  mem.clear(getContract);
+}
+
 export const getDexStorage = (contractAddress: string) =>
   getStorage(contractAddress).then(s => s.storage);
 

@@ -25,30 +25,33 @@
         <div class="field rounded-3px relative">
           <div class="py-6 flex-1 flex flex-col justify-start">
             <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">
-              Output <span class="text-sm">(estimated)</span>
+              Output
+              <span class="text-sm">(estimated)</span>
             </div>
 
             <div v-if="inTokens" class="flex flex-col fieldval">
               <div class="mb-1">
                 <span class="opacity-75 mr-1">+</span>
-                <span class="tracking-wide">{{
+                <span class="tracking-wide">
+                  {{
                   formatNum(inTokens.tezos, 6)
-                }}</span>
+                  }}
+                </span>
                 <span class="ml-1 text-sm opacity-90">XTZ</span>
               </div>
 
               <div class="mb-1">
                 <span class="opacity-75 mr-1">+</span>
-                <span class="tracking-wide">{{
+                <span class="tracking-wide">
+                  {{
                   formatNum(inTokens.token, 0)
-                }}</span>
+                  }}
+                </span>
                 <span class="ml-1 text-sm opacity-90">Token</span>
               </div>
             </div>
 
-            <div v-else>
-              -
-            </div>
+            <div v-else>-</div>
           </div>
         </div>
       </div>
@@ -81,9 +84,7 @@
       </FormInfo>
     </Form>
 
-    <div
-      class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal"
-    ></div>
+    <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal"></div>
     <div class="flex justify-center text-center">
       <SubmitBtn @click="removeLiquidity" :disabled="!valid">
         <template v-if="!processing">{{ remLiqStatus }}</template>
@@ -120,6 +121,7 @@ import {
   mutezToTz,
   estimatePrice,
   estimatePriceInverse,
+  clearMem,
 } from "@/core";
 import { TEZOS_TOKEN } from "@/defaults";
 import { useThanosWallet } from "@/taquito/tezos";
@@ -318,6 +320,7 @@ export default class RemoveLiquidity extends Vue {
       await operation.confirmation();
 
       this.remLiqStatus = "Success!";
+      this.refresh();
     } catch (err) {
       console.error(err);
       this.remLiqStatus =
@@ -327,8 +330,15 @@ export default class RemoveLiquidity extends Vue {
     }
     this.processing = false;
 
-    await new Promise(res => setTimeout(res, 5000));
+    await new Promise((res) => setTimeout(res, 5000));
     this.remLiqStatus = this.defaultRemLiqStatus;
+  }
+
+  refresh() {
+    clearMem();
+    this.loadMyShares();
+    this.loadPoolMetadata();
+    this.calcInTokens();
   }
 }
 </script>

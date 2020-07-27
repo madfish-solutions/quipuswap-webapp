@@ -104,7 +104,7 @@ import * as NP from "number-precision";
 import { useThanosWallet } from "@/taquito/tezos";
 import store, { getAccount } from "@/store";
 import { BBKnownBaker } from "@/baking-bad";
-import { QSAsset, getDexStorage, isAddressValid } from "@/core";
+import { QSAsset, getDexStorage, isAddressValid, clearMem } from "@/core";
 import NavTabs from "@/components/NavTabs.vue";
 import NavGovernance from "@/components/NavGovernance.vue";
 import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
@@ -237,6 +237,7 @@ export default class VoteBaker extends Vue {
       await operation.confirmation();
 
       this.voteStatus = "Success";
+      this.refresh();
     } catch (err) {
       console.error(err);
       const msg = err.message;
@@ -248,6 +249,11 @@ export default class VoteBaker extends Vue {
       await new Promise((r) => setTimeout(r, 5000));
       this.voteStatus = "Vote";
     }
+  }
+
+  refresh() {
+    clearMem();
+    this.loadData();
   }
 }
 </script>

@@ -98,6 +98,7 @@ import {
   mutezToTz,
   estimatePrice,
   estimatePriceInverse,
+  clearMem,
 } from "@/core";
 import { TEZOS_TOKEN } from "@/defaults";
 import { useThanosWallet } from "@/taquito/tezos";
@@ -364,6 +365,7 @@ export default class AddLiquidity extends Vue {
       await operation.confirmation();
 
       this.addLiqStatus = "Success!";
+      this.refresh();
     } catch (err) {
       console.error(err);
       this.addLiqStatus =
@@ -375,6 +377,14 @@ export default class AddLiquidity extends Vue {
 
     await new Promise((res) => setTimeout(res, 5000));
     this.addLiqStatus = this.defaultAddLiqStatus;
+  }
+
+  refresh() {
+    clearMem();
+    this.loadTezBalance();
+    this.loadTokenBalance();
+    this.loadPoolMetadata();
+    this.calcTokenAmount();
   }
 }
 </script>

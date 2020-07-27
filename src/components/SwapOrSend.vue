@@ -68,9 +68,11 @@
 
         <div class="flex justify-between mb-1">
           <span>Minimum received</span>
-          <span>{{
+          <span>
+            {{
             minimumReceived ? `${minimumReceived} ${outputToken.name}` : "-"
-          }}</span>
+            }}
+          </span>
         </div>
       </FormInfo>
     </Form>
@@ -108,6 +110,7 @@ import {
   estimateTokenToTezInverse,
   tzToMutez,
   mutezToTz,
+  clearMem,
 } from "@/core";
 import { TEZOS_TOKEN } from "@/defaults";
 import { useThanosWallet } from "@/taquito/tezos";
@@ -163,7 +166,7 @@ export default class SwapOrSend extends Vue {
 
     const price = new BigNumber(this.inputAmount)
       .div(this.outputAmount)
-      .toFormat(6);
+      .toFormat(this.inputToken.type === "token" ? 0 : 6);
     return `1 ${this.outputToken.name} = ${price} ${this.inputToken.name}`;
   }
 
@@ -183,7 +186,7 @@ export default class SwapOrSend extends Vue {
     const inAndOutValid =
       this.inputToken &&
       this.outputToken &&
-      [this.inputAmount, this.outputAmount].every(a => a && +a > 0);
+      [this.inputAmount, this.outputAmount].every((a) => a && +a > 0);
     return this.send
       ? inAndOutValid && isAddressValid(this.recipientAddress)
       : inAndOutValid;
@@ -453,6 +456,7 @@ export default class SwapOrSend extends Vue {
       }
 
       this.swapStatus = "Success!";
+      this.refresh();
     } catch (err) {
       console.error(err);
       this.swapStatus =
@@ -462,8 +466,14 @@ export default class SwapOrSend extends Vue {
     }
     this.swapping = false;
 
-    await new Promise(res => setTimeout(res, 5000));
+    await new Promise((res) => setTimeout(res, 5000));
     this.swapStatus = this.defaultSwapStatus;
+  }
+
+  refresh() {
+    clearMem();
+    this.loadInputBalance();
+    this.calcOutputAmount();
   }
 }
 </script>
