@@ -384,16 +384,6 @@ export default class SwapOrSend extends Vue {
           tezos.wallet.at(inTk.exchange),
         ]);
 
-        // const firstOp = await tokenContract.methods
-        //   .approve(inTk.exchange, inpAmn)
-        //   .send();
-        // await firstOp.confirmation();
-
-        // const secondOp = await dexContract.methods
-        //   .use(2, "tokenToTezPayment", inpAmn, tzToMutez(minOut), recipient)
-        //   .send();
-        // await secondOp.confirmation();
-
         const batch = tezos.wallet
           .batch([])
           .withTransfer(
