@@ -61,9 +61,7 @@
       </FormInfo>
     </Form>
 
-    <div
-      class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal"
-    ></div>
+    <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal"></div>
     <div class="flex justify-center text-center">
       <SubmitBtn @click="addLiquidity" :disabled="!valid">
         <template v-if="!processing">{{ addLiqStatus }}</template>
@@ -100,6 +98,7 @@ import {
   mutezToTz,
   estimatePrice,
   estimatePriceInverse,
+  clearMem,
 } from "@/core";
 import { TEZOS_TOKEN } from "@/defaults";
 import { useThanosWallet } from "@/taquito/tezos";
@@ -151,7 +150,7 @@ export default class AddLiquidity extends Vue {
     return (
       this.tezToken &&
       this.selectedToken &&
-      [this.tezAmount, this.tokenAmount].every(a => a && +a > 0)
+      [this.tezAmount, this.tokenAmount].every((a) => a && +a > 0)
     );
   }
 
@@ -301,8 +300,8 @@ export default class AddLiquidity extends Vue {
   }
 
   async addLiquidity() {
+    if (this.processing) return;
     this.processing = true;
-
     try {
       const tezos = await useThanosWallet();
       const me = await tezos.wallet.pkh();
@@ -366,17 +365,29 @@ export default class AddLiquidity extends Vue {
       await operation.confirmation();
 
       this.addLiqStatus = "Success!";
+      this.refresh();
     } catch (err) {
       console.error(err);
+      const msg = err.message;
       this.addLiqStatus =
-        err.message && err.message.length < 25
-          ? err.message
+        msg && msg.length < 30
+          ? msg.startsWith("Dex/")
+            ? msg.replace("Dex/", "")
+            : msg
           : "Something went wrong";
     }
     this.processing = false;
 
-    await new Promise(res => setTimeout(res, 5000));
+    await new Promise((res) => setTimeout(res, 5000));
     this.addLiqStatus = this.defaultAddLiqStatus;
+  }
+
+  refresh() {
+    clearMem();
+    this.loadTezBalance();
+    this.loadTokenBalance();
+    this.loadPoolMetadata();
+    this.calcTokenAmount();
   }
 }
 </script>

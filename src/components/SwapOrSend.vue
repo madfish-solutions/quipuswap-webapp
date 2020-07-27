@@ -68,9 +68,11 @@
 
         <div class="flex justify-between mb-1">
           <span>Minimum received</span>
-          <span>{{
+          <span>
+            {{
             minimumReceived ? `${minimumReceived} ${outputToken.name}` : "-"
-          }}</span>
+            }}
+          </span>
         </div>
       </FormInfo>
     </Form>
@@ -108,6 +110,7 @@ import {
   estimateTokenToTezInverse,
   tzToMutez,
   mutezToTz,
+  clearMem,
 } from "@/core";
 import { TEZOS_TOKEN } from "@/defaults";
 import { useThanosWallet } from "@/taquito/tezos";
@@ -163,7 +166,7 @@ export default class SwapOrSend extends Vue {
 
     const price = new BigNumber(this.inputAmount)
       .div(this.outputAmount)
-      .toFormat(6);
+      .toFormat(this.inputToken.type === "token" ? 0 : 6);
     return `1 ${this.outputToken.name} = ${price} ${this.inputToken.name}`;
   }
 
@@ -183,7 +186,7 @@ export default class SwapOrSend extends Vue {
     const inAndOutValid =
       this.inputToken &&
       this.outputToken &&
-      [this.inputAmount, this.outputAmount].every(a => a && +a > 0);
+      [this.inputAmount, this.outputAmount].every((a) => a && +a > 0);
     return this.send
       ? inAndOutValid && isAddressValid(this.recipientAddress)
       : inAndOutValid;
@@ -346,6 +349,7 @@ export default class SwapOrSend extends Vue {
   }
 
   async swap() {
+    if (this.swapping) return;
     this.swapping = true;
 
     try {
@@ -380,16 +384,6 @@ export default class SwapOrSend extends Vue {
           tezos.wallet.at(inTk.id),
           tezos.wallet.at(inTk.exchange),
         ]);
-
-        // const firstOp = await tokenContract.methods
-        //   .approve(inTk.exchange, inpAmn)
-        //   .send();
-        // await firstOp.confirmation();
-
-        // const secondOp = await dexContract.methods
-        //   .use(2, "tokenToTezPayment", inpAmn, tzToMutez(minOut), recipient)
-        //   .send();
-        // await secondOp.confirmation();
 
         const batch = tezos.wallet
           .batch([])
@@ -453,17 +447,27 @@ export default class SwapOrSend extends Vue {
       }
 
       this.swapStatus = "Success!";
+      this.refresh();
     } catch (err) {
       console.error(err);
+      const msg = err.message;
       this.swapStatus =
-        err.message && err.message.length < 25
-          ? err.message
+        msg && msg.length < 30
+          ? msg.startsWith("Dex/")
+            ? msg.replace("Dex/", "")
+            : msg
           : "Something went wrong";
     }
     this.swapping = false;
 
-    await new Promise(res => setTimeout(res, 5000));
+    await new Promise((res) => setTimeout(res, 5000));
     this.swapStatus = this.defaultSwapStatus;
+  }
+
+  refresh() {
+    clearMem();
+    this.loadInputBalance();
+    this.calcOutputAmount();
   }
 }
 </script>

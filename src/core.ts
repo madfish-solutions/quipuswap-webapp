@@ -14,6 +14,14 @@ export interface QSAsset {
 
 Tezos.setProvider({ rpc: "https://testnet-tezos.giganode.io" });
 
+let prevHash = "";
+Tezos.stream.subscribe("head").on("data", hash => {
+  if (prevHash && hash !== prevHash) {
+    mem.clear(getStorage);
+  }
+  prevHash = hash;
+});
+
 export function toValidAmount(amount?: BigNumber) {
   return amount && amount.isFinite() && amount.isGreaterThan(0)
     ? amount.toString()
@@ -28,6 +36,11 @@ export async function getBalance(accountPkh: string, token: QSAsset) {
     const val = await storage.ledger.get(accountPkh);
     return new BigNumber(val ? val.balance : 0);
   }
+}
+
+export function clearMem() {
+  mem.clear(getStorage);
+  mem.clear(getContract);
 }
 
 export const getDexStorage = (contractAddress: string) =>

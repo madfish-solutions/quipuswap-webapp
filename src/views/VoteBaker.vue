@@ -32,15 +32,15 @@
 
         <FormInfo>
           <div class="flex justify-between mb-1">
-            <span>Total votes</span>
+            <span class="whitespace-no-wrap mr-2">Total votes</span>
             <span>{{ totalVotes !== null ? totalVotes : "-" }}</span>
           </div>
           <div class="flex justify-between mb-1">
-            <span>Total shares</span>
+            <span class="whitespace-no-wrap mr-2">Total shares</span>
             <span>{{ totalShares !== null ? totalShares : "-" }}</span>
           </div>
           <div class="flex justify-between mb-1">
-            <span>Your shares</span>
+            <span class="whitespace-no-wrap mr-2">Your shares</span>
             <span>
               {{
               yourShares !== null
@@ -50,13 +50,13 @@
             </span>
           </div>
           <div class="flex justify-between">
-            <span>Your candidate</span>
-            <span>{{ yourCandidate }}</span>
+            <span class="whitespace-no-wrap mr-2">Your candidate</span>
+            <span class="truncate">{{ yourCandidate }}</span>
           </div>
         </FormInfo>
       </Form>
 
-      <Form class="mt-8">
+      <Form class="mt-8" :style="processing && 'pointer-events:none'">
         <FormInfo>
           <div class="flex items-center justify-center text-base font-semibold">Vote baker</div>
         </FormInfo>
@@ -87,9 +87,9 @@
       </Form>
 
       <div class="mt-8 flex justify-center align-center text-center">
-        <SubmitBtn :disabled="!readyToVote" @click="handleVote">
-          <template v-if="!voting">{{ voteStatus }}</template>
-          <template v-if="voting">
+        <SubmitBtn :disabled="!valid" @click="handleVote">
+          <template v-if="!processing">{{ voteStatus }}</template>
+          <template v-if="processing">
             <Loader size="large" />
           </template>
         </SubmitBtn>
@@ -99,13 +99,12 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import * as NP from "number-precision";
-import { ITokenItem } from "@/api/getTokens";
-import { getStorage, isAddressValid, useThanosWallet } from "@/taquito/tezos";
+import { useThanosWallet } from "@/taquito/tezos";
 import store, { getAccount } from "@/store";
-import bus from "@/store/bus";
 import { BBKnownBaker } from "@/baking-bad";
+import { QSAsset, getDexStorage, isAddressValid, clearMem } from "@/core";
 import NavTabs from "@/components/NavTabs.vue";
 import NavGovernance from "@/components/NavGovernance.vue";
 import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
@@ -142,7 +141,7 @@ export default class VoteBaker extends Vue {
   selectedBaker: BBKnownBaker | null = null;
 
   voter: string = "";
-  voting: boolean = false;
+  processing: boolean = false;
   voteStatus: string = "Vote";
   readyToVote: boolean = false;
 
@@ -150,32 +149,36 @@ export default class VoteBaker extends Vue {
     return getAccount();
   }
 
-  get selectedToken(): ITokenItem | null {
+  get selectedToken(): QSAsset | null {
     const tokenExchange = this.$route.params.token;
     return (
       store.state.tokens.find((t: any) => t.exchange === tokenExchange) || null
     );
   }
 
+  get valid() {
+    return isAddressValid(this.bakerAddress) && isAddressValid(this.voter);
+  }
+
   created() {
     this.loadData();
   }
 
-  mounted() {
-    this.$watch(
-      (vm?) => [vm.selectedToken, vm.account],
-      () => this.loadData()
-    );
+  @Watch("selectedToken")
+  onSelectedTokenChange() {
+    this.loadData();
+  }
 
-    this.$watch(
-      (vm?) => [vm.bakerAddress],
-      () => this.bakerAddressChanged()
-    );
+  @Watch("account")
+  onAccountChange() {
+    this.loadData();
+  }
 
-    this.$watch(
-      (vm?) => [vm.bakerAddress, vm.voter],
-      () => this.validateVote()
-    );
+  @Watch("bakerAddress")
+  onBakerAddressChange() {
+    if (this.selectedBaker && !isAddressValid(this.bakerAddress)) {
+      this.selectedBaker = null;
+    }
   }
 
   async loadData() {
@@ -183,7 +186,7 @@ export default class VoteBaker extends Vue {
 
     this.isLoading = true;
     try {
-      const storage = await getStorage(this.selectedToken.exchange);
+      const storage = await getDexStorage(this.selectedToken.exchange);
 
       this.currentCandidate = storage.currentDelegated || "-";
       this.nextCandidate = storage.delegated || "-";
@@ -210,7 +213,7 @@ export default class VoteBaker extends Vue {
     }
   }
 
-  selectToken(token: ITokenItem) {
+  selectToken(token: QSAsset) {
     this.$router.replace(`/governance/vote-baker/${token.exchange}`);
   }
 
@@ -219,23 +222,13 @@ export default class VoteBaker extends Vue {
     this.bakerAddress = baker.address;
   }
 
-  bakerAddressChanged() {
-    if (this.selectedBaker && !isAddressValid(this.bakerAddress)) {
-      this.selectedBaker = null;
-    }
-  }
-
-  validateVote() {
-    this.readyToVote =
-      isAddressValid(this.bakerAddress) && isAddressValid(this.voter);
-  }
-
   toPercentage(val: any) {
     return NP.round(val * 100, 2);
   }
 
   async handleVote() {
-    this.voting = true;
+    if (this.processing) return;
+    this.processing = true;
     try {
       const tezos = await useThanosWallet();
       const contract = await tezos.wallet.at(this.selectedToken!.exchange);
@@ -244,19 +237,27 @@ export default class VoteBaker extends Vue {
         .send();
       await operation.confirmation();
 
-      this.voteStatus = "Done!";
-      bus.$emit("refreshWallet");
+      this.voteStatus = "Success";
+      this.refresh();
     } catch (err) {
       console.error(err);
       const msg = err.message;
-      this.voteStatus = msg.startsWith("Dex/")
-        ? msg.replace("Dex/", "Failed: ")
-        : "Failed";
+      this.voteStatus =
+        msg && msg.length < 30
+          ? msg.startsWith("Dex/")
+            ? msg.replace("Dex/", "")
+            : msg
+          : "Something went wrong";
     } finally {
-      this.voting = false;
-      await new Promise(r => setTimeout(r, 5000));
+      this.processing = false;
+      await new Promise((r) => setTimeout(r, 5000));
       this.voteStatus = "Vote";
     }
+  }
+
+  refresh() {
+    clearMem();
+    this.loadData();
   }
 }
 </script>
