@@ -61,9 +61,7 @@
       </FormInfo>
     </Form>
 
-    <div
-      class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal"
-    ></div>
+    <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal"></div>
     <div class="flex justify-center text-center">
       <SubmitBtn @click="addLiquidity" :disabled="!valid">
         <template v-if="!processing">{{ addLiqStatus }}</template>
@@ -151,7 +149,7 @@ export default class AddLiquidity extends Vue {
     return (
       this.tezToken &&
       this.selectedToken &&
-      [this.tezAmount, this.tokenAmount].every(a => a && +a > 0)
+      [this.tezAmount, this.tokenAmount].every((a) => a && +a > 0)
     );
   }
 
@@ -375,7 +373,7 @@ export default class AddLiquidity extends Vue {
     }
     this.processing = false;
 
-    await new Promise(res => setTimeout(res, 5000));
+    await new Promise((res) => setTimeout(res, 5000));
     this.addLiqStatus = this.defaultAddLiqStatus;
   }
 }
