@@ -7,7 +7,7 @@
     <Form>
       <NavGovernance />
 
-      <div>Veta</div>
+      <div>Veto</div>
     </Form>
   </div>
 </template>
@@ -29,7 +29,7 @@ import GovernancePairSelect from "@/components/GovernancePairSelect.vue";
     GovernancePairSelect,
   },
 })
-export default class Veta extends Vue {
+export default class Veto extends Vue {
   get selectedToken(): ITokenItem | null {
     const tokenExchange = this.$route.params.token;
     return (
@@ -38,7 +38,7 @@ export default class Veta extends Vue {
   }
 
   selectToken(token: ITokenItem) {
-    this.$router.replace(`/governance/veta/${token.exchange}`);
+    this.$router.replace(`/governance/veto/${token.exchange}`);
   }
 }
 </script>

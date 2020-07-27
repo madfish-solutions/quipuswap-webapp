@@ -19,11 +19,11 @@
     </router-link>
 
     <router-link
-      :to="$route.params.token ? `/governance/veta/${$route.params.token}` : '/governance/veta'"
+      :to="$route.params.token ? `/governance/veto/${$route.params.token}` : '/governance/veto'"
       active-class="active"
       class="w-1/4 flex flex-col justify-around text-center leading-tight"
     >
-      <span class="text-base xs:text-xl">Veta</span>
+      <span class="text-base xs:text-xl">Veto</span>
     </router-link>
 
     <router-link
