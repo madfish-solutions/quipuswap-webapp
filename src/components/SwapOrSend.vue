@@ -349,6 +349,7 @@ export default class SwapOrSend extends Vue {
   }
 
   async swap() {
+    if (this.swapping) return;
     this.swapping = true;
 
     try {

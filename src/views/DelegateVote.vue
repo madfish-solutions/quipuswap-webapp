@@ -165,6 +165,7 @@ export default class DelegateVote extends Vue {
   }
 
   async allow(address: string, allow: boolean) {
+    if (this.processing) return;
     this.processing = true;
     try {
       const tezos = await useThanosWallet();

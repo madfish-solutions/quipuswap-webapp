@@ -227,6 +227,7 @@ export default class VoteBaker extends Vue {
   }
 
   async handleVote() {
+    if (this.processing) return;
     this.processing = true;
     try {
       const tezos = await useThanosWallet();

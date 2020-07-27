@@ -102,6 +102,7 @@ export default class Rewards extends Vue {
   }
 
   async handleWithdraw() {
+    if (this.processing) return;
     this.processing = true;
     try {
       const tezos = await useThanosWallet();

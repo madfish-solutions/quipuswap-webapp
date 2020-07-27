@@ -288,8 +288,8 @@ export default class RemoveLiquidity extends Vue {
   }
 
   async removeLiquidity() {
+    if (this.processing) return;
     this.processing = true;
-
     try {
       const tezos = await useThanosWallet();
       const me = await tezos.wallet.pkh();

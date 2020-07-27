@@ -300,8 +300,8 @@ export default class AddLiquidity extends Vue {
   }
 
   async addLiquidity() {
+    if (this.processing) return;
     this.processing = true;
-
     try {
       const tezos = await useThanosWallet();
       const me = await tezos.wallet.pkh();
