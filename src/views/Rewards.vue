@@ -18,7 +18,14 @@
         />
 
         <FormInfo>
-          <p>It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English.</p>
+          <div v-if="dataLoading" class="p-4 flex items-center justify-center">
+            <Loader size="large" />
+          </div>
+          <p v-else class="py-4 text-xl">
+            Your Rewards:
+            <span class="text-accent mr-1">{{ rewards }}</span>
+            <span class="text-sm opacity-90">XTZ</span>
+          </p>
         </FormInfo>
       </Form>
 
@@ -38,7 +45,13 @@
 import { Component, Vue, Watch } from "vue-property-decorator";
 import { useThanosWallet } from "@/taquito/tezos";
 import store, { getAccount } from "@/store";
-import { QSAsset, isAddressValid, getDexStorage, clearMem } from "@/core";
+import {
+  QSAsset,
+  isAddressValid,
+  getDexStorage,
+  clearMem,
+  mutezToTz,
+} from "@/core";
 import NavTabs from "@/components/NavTabs.vue";
 import NavGovernance from "@/components/NavGovernance.vue";
 import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
@@ -60,6 +73,9 @@ import GovernancePairSelect from "@/components/GovernancePairSelect.vue";
   },
 })
 export default class Rewards extends Vue {
+  dataLoading = false;
+  rewards = "0";
+
   recipientAddress: string = this.account.pkh;
 
   processing: boolean = false;
@@ -95,7 +111,24 @@ export default class Rewards extends Vue {
     this.loadData();
   }
 
-  async loadData() {}
+  async loadData() {
+    this.rewards = "0";
+
+    if (!this.selectedToken || !this.account.pkh) return;
+
+    this.dataLoading = true;
+    try {
+      const storage = await getDexStorage(this.selectedToken.exchange);
+      const myCl = await storage.circleLoyalty.get(this.account.pkh);
+      if (myCl) {
+        this.rewards = mutezToTz(myCl.reward).toFormat(6);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      this.dataLoading = false;
+    }
+  }
 
   selectToken(token: QSAsset) {
     this.$router.replace(`/governance/rewards/${token.exchange}`);
