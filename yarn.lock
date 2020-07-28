@@ -8450,6 +8450,11 @@ svgo@^1.0.0:
     unquote "~1.1.1"
     util.promisify "~1.0.0"
 
+sweetalert2@^8.18.6:
+  version "8.19.0"
+  resolved "https://registry.yarnpkg.com/sweetalert2/-/sweetalert2-8.19.0.tgz#692269bc8ddc5760e2b5070da2cf5e9e278bac0b"
+  integrity sha512-nFL++N3bitkEkd487Tv4i5ZxusmnoAAXHjtk7lp603Opxb8wlvVnz3hqa7qiIw6QFL04JC810E6qVQNf8s0vYQ==
+
 table@^5.2.3:
   version "5.4.6"
   resolved "https://registry.yarnpkg.com/table/-/table-5.4.6.tgz#1292d19500ce3f86053b05f0e8e7e4a3bb21079e"
@@ -9065,6 +9070,13 @@ vue-router@^3.1.5:
   version "3.1.5"
   resolved "https://registry.yarnpkg.com/vue-router/-/vue-router-3.1.5.tgz#ff29b8a1e1306c526b52d4dc0532109f16c41231"
   integrity sha512-BszkPvhl7I9h334GjckCh7sVFyjTPMMJFJ4Bsrem/Ik+B/9gt5tgrk8k4gGLO4ZpdvciVdg7O41gW4DisQWurg==
+
+vue-simple-alert@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/vue-simple-alert/-/vue-simple-alert-1.1.1.tgz#45662fcec411c0e3b1e08a0918c64242e2cc19e3"
+  integrity sha512-iyQorOyO9Ar+bgvvyshQtkgvXTocR3hu0D1PD6R9mEJ1M3JWvjFg5UoL5rIqmqhkfMg6lzwMW9Bu6iwHUdcqig==
+  dependencies:
+    sweetalert2 "^8.18.6"
 
 vue-style-loader@^4.1.0, vue-style-loader@^4.1.2:
   version "4.1.2"
