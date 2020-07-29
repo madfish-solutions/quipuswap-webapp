@@ -170,7 +170,8 @@ export default class BakerFormField extends Vue {
 }
 
 .field {
-  @apply h-20 px-3 flex items-center;
+  @apply px-3 flex items-center;
+  min-height: 5rem;
   background: #2a3248;
 }
 

@@ -159,7 +159,8 @@ export default class FormField extends Vue {
 }
 
 .field {
-  @apply h-20 px-3 flex items-stretch;
+  @apply px-3 flex items-stretch;
+  min-height: 5rem;
   background: #2a3248;
 }
 
