@@ -43,8 +43,7 @@
 
 <script lang="ts">
 import { Component, Vue, Watch } from "vue-property-decorator";
-import { useThanosWallet } from "@/taquito/tezos";
-import store, { getAccount } from "@/store";
+import store, { getAccount, useThanosWallet } from "@/store";
 import {
   QSAsset,
   isAddressValid,

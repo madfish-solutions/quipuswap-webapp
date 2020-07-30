@@ -1,63 +1,5 @@
-import { Tezos } from "@taquito/taquito";
-import { validateAddress, ValidationResult } from "@taquito/utils";
 import BigNumber from "bignumber.js";
-import mem from "mem";
-
-export interface QSAsset {
-  id: string;
-  symbol: string;
-  name: string;
-  imgUrl: string;
-  type?: string;
-  exchange: string;
-}
-
-Tezos.setProvider({ rpc: "https://testnet-tezos.giganode.io" });
-
-let prevHash = "";
-Tezos.stream.subscribe("head").on("data", hash => {
-  if (prevHash && hash !== prevHash) {
-    mem.clear(getStorage);
-  }
-  prevHash = hash;
-});
-
-export function toValidAmount(amount?: BigNumber) {
-  return amount && amount.isFinite() && amount.isGreaterThan(0)
-    ? amount.toString()
-    : "";
-}
-
-export async function getBalance(accountPkh: string, token: QSAsset) {
-  if (token.type === "xtz") {
-    return mutezToTz(await Tezos.tz.getBalance(accountPkh));
-  } else {
-    const storage = await getStoragePure(token.id);
-    const val = await storage.ledger.get(accountPkh);
-    return new BigNumber(val ? val.balance : 0);
-  }
-}
-
-export function clearMem() {
-  mem.clear(getStorage);
-  mem.clear(getContract);
-}
-
-export const getDexStorage = (contractAddress: string) =>
-  getStorage(contractAddress).then(s => s.storage);
-
-export const getStorage = mem(getStoragePure, { maxAge: 30000 });
-
-export async function getStoragePure(contractAddress: string) {
-  const contract = await getContract(contractAddress);
-  return contract.storage<any>();
-}
-
-export const getContract = mem(getContractPure);
-
-export function getContractPure(address: string) {
-  return Tezos.contract.at(address);
-}
+import { tzToMutez, mutezToTz } from "./helpers";
 
 export function estimateTezToToken(tezAmount: any, dexStorage: any) {
   if (!tezAmount) return new BigNumber(0);
@@ -146,16 +88,4 @@ export function estimatePriceInverse(tokenAmount: any, dexStorage: any) {
     .div(tokenPerShare)
     .integerValue(BigNumber.ROUND_DOWN);
   return mutezToTz(shares.times(tezPerShare));
-}
-
-export function tzToMutez(tz: any) {
-  return Tezos.format("tz", "mutez", tz) as BigNumber;
-}
-
-export function mutezToTz(mutez: any) {
-  return Tezos.format("mutez", "tz", mutez) as BigNumber;
-}
-
-export function isAddressValid(address: any) {
-  return validateAddress(address) === ValidationResult.VALID;
 }

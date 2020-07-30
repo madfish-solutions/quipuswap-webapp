@@ -32,21 +32,13 @@
             <div v-if="inTokens" class="flex flex-col fieldval">
               <div class="mb-1">
                 <span class="opacity-75 mr-1">+</span>
-                <span class="tracking-wide">
-                  {{
-                  formatNum(inTokens.tezos, 6)
-                  }}
-                </span>
+                <span class="tracking-wide">{{ formatNum(inTokens.tezos, 6) }}</span>
                 <span class="ml-1 text-sm opacity-90">XTZ</span>
               </div>
 
               <div class="mb-1">
                 <span class="opacity-75 mr-1">+</span>
-                <span class="tracking-wide">
-                  {{
-                  formatNum(inTokens.token, 0)
-                  }}
-                </span>
+                <span class="tracking-wide">{{ formatNum(inTokens.token, 0) }}</span>
                 <span class="ml-1 text-sm opacity-90">Token</span>
               </div>
             </div>
@@ -105,7 +97,7 @@ import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
 import SubmitBtn from "@/components/SubmitBtn.vue";
 
 import BigNumber from "bignumber.js";
-import { getAccount } from "@/store";
+import { getAccount, useThanosWallet } from "@/store";
 import {
   QSAsset,
   isAddressValid,
@@ -123,8 +115,7 @@ import {
   estimatePriceInverse,
   clearMem,
 } from "@/core";
-import { TEZOS_TOKEN } from "@/defaults";
-import { useThanosWallet } from "@/taquito/tezos";
+import { TEZOS_TOKEN } from "@/core/defaults";
 
 type InTokens = {
   tezos: string;

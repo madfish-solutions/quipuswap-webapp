@@ -1,15 +1,25 @@
 <template>
   <div class="-mx-3 xs:-mx-4 shadow-lg">
-    <div :class="isSearchOpened ? 'field rounded-t-3px' : ' field rounded-3px relative'">
+    <div
+      :class="
+        isSearchOpened ? 'field rounded-t-3px' : ' field rounded-3px relative'
+      "
+    >
       <div class="py-6 flex-1 flex flex-col justify-start">
-        <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">{{ label }}</div>
+        <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">
+          {{ label }}
+        </div>
         <input
           class="w-full"
           :class="!withSelect && isLoading && 'hidden'"
           v-bind="$attrs"
           v-on="$listeners"
         />
-        <div v-if="!withSelect && isLoading" class="flex items-center" style="height: 30px">
+        <div
+          v-if="!withSelect && isLoading"
+          class="flex items-center"
+          style="height: 30px"
+        >
           <Loader />
         </div>
         <div class="flex-1" />
@@ -71,12 +81,12 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Ref, Watch } from "vue-property-decorator";
-import Loader from "@/components/Loader.vue";
-import { ITokenItem } from "@/api/getTokens";
-import { isAddressValid } from "@/taquito/tezos";
-import store from "@/store";
 import TokenItem from "@/components/Form/TokenItem.vue";
-import { TEZOS_TOKEN } from "@/defaults";
+import Loader from "@/components/Loader.vue";
+
+import store from "@/store";
+import { QSAsset, isAddressValid } from "@/core";
+import { TEZOS_TOKEN } from "@/core/defaults";
 
 @Component({
   components: { TokenItem, Loader },
@@ -89,14 +99,14 @@ export default class FormField extends Vue {
   @Prop({ default: true }) showSearch?: boolean;
   @Prop({ default: true }) withTezos?: boolean;
   @Prop({ default: false }) onlyTezos?: boolean;
-  @Prop({ default: null }) selectedToken?: ITokenItem | null;
+  @Prop({ default: null }) selectedToken?: QSAsset | null;
   @Ref("searchInput") readonly searchInput!: HTMLInputElement;
 
   value: string = "0.0";
 
   searchValue: string = "";
   isSearchOpened: boolean = false;
-  localToken: ITokenItem | null = null;
+  localToken: QSAsset | null = null;
 
   get formattedLocalTokenSymbol() {
     if (!this.localToken) return "";
@@ -107,11 +117,11 @@ export default class FormField extends Vue {
     } else return term;
   }
 
-  get filteredTokens(): ITokenItem[] {
+  get filteredTokens(): QSAsset[] {
     return [
       ...(this.withTezos ? [TEZOS_TOKEN] : []),
       ...store.state.tokens.filter(
-        (t: ITokenItem) =>
+        (t: QSAsset) =>
           t.name.toLowerCase().includes(this.searchValue.toLowerCase()) ||
           t.symbol.toLowerCase().includes(this.searchValue.toLowerCase())
       ),
@@ -140,7 +150,7 @@ export default class FormField extends Vue {
     );
   }
 
-  selectToken(token: ITokenItem) {
+  selectToken(token: QSAsset) {
     this.searchValue = "";
     this.localToken = token;
     this.isSearchOpened = false;

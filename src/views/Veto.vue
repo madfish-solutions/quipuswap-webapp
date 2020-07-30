@@ -2,10 +2,7 @@
   <div class="max-w-xl mx-auto">
     <NavTabs class="mb-6" />
 
-    <GovernancePairSelect
-      :selectedToken="selectedToken"
-      v-on:token-selected="selectToken"
-    />
+    <GovernancePairSelect :selectedToken="selectedToken" v-on:token-selected="selectToken" />
 
     <template v-if="selectedToken">
       <Form>
@@ -40,13 +37,11 @@
 
       <Form class="mt-8" :style="processing && 'pointer-events:none'">
         <FormInfo class="my-2">
-          <p class="text-center text-base font-semibold">
-            Do you want to veto Current Candidate?
-          </p>
+          <p class="text-center text-base font-semibold">Do you want to veto Current Candidate?</p>
 
           <p class="mt-2 text-center">
-            Be sure in your choise, you cannot cancel veto.<br />
-            If successful, the candidate will be banned for 3 months.
+            Be sure in your choise, you cannot cancel veto.
+            <br />If successful, the candidate will be banned for 3 months.
           </p>
         </FormInfo>
 
@@ -69,9 +64,11 @@
           <template v-if="dataLoading || processing">
             <Loader size="large" />
           </template>
-          <template v-else>{{
+          <template v-else>
+            {{
             alreadyBanned ? "Already banned" : banStatus
-          }}</template>
+            }}
+          </template>
         </SubmitBtn>
       </div>
     </template>
@@ -81,8 +78,7 @@
 <script lang="ts">
 import { Component, Vue, Watch } from "vue-property-decorator";
 import * as NP from "number-precision";
-import { useThanosWallet } from "@/taquito/tezos";
-import store, { getAccount } from "@/store";
+import store, { getAccount, useThanosWallet } from "@/store";
 import { BBKnownBaker } from "@/baking-bad";
 import { QSAsset, getDexStorage, isAddressValid, clearMem } from "@/core";
 import NavTabs from "@/components/NavTabs.vue";
@@ -228,7 +224,7 @@ export default class Veto extends Vue {
           : "Something went wrong";
     } finally {
       this.processing = false;
-      await new Promise(r => setTimeout(r, 5000));
+      await new Promise((r) => setTimeout(r, 5000));
       this.banStatus = "Ban";
     }
   }

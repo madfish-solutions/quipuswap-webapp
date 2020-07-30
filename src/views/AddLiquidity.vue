@@ -82,7 +82,7 @@ import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
 import SubmitBtn from "@/components/SubmitBtn.vue";
 
 import BigNumber from "bignumber.js";
-import { getAccount } from "@/store";
+import { getAccount, useThanosWallet } from "@/store";
 import {
   QSAsset,
   isAddressValid,
@@ -100,8 +100,7 @@ import {
   estimatePriceInverse,
   clearMem,
 } from "@/core";
-import { TEZOS_TOKEN } from "@/defaults";
-import { useThanosWallet } from "@/taquito/tezos";
+import { TEZOS_TOKEN } from "@/core/defaults";
 
 type PoolMeta = {
   tezFull: string;
