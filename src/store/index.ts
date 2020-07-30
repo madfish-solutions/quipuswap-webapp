@@ -1,67 +1,73 @@
 import Vue from "vue";
 import Vuex from "vuex";
-import { getStorage } from "@/taquito/contracts/factory";
+import { ThanosWallet } from "@thanos-wallet/dapp";
+import { QSAsset, getTokens, getNetwork } from "@/core";
 
 Vue.use(Vuex);
 
-const store = new Vuex.Store({
+interface StoreState {
+  tokensLoading: boolean;
+  tokens: QSAsset[];
+  account: { pkh: string };
+}
+
+const store = new Vuex.Store<StoreState>({
   state: {
+    tokensLoading: false,
     tokens: [],
     account: getAccountInitial(),
-    tokensStorage: {} as any,
   },
   mutations: {
+    tokensLoading(state, tokensLoading) {
+      state.tokensLoading = tokensLoading;
+    },
     tokens(state, tokens) {
       state.tokens = tokens;
-    },
-    tokensStorage(state, storage) {
-      state.tokensStorage = { ...state.tokensStorage, [storage.key]: storage.value };
     },
     account(state, account) {
       state.account = account;
     },
   },
-  actions: {
-    async tokens({ commit, state }) {
-      const storage = await getStorage().catch(e => console.error(e));
-      const tokenList = await Promise.all(
-        storage.tokenList.map(async (token: any) => ({
-          id: token,
-          name: "Token",
-          type: "token",
-          symbol: token,
-          exchange: await storage.tokenToExchange.get(token),
-          imgUrl:
-            "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xB6eD7644C69416d67B522e20bC294A9a9B405B31/logo.png",
-        }))
-      );
-      commit("tokens", tokenList);
-    },
-  },
-  modules: {},
 });
 
 export default store;
 
-export function setAccount(account: object) {
-  localStorage.setItem("account", JSON.stringify(account));
-  store.commit("account", account);
+(async () => {
+  try {
+    store.commit("tokensLoading", true);
+    store.commit("tokens", await getTokens());
+    store.commit("tokensLoading", false);
+  } catch (err) {
+    console.error(err);
+  }
+})();
+
+export async function useThanosWallet(opts = { forcePermission: false }) {
+  const available = await ThanosWallet.isAvailable();
+  if (!available) {
+    throw new Error("Thanos Wallet not installed");
+  }
+
+  const wallet = new ThanosWallet("Quipuswap");
+  await wallet.connect(getNetwork().id, opts);
+  const tezos = wallet.toTezos();
+  const pkh = await tezos.wallet.pkh();
+  if (getAccount().pkh !== pkh) {
+    setAccount(pkh);
+  }
+  return tezos;
 }
 
 export function getAccount() {
   return store.state.account;
 }
 
+export function setAccount(pkh: string) {
+  localStorage.setItem("accpkh", pkh);
+  store.commit("account", { pkh });
+}
+
 function getAccountInitial() {
-  const account = localStorage.getItem("account");
-  return account ? JSON.parse(account) : { balance: 0, pkh: "" };
-}
-
-export function setNetwork(network: string) {
-  localStorage.setItem("network", network);
-}
-
-export function getNetwork() {
-  const network: string = localStorage.getItem("network") || "carthagenet";
-  return network;
+  const pkh = localStorage.getItem("accpkh");
+  return { pkh: pkh || "" };
 }
