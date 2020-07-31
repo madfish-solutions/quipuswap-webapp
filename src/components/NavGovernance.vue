@@ -1,16 +1,24 @@
 <template>
   <div class="flex items-stretch">
     <router-link
-      :to="$route.params.token ? `/governance/vote-baker/${$route.params.token}` : '/governance/vote-baker'"
+      :to="
+        $route.params.token
+          ? `/governance/vote-baker/${$route.params.token}`
+          : '/governance/vote-baker'
+      "
       active-class="active"
       class="w-1/4 flex flex-col justify-around text-center leading-tight"
     >
       <span class="text-base xs:text-xl">Vote</span>
-      <span class="text-xs">Baker</span>
+      <span class="text-xs">for Baker</span>
     </router-link>
 
     <router-link
-      :to="$route.params.token ? `/governance/delegate-vote/${$route.params.token}` : '/governance/delegate-vote'"
+      :to="
+        $route.params.token
+          ? `/governance/delegate-vote/${$route.params.token}`
+          : '/governance/delegate-vote'
+      "
       active-class="active"
       class="w-1/4 flex flex-col justify-around text-center leading-tight"
     >
@@ -19,7 +27,11 @@
     </router-link>
 
     <router-link
-      :to="$route.params.token ? `/governance/veto/${$route.params.token}` : '/governance/veto'"
+      :to="
+        $route.params.token
+          ? `/governance/veto/${$route.params.token}`
+          : '/governance/veto'
+      "
       active-class="active"
       class="w-1/4 flex flex-col justify-around text-center leading-tight"
     >
@@ -27,7 +39,11 @@
     </router-link>
 
     <router-link
-      :to="$route.params.token ? `/governance/rewards/${$route.params.token}` : '/governance/rewards'"
+      :to="
+        $route.params.token
+          ? `/governance/rewards/${$route.params.token}`
+          : '/governance/rewards'
+      "
       active-class="active"
       class="w-1/4 flex flex-col justify-around text-center leading-tight"
     >

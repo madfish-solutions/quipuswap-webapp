@@ -37,11 +37,11 @@
 
       <Form class="mt-8" :style="processing && 'pointer-events:none'">
         <FormInfo class="my-2">
-          <p class="text-center text-base font-semibold">Do you want to veto Current Candidate?</p>
+          <p class="text-center text-base font-semibold">Do you want to veto on current candidate?</p>
 
           <p class="mt-2 text-center">
-            Be sure in your choise, you cannot cancel veto.
-            <br />If successful, the candidate will be banned for 3 months.
+            Ensure that your choice is correct as long as veto cannot be canceled.
+            <br />If veto is successful, the candidate will be banned for 3 months.
           </p>
         </FormInfo>
 

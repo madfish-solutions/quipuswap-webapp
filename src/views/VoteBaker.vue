@@ -62,7 +62,7 @@
       <Form class="mt-8" :style="processing && 'pointer-events:none'">
         <FormInfo>
           <div class="flex items-center justify-center text-base font-semibold">
-            Vote baker
+            Vote for baker
           </div>
         </FormInfo>
 
