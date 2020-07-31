@@ -61,7 +61,9 @@
       </FormInfo>
     </Form>
 
-    <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal"></div>
+    <div
+      class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal"
+    ></div>
     <div class="flex justify-center text-center">
       <SubmitBtn @click="addLiquidity" :disabled="!valid">
         <template v-if="!processing">{{ addLiqStatus }}</template>
@@ -90,14 +92,12 @@ import {
   getBalance,
   getDexStorage,
   getContract,
-  estimateTezToToken,
-  estimateTezToTokenInverse,
-  estimateTokenToTez,
-  estimateTokenToTezInverse,
+  estimateShares,
+  estimateSharesInverse,
+  estimateInTokens,
+  estimateInTezos,
   tzToMutez,
   mutezToTz,
-  estimatePrice,
-  estimatePriceInverse,
   clearMem,
 } from "@/core";
 import { TEZOS_TOKEN } from "@/core/defaults";
@@ -149,7 +149,7 @@ export default class AddLiquidity extends Vue {
     return (
       this.tezToken &&
       this.selectedToken &&
-      [this.tezAmount, this.tokenAmount].every((a) => a && +a > 0)
+      [this.tezAmount, this.tokenAmount].every(a => a && +a > 0)
     );
   }
 
@@ -281,20 +281,20 @@ export default class AddLiquidity extends Vue {
   async calcTokenAmount() {
     if (!this.selectedToken) return;
 
-    const amount = estimatePrice(
-      this.tezAmount,
-      await getDexStorage(this.selectedToken.exchange)
-    );
+    const dexStorage = await getDexStorage(this.selectedToken.exchange);
+    const shares = estimateShares(this.tezAmount, dexStorage);
+    const amount = estimateInTokens(shares, dexStorage);
+
     this.tokenAmount = toValidAmount(amount);
   }
 
   async calcTezAmount() {
     if (!this.selectedToken) return;
 
-    const amount = estimatePriceInverse(
-      this.tokenAmount,
-      await getDexStorage(this.selectedToken.exchange)
-    );
+    const dexStorage = await getDexStorage(this.selectedToken.exchange);
+    const shares = estimateSharesInverse(this.tokenAmount, dexStorage);
+    const amount = estimateInTezos(shares, dexStorage);
+
     this.tezAmount = toValidAmount(amount);
   }
 
@@ -307,29 +307,20 @@ export default class AddLiquidity extends Vue {
 
       const tezTk = this.tezToken!;
       const selTk = this.selectedToken!;
-      const tkAmn = +this.tokenAmount!;
+      const tezAmount = new BigNumber(this.tezAmount);
 
       const dexStorage = await getDexStorage(selTk.exchange);
-      const tokenPerShare = new BigNumber(dexStorage.tokenPool)
-        .div(dexStorage.totalShares)
-        .integerValue(BigNumber.ROUND_DOWN);
-      const tezPerShare = new BigNumber(dexStorage.tezPool)
-        .div(dexStorage.totalShares)
-        .integerValue(BigNumber.ROUND_DOWN);
-
-      const shares = new BigNumber(tkAmn)
-        .div(tokenPerShare)
-        .integerValue(BigNumber.ROUND_DOWN);
-      const mutezAmount = shares.times(tezPerShare);
+      const shares = estimateShares(tezAmount, dexStorage);
+      const tokenAmount = estimateInTokens(shares, dexStorage);
 
       const toCheck = [
         {
           token: selTk,
-          amount: tkAmn,
+          amount: tokenAmount,
         },
         {
           token: tezTk,
-          amount: mutezToTz(mutezAmount),
+          amount: tezAmount,
         },
       ];
       for (const { token, amount } of toCheck) {
@@ -351,13 +342,13 @@ export default class AddLiquidity extends Vue {
         .batch([])
         .withTransfer(
           tokenContract.methods
-            .approve(selTk.exchange, tkAmn)
+            .approve(selTk.exchange, tokenAmount.toNumber())
             .toTransferParams()
         )
         .withTransfer(
           dexContract.methods
             .use(4, "investLiquidity", shares.toNumber())
-            .toTransferParams({ amount: mutezToTz(mutezAmount).toNumber() })
+            .toTransferParams({ amount: tezAmount.toNumber() })
         );
 
       const operation = await batch.send();
@@ -377,7 +368,7 @@ export default class AddLiquidity extends Vue {
     }
     this.processing = false;
 
-    await new Promise((res) => setTimeout(res, 5000));
+    await new Promise(res => setTimeout(res, 5000));
     this.addLiqStatus = this.defaultAddLiqStatus;
   }
 
