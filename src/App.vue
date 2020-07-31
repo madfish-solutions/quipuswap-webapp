@@ -176,10 +176,15 @@ export default class App extends Vue {
 
 <style lang="scss">
 html {
-  min-height: 100vh;
   background-color: #151a28;
   background-image: linear-gradient(203.07deg, #151a28 21.27%, #242f4e 92.17%);
   background-repeat: no-repeat;
+}
+
+html,
+body,
+#app {
+  min-height: 100vh;
 }
 
 button {
@@ -187,7 +192,6 @@ button {
 }
 
 #app {
-  min-height: 100%;
   background: url("assets/lines.png") 100%;
   background-size: 100%, cover;
   background-position: 0 0, 50%;

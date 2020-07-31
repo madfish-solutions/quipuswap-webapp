@@ -2,7 +2,10 @@
   <div class="max-w-xl mx-auto">
     <NavTabs class="mb-6" />
 
-    <GovernancePairSelect :selectedToken="selectedToken" v-on:token-selected="selectToken" />
+    <GovernancePairSelect
+      :selectedToken="selectedToken"
+      v-on:token-selected="selectToken"
+    />
 
     <template v-if="selectedToken">
       <Form :style="processing && 'pointer-events:none'">
@@ -19,11 +22,8 @@
 
         <FormInfo>
           <p>
-            It is a long established fact that a reader will be distracted by
-            the readable content of a page when looking at its layout. The point
-            of using Lorem Ipsum is that it has a more-or-less normal
-            distribution of letters, as opposed to using 'Content here, content
-            here', making it look like readable English.
+            Every user is able to delegate their voting power to any address.<br />
+            It’s fully optional feature.
           </p>
         </FormInfo>
       </Form>
@@ -40,9 +40,9 @@
       <Form class="mt-8">
         <h1 class="text-xl text-center p-4 pb-2">Already trusted deputies</h1>
 
-        <p
-          class="px-4 text-sm text-center opacity-90"
-        >Click on left button near deputy you want to remove</p>
+        <p class="px-4 text-sm text-center opacity-90">
+          Click on left button near deputy you want to remove
+        </p>
 
         <div class="p-4 pb-8">
           <div v-if="dataLoading" class="p-4 flex items-center justify-center">
@@ -58,9 +58,7 @@
                   @click="() => handleRemove(depAddress)"
                 />
                 <span class="text-lg font-medium truncate">
-                  {{
-                  depAddress
-                  }}
+                  {{ depAddress }}
                 </span>
               </div>
 
@@ -197,7 +195,7 @@ export default class DelegateVote extends Vue {
           : "Something went wrong";
     } finally {
       this.processing = false;
-      await new Promise((r) => setTimeout(r, 5000));
+      await new Promise(r => setTimeout(r, 5000));
       this.addStatus = "Add Deputy";
     }
   }
