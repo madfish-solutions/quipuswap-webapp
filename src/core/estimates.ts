@@ -60,32 +60,77 @@ export function estimateTokenToTezInverse(tezAmount: any, dexStorage: any) {
   return fee.times(dexStorage.feeRate);
 }
 
+export function estimateShares(tezAmount: any, dexStorage: any) {
+  if (!tezAmount) return new BigNumber(0);
+
+  return tzToMutez(tezAmount)
+    .integerValue(BigNumber.ROUND_DOWN)
+    .times(dexStorage.totalShares)
+    .div(dexStorage.tezPool)
+    .integerValue(BigNumber.ROUND_DOWN);
+}
+
+export function estimateSharesInverse(tokenAmount: any, dexStorage: any) {
+  if (!tokenAmount) return new BigNumber(0);
+
+  return new BigNumber(tokenAmount)
+    .integerValue(BigNumber.ROUND_DOWN)
+    .times(dexStorage.totalShares)
+    .div(dexStorage.tokenPool)
+    .integerValue(BigNumber.ROUND_DOWN);
+}
+
+export function estimateInTezos(shares: any, dexStorage: any) {
+  if (!shares) return new BigNumber(0);
+
+  return mutezToTz(
+    new BigNumber(shares)
+      .times(dexStorage.tezPool)
+      .div(dexStorage.totalShares)
+      .integerValue(BigNumber.ROUND_DOWN)
+  );
+}
+
+export function estimateInTokens(shares: any, dexStorage: any) {
+  if (!shares) return new BigNumber(0);
+
+  return new BigNumber(shares)
+    .integerValue(BigNumber.ROUND_DOWN)
+    .times(dexStorage.tokenPool)
+    .div(dexStorage.totalShares)
+    .integerValue(BigNumber.ROUND_DOWN);
+}
+
 export function estimatePrice(tezAmount: any, dexStorage: any) {
   if (!tezAmount) return new BigNumber(0);
 
-  const tezPerShare = new BigNumber(dexStorage.tezPool)
-    .div(dexStorage.totalShares)
-    .integerValue(BigNumber.ROUND_DOWN);
-  const tokenPerShare = new BigNumber(dexStorage.tokenPool)
-    .div(dexStorage.totalShares)
-    .integerValue(BigNumber.ROUND_DOWN);
-  const shares = tzToMutez(tezAmount)
-    .div(tezPerShare)
-    .integerValue(BigNumber.ROUND_DOWN);
-  return shares.times(tokenPerShare);
+  const tezPerShare = new BigNumber(dexStorage.tezPool).div(
+    dexStorage.totalShares
+  );
+  // .integerValue(BigNumber.ROUND_DOWN);
+  const tokenPerShare = new BigNumber(dexStorage.tokenPool).div(
+    dexStorage.totalShares
+  );
+  // .integerValue(BigNumber.ROUND_DOWN);
+  const shares = tzToMutez(tezAmount).div(tezPerShare);
+  // .integerValue(BigNumber.ROUND_DOWN);
+  return shares.times(tokenPerShare).integerValue(BigNumber.ROUND_DOWN);
 }
 
 export function estimatePriceInverse(tokenAmount: any, dexStorage: any) {
   if (!tokenAmount) return new BigNumber(0);
 
-  const tezPerShare = new BigNumber(dexStorage.tezPool)
-    .div(dexStorage.totalShares)
-    .integerValue(BigNumber.ROUND_DOWN);
-  const tokenPerShare = new BigNumber(dexStorage.tokenPool)
-    .div(dexStorage.totalShares)
-    .integerValue(BigNumber.ROUND_DOWN);
-  const shares = new BigNumber(tokenAmount)
-    .div(tokenPerShare)
-    .integerValue(BigNumber.ROUND_DOWN);
-  return mutezToTz(shares.times(tezPerShare));
+  const tezPerShare = new BigNumber(dexStorage.tezPool).div(
+    dexStorage.totalShares
+  );
+  // .integerValue(BigNumber.ROUND_DOWN);
+  const tokenPerShare = new BigNumber(dexStorage.tokenPool).div(
+    dexStorage.totalShares
+  );
+  // .integerValue(BigNumber.ROUND_DOWN);
+  const shares = new BigNumber(tokenAmount).div(tokenPerShare);
+  // .integerValue(BigNumber.ROUND_DOWN);
+  return mutezToTz(shares.times(tezPerShare)).integerValue(
+    BigNumber.ROUND_DOWN
+  );
 }
