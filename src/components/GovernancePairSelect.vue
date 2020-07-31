@@ -6,7 +6,9 @@
       @click="toggleSearch"
     >
       <div class="flex flex-col">
-        <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">{{ label }}</div>
+        <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">
+          {{ label }}
+        </div>
 
         <div class="w-full flex items-center">
           <template v-if="selectedToken">
@@ -19,7 +21,11 @@
 
       <div class="flex-1" />
 
-      <img class="w-3 ml-2" style="margin-top: -2px" src="@/assets/chevron-white.svg" />
+      <img
+        class="w-3 ml-2"
+        style="margin-top: -2px"
+        src="@/assets/chevron-white.svg"
+      />
     </button>
 
     <div class="field-search rounded-b-3px" v-if="isSearchOpened">
@@ -50,17 +56,17 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Ref, Watch } from "vue-property-decorator";
-import { ITokenItem } from "@/api/getTokens";
-import { isAddressValid } from "@/taquito/tezos";
-import store from "@/store";
 import TokenItem from "@/components/Form/TokenItem.vue";
 import Loader from "@/components/Loader.vue";
+
+import { QSAsset, isAddressValid } from "@/core";
+import store from "@/store";
 
 @Component({
   components: { TokenItem, Loader },
 })
 export default class GovernancePairSelect extends Vue {
-  @Prop({ default: null }) selectedToken?: ITokenItem | null;
+  @Prop({ default: null }) selectedToken?: QSAsset | null;
   @Ref("searchInput") readonly searchInput!: HTMLInputElement;
 
   label: string = "Select Token";
@@ -85,9 +91,9 @@ export default class GovernancePairSelect extends Vue {
     } else return term;
   }
 
-  get filteredTokens(): ITokenItem[] {
+  get filteredTokens(): QSAsset[] {
     return store.state.tokens.filter(
-      (t: ITokenItem) =>
+      (t: QSAsset) =>
         t.name.toLowerCase().includes(this.searchValue.toLowerCase()) ||
         t.symbol.toLowerCase().includes(this.searchValue.toLowerCase())
     );
@@ -100,7 +106,7 @@ export default class GovernancePairSelect extends Vue {
     }
   }
 
-  selectToken(token: ITokenItem) {
+  selectToken(token: QSAsset) {
     this.searchValue = "";
     if (!this.selectedToken || this.selectedToken.exchange !== token.exchange) {
       this.$emit("token-selected", token);

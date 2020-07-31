@@ -18,7 +18,13 @@
         />
 
         <FormInfo>
-          <p>It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English.</p>
+          <p>
+            It is a long established fact that a reader will be distracted by
+            the readable content of a page when looking at its layout. The point
+            of using Lorem Ipsum is that it has a more-or-less normal
+            distribution of letters, as opposed to using 'Content here, content
+            here', making it look like readable English.
+          </p>
         </FormInfo>
       </Form>
 
@@ -51,7 +57,11 @@
                   class="mr-2 h-8 w-auto flex-shrink-0 cursor-pointer"
                   @click="() => handleRemove(depAddress)"
                 />
-                <span class="text-lg font-medium truncate">{{ depAddress }}</span>
+                <span class="text-lg font-medium truncate">
+                  {{
+                  depAddress
+                  }}
+                </span>
               </div>
 
               <div
@@ -72,8 +82,7 @@
 
 <script lang="ts">
 import { Component, Vue, Watch } from "vue-property-decorator";
-import { useThanosWallet } from "@/taquito/tezos";
-import store, { getAccount } from "@/store";
+import store, { getAccount, useThanosWallet } from "@/store";
 import { QSAsset, isAddressValid, getDexStorage, clearMem } from "@/core";
 import NavTabs from "@/components/NavTabs.vue";
 import NavGovernance from "@/components/NavGovernance.vue";
