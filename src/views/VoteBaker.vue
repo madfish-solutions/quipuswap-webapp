@@ -2,7 +2,10 @@
   <div class="max-w-xl mx-auto">
     <NavTabs class="mb-6" />
 
-    <GovernancePairSelect :selectedToken="selectedToken" v-on:token-selected="selectToken" />
+    <GovernancePairSelect
+      :selectedToken="selectedToken"
+      v-on:token-selected="selectToken"
+    />
 
     <template v-if="selectedToken">
       <Form>
@@ -43,9 +46,9 @@
             <span class="whitespace-no-wrap mr-2">Your shares</span>
             <span>
               {{
-              yourShares !== null
-              ? `${yourShares} (${toPercentage(yourShares / totalShares)}%)`
-              : "-"
+                yourShares !== null
+                  ? `${yourShares} (${toPercentage(yourShares / totalShares)}%)`
+                  : "-"
               }}
             </span>
           </div>
@@ -58,7 +61,9 @@
 
       <Form class="mt-8" :style="processing && 'pointer-events:none'">
         <FormInfo>
-          <div class="flex items-center justify-center text-base font-semibold">Vote baker</div>
+          <div class="flex items-center justify-center text-base font-semibold">
+            Vote baker
+          </div>
         </FormInfo>
 
         <FormField
@@ -232,7 +237,7 @@ export default class VoteBaker extends Vue {
       const tezos = await useThanosWallet();
       const contract = await tezos.wallet.at(this.selectedToken!.exchange);
       const operation = await contract.methods
-        .use(7, "vote", this.voter, this.bakerAddress)
+        .use(7, "vote", this.bakerAddress, this.voter)
         .send();
       await operation.confirmation();
 
@@ -249,7 +254,7 @@ export default class VoteBaker extends Vue {
           : "Something went wrong";
     } finally {
       this.processing = false;
-      await new Promise((r) => setTimeout(r, 5000));
+      await new Promise(r => setTimeout(r, 5000));
       this.voteStatus = "Vote";
     }
   }

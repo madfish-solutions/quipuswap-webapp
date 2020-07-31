@@ -32,13 +32,17 @@
             <div v-if="inTokens" class="flex flex-col fieldval">
               <div class="mb-1">
                 <span class="opacity-75 mr-1">+</span>
-                <span class="tracking-wide">{{ formatNum(inTokens.tezos, 6) }}</span>
+                <span class="tracking-wide">{{
+                  formatNum(inTokens.tezos, 6)
+                }}</span>
                 <span class="ml-1 text-sm opacity-90">XTZ</span>
               </div>
 
               <div class="mb-1">
                 <span class="opacity-75 mr-1">+</span>
-                <span class="tracking-wide">{{ formatNum(inTokens.token, 0) }}</span>
+                <span class="tracking-wide">{{
+                  formatNum(inTokens.token, 0)
+                }}</span>
                 <span class="ml-1 text-sm opacity-90">Token</span>
               </div>
             </div>
@@ -76,7 +80,9 @@
       </FormInfo>
     </Form>
 
-    <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal"></div>
+    <div
+      class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal"
+    ></div>
     <div class="flex justify-center text-center">
       <SubmitBtn @click="removeLiquidity" :disabled="!valid">
         <template v-if="!processing">{{ remLiqStatus }}</template>
@@ -105,14 +111,12 @@ import {
   getBalance,
   getDexStorage,
   getContract,
-  estimateTezToToken,
-  estimateTezToTokenInverse,
-  estimateTokenToTez,
-  estimateTokenToTezInverse,
+  estimateShares,
+  estimateSharesInverse,
+  estimateInTokens,
+  estimateInTezos,
   tzToMutez,
   mutezToTz,
-  estimatePrice,
-  estimatePriceInverse,
   clearMem,
 } from "@/core";
 import { TEZOS_TOKEN } from "@/core/defaults";
@@ -264,15 +268,10 @@ export default class RemoveLiquidity extends Vue {
     if (!this.selectedToken || !this.sharesToRemove) return;
 
     const dexStorage = await getDexStorage(this.selectedToken.exchange);
-    const tokenPerShare = new BigNumber(dexStorage.tokenPool)
-      .div(dexStorage.totalShares)
-      .integerValue(BigNumber.ROUND_DOWN);
-    const tezPerShare = new BigNumber(dexStorage.tezPool)
-      .div(dexStorage.totalShares)
-      .integerValue(BigNumber.ROUND_DOWN);
 
-    const tezAmount = mutezToTz(tezPerShare.times(this.sharesToRemove));
-    const tokenAmount = tokenPerShare.times(this.sharesToRemove);
+    const tezAmount = estimateInTezos(this.sharesToRemove, dexStorage);
+    const tokenAmount = estimateInTokens(this.sharesToRemove, dexStorage);
+
     const tezos = toValidAmount(tezAmount);
     const token = toValidAmount(tokenAmount);
     this.inTokens = tezos && token ? { tezos, token } : null;
@@ -303,9 +302,9 @@ export default class RemoveLiquidity extends Vue {
         .use(
           5,
           "divestLiquidity",
-          shares.toNumber(),
           minTezos.toNumber(),
-          minToken.toNumber()
+          minToken.toNumber(),
+          shares.toNumber()
         )
         .send();
       await operation.confirmation();
@@ -324,7 +323,7 @@ export default class RemoveLiquidity extends Vue {
     }
     this.processing = false;
 
-    await new Promise((res) => setTimeout(res, 5000));
+    await new Promise(res => setTimeout(res, 5000));
     this.remLiqStatus = this.defaultRemLiqStatus;
   }
 

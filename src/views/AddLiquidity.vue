@@ -92,19 +92,13 @@ import {
   getBalance,
   getDexStorage,
   getContract,
-  estimateTezToToken,
-  estimateTezToTokenInverse,
-  estimateTokenToTez,
-  estimateTokenToTezInverse,
-  tzToMutez,
-  mutezToTz,
-  estimatePrice,
-  estimatePriceInverse,
-  clearMem,
   estimateShares,
   estimateSharesInverse,
   estimateInTokens,
   estimateInTezos,
+  tzToMutez,
+  mutezToTz,
+  clearMem,
 } from "@/core";
 import { TEZOS_TOKEN } from "@/core/defaults";
 
@@ -291,10 +285,6 @@ export default class AddLiquidity extends Vue {
     const shares = estimateShares(this.tezAmount, dexStorage);
     const amount = estimateInTokens(shares, dexStorage);
 
-    // const amount = estimatePrice(
-    //   this.tezAmount,
-    //   await getDexStorage(this.selectedToken.exchange)
-    // );
     this.tokenAmount = toValidAmount(amount);
   }
 
@@ -305,10 +295,6 @@ export default class AddLiquidity extends Vue {
     const shares = estimateSharesInverse(this.tokenAmount, dexStorage);
     const amount = estimateInTezos(shares, dexStorage);
 
-    // const amount = estimatePriceInverse(
-    //   this.tokenAmount,
-    //   await getDexStorage(this.selectedToken.exchange)
-    // );
     this.tezAmount = toValidAmount(amount);
   }
 
@@ -322,38 +308,10 @@ export default class AddLiquidity extends Vue {
       const tezTk = this.tezToken!;
       const selTk = this.selectedToken!;
       const tezAmount = new BigNumber(this.tezAmount);
-      // const tkAmn = +this.tokenAmount!;
 
       const dexStorage = await getDexStorage(selTk.exchange);
-      // const tokenPerShare = new BigNumber(dexStorage.tokenPool).div(
-      //   dexStorage.totalShares
-      // );
-      // .integerValue(BigNumber.ROUND_DOWN);
-      // const tezPerShare = new BigNumber(dexStorage.tezPool).div(
-      //   dexStorage.totalShares
-      // );
-      // .integerValue(BigNumber.ROUND_DOWN);
-
-      // const shares = new BigNumber(tkAmn).div(tokenPerShare);
-      // .integerValue(BigNumber.ROUND_DOWN);
-
       const shares = estimateShares(tezAmount, dexStorage);
       const tokenAmount = estimateInTokens(shares, dexStorage);
-
-      console.info(
-        JSON.parse(
-          JSON.stringify({
-            dexStorage,
-            shares,
-            tezAmount,
-            tokenAmount,
-          })
-        )
-      );
-
-      // const mutezAmount = shares
-      //   .times(tezPerShare)
-      //   .integerValue(BigNumber.ROUND_DOWN);
 
       const toCheck = [
         {
