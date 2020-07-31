@@ -7,7 +7,8 @@
       >
         <span
           class="connect-button button-network text-white w-48 h-12 border border-accent rounded-lg flex items-center justify-center"
-        >{{ selectedNetwork.name }}</span>
+          >{{ selectedNetwork.name }}</span
+        >
         <img
           :class="
             networkSelectOpened
@@ -17,7 +18,10 @@
           src="@/assets/arrow-down.svg"
         />
       </div>
-      <div class="flex flex-col w-48 justify-end absolute top-100px" v-if="networkSelectOpened">
+      <div
+        class="flex flex-col w-48 justify-end absolute top-100px"
+        v-if="networkSelectOpened"
+      >
         <button
           class="connect-button network-item cursor-pointer text-white w-48 h-12 my-1 border border-accent rounded-lg flex items-center justify-center"
           :class="net.disabled ? 'opacity-50' : ''"
@@ -25,18 +29,24 @@
           :key="net.id"
           @click="() => selectNetwork(net)"
           :disabled="net.disabled"
-        >{{ net.name }}</button>
+        >
+          {{ net.name }}
+        </button>
       </div>
 
       <template v-if="!account.pkh">
         <button
           class="text-white w-56 h-12 border border-accent rounded-3px absolute top-40px right-40px hidden md:block"
           @click="handleConnect"
-        >Connect to a Wallet</button>
+        >
+          Connect to a Wallet
+        </button>
       </template>
 
       <template v-else>
-        <div class="flex flex-row w-auto justify-center absolute right-0 top-40px right-0px">
+        <div
+          class="flex flex-row w-auto justify-center absolute right-0 top-40px right-0px"
+        >
           <span
             class="connect-button button-balance text-white w-32 h-12 px-2 border border-accent rounded-lg flex items-center justify-center"
           >
@@ -165,17 +175,20 @@ export default class App extends Vue {
 </script>
 
 <style lang="scss">
-html,
-body {
-  height: 100%;
+html {
+  min-height: 100vh;
+  background-color: #151a28;
+  background-image: linear-gradient(203.07deg, #151a28 21.27%, #242f4e 92.17%);
+  background-repeat: no-repeat;
 }
+
 button {
   outline: none;
 }
 
 #app {
   min-height: 100%;
-  background: url("assets/lines.png") 100%, url("assets/gradient.png");
+  background: url("assets/lines.png") 100%;
   background-size: 100%, cover;
   background-position: 0 0, 50%;
   font-family: "Roboto", sans-serif;
