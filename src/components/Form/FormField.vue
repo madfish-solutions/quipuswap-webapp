@@ -6,20 +6,14 @@
       "
     >
       <div class="py-6 flex-1 flex flex-col justify-start">
-        <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">
-          {{ label }}
-        </div>
+        <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">{{ label }}</div>
         <input
           class="w-full"
           :class="!withSelect && isLoading && 'hidden'"
           v-bind="$attrs"
           v-on="$listeners"
         />
-        <div
-          v-if="!withSelect && isLoading"
-          class="flex items-center"
-          style="height: 30px"
-        >
+        <div v-if="!withSelect && isLoading" class="flex items-center" style="height: 30px">
           <Loader />
         </div>
         <div class="flex-1" />
@@ -61,7 +55,7 @@
           placeholder="Search..."
         />
       </div>
-      <div class="overflow-auto" style="max-height: 200px">
+      <div class="overflow-auto" style="max-height: 13.5rem">
         <template v-if="filteredTokens.length">
           <TokenItem
             v-for="token in filteredTokens"

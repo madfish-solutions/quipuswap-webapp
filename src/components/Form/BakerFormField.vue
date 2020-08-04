@@ -44,7 +44,7 @@
           placeholder="Search..."
         />
       </div>
-      <div class="overflow-auto" style="max-height: 200px">
+      <div class="overflow-auto" style="max-height: 12.5rem">
         <template v-if="allKnownBakers.length > 0">
           <button
             v-for="baker in allKnownBakers"

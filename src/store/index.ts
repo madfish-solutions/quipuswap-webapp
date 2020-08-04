@@ -32,15 +32,18 @@ const store = new Vuex.Store<StoreState>({
 
 export default store;
 
-(async () => {
+loadTokens();
+
+export async function loadTokens() {
   try {
     store.commit("tokensLoading", true);
     store.commit("tokens", await getTokens());
-    store.commit("tokensLoading", false);
   } catch (err) {
     console.error(err);
+  } finally {
+    store.commit("tokensLoading", false);
   }
-})();
+}
 
 export async function useThanosWallet(opts = { forcePermission: false }) {
   const available = await ThanosWallet.isAvailable();
