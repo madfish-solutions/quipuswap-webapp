@@ -6,20 +6,14 @@
       "
     >
       <div class="py-6 flex-1 flex flex-col justify-start">
-        <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">
-          {{ label }}
-        </div>
+        <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">{{ label }}</div>
         <input
           class="w-full"
           :class="!withSelect && isLoading && 'hidden'"
           v-bind="$attrs"
           v-on="$listeners"
         />
-        <div
-          v-if="!withSelect && isLoading"
-          class="flex items-center"
-          style="height: 30px"
-        >
+        <div v-if="!withSelect && isLoading" class="flex items-center" style="height: 30px">
           <Loader />
         </div>
         <div class="flex-1" />
@@ -27,7 +21,7 @@
       </div>
 
       <div class="flex items-center">
-        <div v-if="withSelect" class="append flex">
+        <div v-if="withSelect" class="append flex relative">
           <button
             @click="toggleSearch"
             class="flex text-white border-accent border-2 items-center rounded-3px py-2 px-3 text-sm sm:text-base whitespace-no-wrap flex-shrink-0 focus:outline-none"
@@ -49,6 +43,17 @@
               v-if="!onlyTezos"
             />
           </button>
+
+          <div
+            v-if="!onlyTezos && selectedToken && selectedToken.type === 'token' && !isLoading"
+            class="absolute w-full flex justify-center"
+            style="top: 100%;"
+          >
+            <button
+              class="p-1 text-xs text-accent font-light opacity-75 hover:underline hover:opacity-100 focus:outline-none whitespace-no-wrap"
+              @click="() => copyToCB(this.selectedToken.id)"
+            >Copy contract address</button>
+          </div>
         </div>
       </div>
     </div>
@@ -155,6 +160,15 @@ export default class FormField extends Vue {
     this.localToken = token;
     this.isSearchOpened = false;
     this.$emit("selectToken", token);
+  }
+
+  copyToCB(text: string) {
+    const el = document.createElement("textarea");
+    el.value = text;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand("copy");
+    document.body.removeChild(el);
   }
 }
 </script>
