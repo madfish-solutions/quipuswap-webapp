@@ -1,6 +1,6 @@
 <template>
   <div class="flex">
-    <div class="w-1/2 text-center">
+    <div class="w-1/3 text-center">
       <router-link
         to="/invest/add-liquidity"
         active-class="active"
@@ -10,7 +10,7 @@
         <span class="text-xs">Liquidity</span>
       </router-link>
     </div>
-    <div class="w-1/2 text-center">
+    <div class="w-1/3 text-center">
       <router-link
         to="/invest/remove-liquidity"
         active-class="active"
@@ -20,16 +20,12 @@
         <span class="text-xs">Liquidity</span>
       </router-link>
     </div>
-    <!-- <div class="w-1/3 text-center">
-      <router-link
-        to="/invest/create-exchange"
-        active-class="active"
-        class="flex flex-col leading-tight"
-      >
-        <span class="text-base xs:text-xl">Create</span>
-        <span class="text-xs">Exchange</span>
+    <div class="w-1/3 text-center">
+      <router-link to="/invest/add-token" active-class="active" class="flex flex-col leading-tight">
+        <span class="text-base xs:text-xl">Add</span>
+        <span class="text-xs">new Token</span>
       </router-link>
-    </div>-->
+    </div>
   </div>
 </template>
 

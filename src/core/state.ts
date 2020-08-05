@@ -11,6 +11,15 @@ import { mutezToTz } from "./helpers";
 
 Tezos.setProvider({ rpc: getNetwork().rpcBaseURL });
 
+export async function getNewTokenBalance(
+  accountPkh: string,
+  tokenAddress: string
+) {
+  const storage = await getStoragePure(tokenAddress);
+  const val = await storage.ledger.get(accountPkh);
+  return new BigNumber(val && val.balance ? val.balance : val ? val : 0);
+}
+
 export async function getBalance(accountPkh: string, token: QSAsset) {
   if (token.type === "xtz") {
     return mutezToTz(await Tezos.tz.getBalance(accountPkh));

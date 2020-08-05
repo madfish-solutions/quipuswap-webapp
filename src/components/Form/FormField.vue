@@ -66,7 +66,7 @@
           placeholder="Search..."
         />
       </div>
-      <div class="overflow-auto" style="max-height: 200px">
+      <div class="overflow-auto" style="max-height: 13.5rem">
         <template v-if="filteredTokens.length">
           <TokenItem
             v-for="token in filteredTokens"

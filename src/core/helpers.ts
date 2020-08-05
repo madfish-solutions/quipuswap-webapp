@@ -16,6 +16,10 @@ export function mutezToTz(mutez: any) {
   return Tezos.format("mutez", "tz", mutez) as BigNumber;
 }
 
+export function isKTAddress(address: any): boolean {
+  return isAddressValid(address) && address.startsWith("KT");
+}
+
 export function isAddressValid(address: any) {
   return validateAddress(address) === ValidationResult.VALID;
 }

@@ -6,9 +6,7 @@
       @click="toggleSearch"
     >
       <div class="flex flex-col">
-        <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">
-          {{ label }}
-        </div>
+        <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">{{ label }}</div>
 
         <div class="w-full flex items-center">
           <template v-if="selectedToken">
@@ -21,11 +19,7 @@
 
       <div class="flex-1" />
 
-      <img
-        class="w-3 ml-2"
-        style="margin-top: -2px"
-        src="@/assets/chevron-white.svg"
-      />
+      <img class="w-3 ml-2" style="margin-top: -2px" src="@/assets/chevron-white.svg" />
     </button>
 
     <div class="field-search rounded-b-3px" v-if="isSearchOpened">
@@ -37,7 +31,7 @@
           placeholder="Search..."
         />
       </div>
-      <div class="overflow-auto" style="max-height: 200px">
+      <div class="overflow-auto" style="max-height: 13.5rem">
         <template v-if="filteredTokens.length">
           <TokenItem
             v-for="token in filteredTokens"
