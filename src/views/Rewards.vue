@@ -2,10 +2,7 @@
   <div class="max-w-xl mx-auto">
     <NavTabs class="mb-6" />
 
-    <GovernancePairSelect
-      :selectedToken="selectedToken"
-      v-on:token-selected="selectToken"
-    />
+    <GovernancePairSelect :selectedToken="selectedToken" v-on:token-selected="selectToken" />
 
     <template v-if="selectedToken">
       <Form :style="processing && 'pointer-events:none'">
@@ -121,7 +118,7 @@ export default class Rewards extends Vue {
     this.dataLoading = true;
     try {
       const storage = await getDexStorage(this.selectedToken.exchange);
-      const myCl = await storage.cycleLoyalty.get(this.account.pkh);
+      const myCl = await storage.loyaltyCycle.get(this.account.pkh);
       if (myCl) {
         this.rewards = mutezToTz(myCl.reward).toFormat(6);
       }
@@ -160,7 +157,7 @@ export default class Rewards extends Vue {
           : "Something went wrong";
     } finally {
       this.processing = false;
-      await new Promise(r => setTimeout(r, 5000));
+      await new Promise((r) => setTimeout(r, 5000));
       this.withdrawStatus = "Withdraw";
     }
   }
