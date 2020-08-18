@@ -1,6 +1,8 @@
 import BigNumber from "bignumber.js";
 import { tzToMutez, mutezToTz } from "./helpers";
 
+const PENNY = 0.000001;
+
 export function estimateTezToToken(tezAmount: any, dexStorage: any) {
   if (!tezAmount) return new BigNumber(0);
 
@@ -95,8 +97,24 @@ export function estimateInTokens(shares: any, dexStorage: any) {
   if (!shares) return new BigNumber(0);
 
   return new BigNumber(shares)
-    .integerValue(BigNumber.ROUND_DOWN)
     .times(dexStorage.tokenPool)
     .div(dexStorage.totalShares)
     .integerValue(BigNumber.ROUND_DOWN);
+}
+
+export function estimateToTezos(tokenAmount: any, dexStorage: any) {
+  if (!tokenAmount) return new BigNumber(0);
+
+  const shares = estimateSharesInverse(tokenAmount, dexStorage);
+  let tezAmount = estimateInTezos(shares, dexStorage);
+
+  while (!toTokens(tezAmount, dexStorage).isEqualTo(tokenAmount)) {
+    tezAmount = tezAmount.plus(PENNY);
+  }
+  return tezAmount;
+}
+
+function toTokens(tezAmount: any, dexStorage: any) {
+  const shares = estimateShares(tezAmount, dexStorage);
+  return estimateInTokens(shares, dexStorage);
 }

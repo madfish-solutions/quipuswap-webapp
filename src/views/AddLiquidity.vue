@@ -61,9 +61,7 @@
       </FormInfo>
     </Form>
 
-    <div
-      class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal"
-    ></div>
+    <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal"></div>
     <div class="flex justify-center text-center">
       <SubmitBtn @click="addLiquidity" :disabled="!valid">
         <template v-if="!processing">{{ addLiqStatus }}</template>
@@ -96,6 +94,7 @@ import {
   estimateSharesInverse,
   estimateInTokens,
   estimateInTezos,
+  estimateToTezos,
   tzToMutez,
   mutezToTz,
   clearMem,
@@ -149,7 +148,7 @@ export default class AddLiquidity extends Vue {
     return (
       this.tezToken &&
       this.selectedToken &&
-      [this.tezAmount, this.tokenAmount].every(a => a && +a > 0)
+      [this.tezAmount, this.tokenAmount].every((a) => a && +a > 0)
     );
   }
 
@@ -272,7 +271,7 @@ export default class AddLiquidity extends Vue {
     this.tokenAmount = amount;
     const isNum = /^[0-9]*$/g.test(amount);
     if (isNum) {
-      this.calcTezAmount();
+      setTimeout(() => this.calcTezAmount(), 0);
     } else {
       this.tezAmount = "";
     }
@@ -292,8 +291,7 @@ export default class AddLiquidity extends Vue {
     if (!this.selectedToken) return;
 
     const dexStorage = await getDexStorage(this.selectedToken.exchange);
-    const shares = estimateSharesInverse(this.tokenAmount, dexStorage);
-    const amount = estimateInTezos(shares, dexStorage);
+    const amount = estimateToTezos(this.tokenAmount, dexStorage);
 
     this.tezAmount = toValidAmount(amount);
   }
@@ -307,11 +305,11 @@ export default class AddLiquidity extends Vue {
 
       const tezTk = this.tezToken!;
       const selTk = this.selectedToken!;
-      const tezAmount = new BigNumber(this.tezAmount);
+      const tokenAmount = new BigNumber(this.tokenAmount);
 
       const dexStorage = await getDexStorage(selTk.exchange);
+      const tezAmount = estimateToTezos(tokenAmount, dexStorage);
       const shares = estimateShares(tezAmount, dexStorage);
-      const tokenAmount = estimateInTokens(shares, dexStorage);
 
       const toCheck = [
         {
@@ -368,7 +366,7 @@ export default class AddLiquidity extends Vue {
     }
     this.processing = false;
 
-    await new Promise(res => setTimeout(res, 5000));
+    await new Promise((res) => setTimeout(res, 5000));
     this.addLiqStatus = this.defaultAddLiqStatus;
   }
 
