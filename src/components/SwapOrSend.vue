@@ -185,7 +185,9 @@ export default class SwapOrSend extends Vue {
     const inAndOutValid =
       this.inputToken &&
       this.outputToken &&
-      [this.inputAmount, this.outputAmount].every((a) => a && +a > 0);
+      [this.inputAmount, this.outputAmount, this.minimumReceived].every(
+        (a) => a && +a > 0
+      );
     return this.send
       ? inAndOutValid && isAddressValid(this.recipientAddress)
       : inAndOutValid;
