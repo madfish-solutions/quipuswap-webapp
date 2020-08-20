@@ -45,6 +45,11 @@
 
       <FormInfo>
         <div class="flex justify-between mb-1">
+          <span>Fee</span>
+          <span>{{ fee || "-" }}</span>
+        </div>
+
+        <div class="flex justify-between mb-1">
           <span>Exchange rate</span>
           <span>{{ exchangeRate || "-" }}</span>
         </div>
@@ -96,7 +101,7 @@ import SubmitBtn from "@/components/SubmitBtn.vue";
 import Loader from "@/components/Loader.vue";
 
 import BigNumber from "bignumber.js";
-import { getAccount, useThanosWallet } from "@/store";
+import store, { getAccount, useThanosWallet } from "@/store";
 import {
   QSAsset,
   isAddressValid,
@@ -141,6 +146,7 @@ export default class SwapOrSend extends Vue {
 
   slippagePercentages = [0.5, 1, 3];
   activeSlippagePercentage = 1;
+  fee: string | null = null;
 
   swapping = false;
   swapStatus = this.defaultSwapStatus;
@@ -193,8 +199,13 @@ export default class SwapOrSend extends Vue {
       : inAndOutValid;
   }
 
+  get tokens() {
+    return store.state.tokens;
+  }
+
   created() {
     this.loadInputBalance();
+    this.loadFee();
   }
 
   @Watch("inputToken")
@@ -207,12 +218,33 @@ export default class SwapOrSend extends Vue {
     this.loadInputBalance();
   }
 
+  @Watch("tokens")
+  onTokensChange() {
+    this.loadFee();
+  }
+
   async loadInputBalance() {
     this.inputBalance = null;
     try {
       if (this.inputToken && this.account.pkh) {
         const balance = await getBalance(this.account.pkh, this.inputToken);
         this.inputBalance = balance.toString();
+      }
+    } catch (err) {
+      if (process.env.NODE_ENV === "development") {
+        console.error(err);
+      }
+    }
+  }
+
+  async loadFee() {
+    this.fee = null;
+    try {
+      const token = store.state.tokens[0];
+      if (token) {
+        const dexStorage = await getDexStorage(token.exchange);
+        const feeBn = new BigNumber(1).div(dexStorage.feeRate).times(100);
+        this.fee = `${+feeBn.toFixed(2)}%`;
       }
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
