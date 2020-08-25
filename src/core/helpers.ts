@@ -23,3 +23,8 @@ export function isKTAddress(address: any): boolean {
 export function isAddressValid(address: any) {
   return validateAddress(address) === ValidationResult.VALID;
 }
+
+export function formatAddress(address: string) {
+  const ln = address.length;
+  return [address.slice(0, 7), "...", address.slice(ln - 4, ln)].join("");
+}

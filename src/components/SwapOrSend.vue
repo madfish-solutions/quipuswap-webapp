@@ -43,19 +43,29 @@
         />
       </template>
 
-      <FormInfo>
+      <FormInfo class="whitespace-no-wrap overflow-x-auto">
         <div class="flex justify-between mb-1">
-          <span>Fee</span>
+          <span class="mr-2">Input Dex contract</span>
+          <span class="font-mono text-gray-400">{{ inputDexAddress || "-" }}</span>
+        </div>
+
+        <div class="flex justify-between mb-1">
+          <span class="mr-2">Output Dex contract</span>
+          <span class="font-mono text-gray-400">{{ outputDexAddress || "-" }}</span>
+        </div>
+
+        <div class="flex justify-between mb-1">
+          <span class="mr-2">Fee</span>
           <span>{{ fee || "-" }}</span>
         </div>
 
         <div class="flex justify-between mb-1">
-          <span>Exchange rate</span>
+          <span class="mr-2">Exchange rate</span>
           <span>{{ exchangeRate || "-" }}</span>
         </div>
 
         <div class="flex mb-1">
-          <span>Slippage tolerance</span>
+          <span class="mr-2">Slippage tolerance</span>
           <span class="flex-1"></span>
           <button
             v-for="percentage in slippagePercentages"
@@ -72,7 +82,7 @@
         </div>
 
         <div class="flex justify-between mb-1">
-          <span>Minimum received</span>
+          <span class="mr-2">Minimum received</span>
           <span>
             {{
             minimumReceived ? `${minimumReceived} ${outputToken.name}` : "-"
@@ -147,6 +157,8 @@ export default class SwapOrSend extends Vue {
   slippagePercentages = [0.5, 1, 3];
   activeSlippagePercentage = 1;
   fee: string | null = null;
+  inputDexAddress: string | null = null;
+  outputDexAddress: string | null = null;
 
   swapping = false;
   swapStatus = this.defaultSwapStatus;
@@ -261,9 +273,11 @@ export default class SwapOrSend extends Vue {
       this.outputAmount = "";
     }
 
+    this.inputDexAddress = null;
     if (token.type === "token") {
       this.inputLoading = true;
       await getDexStorage(token.exchange);
+      this.inputDexAddress = token.exchange;
       this.inputLoading = false;
     }
 
@@ -281,9 +295,11 @@ export default class SwapOrSend extends Vue {
       }
     }
 
+    this.outputDexAddress = null;
     if (token.type === "token") {
       this.outputLoading = true;
       await getDexStorage(token.exchange);
+      this.outputDexAddress = token.exchange;
       this.outputLoading = false;
     }
     this.calcOutputAmount();

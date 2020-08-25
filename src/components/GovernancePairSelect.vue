@@ -5,13 +5,20 @@
       :class="isSearchOpened ? '' : 'rounded-b-3px'"
       @click="toggleSearch"
     >
-      <div class="flex flex-col">
-        <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">{{ label }}</div>
+      <div class="flex flex-col max-w-full overflow-x-auto">
+        <div class="label mb-1 sm:text-lg font-light w-full">{{ label }}</div>
 
-        <div class="w-full flex items-center">
+        <div class="w-full">
           <template v-if="selectedToken">
-            <img class="w-5 h-5 mr-2" :src="selectedToken.imgUrl" />
-            <span class="truncate">{{ formattedSelectedTokenSymbol }}</span>
+            <div class="flex items-center">
+              <img class="w-5 h-5 mr-2" :src="selectedToken.imgUrl" />
+              <span class="truncate">{{ formattedSelectedTokenSymbol }}</span>
+            </div>
+
+            <div class="mt-1 text-sm text-gray-500 font-light whitespace-no-wrap">
+              <span class="mr-1">Dex contract:</span>
+              <span class="font-mono text-gray-400">{{ selectedToken.exchange }}</span>
+            </div>
           </template>
           <span v-if="!selectedToken">-</span>
         </div>
@@ -121,7 +128,7 @@ export default class GovernancePairSelect extends Vue {
 }
 
 .field {
-  @apply w-full h-20 px-3 flex items-center;
+  @apply w-full h-24 px-3 flex items-center;
   background: #2a3248;
 }
 
@@ -136,7 +143,7 @@ input {
 
 @screen xs {
   .field {
-    @apply px-6 h-20;
+    @apply px-6 h-24;
   }
 
   .token-item {

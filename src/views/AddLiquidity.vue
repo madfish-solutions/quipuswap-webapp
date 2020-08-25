@@ -33,29 +33,34 @@
         :selectedToken="selectedToken"
       />
 
-      <FormInfo>
+      <FormInfo class="whitespace-no-wrap overflow-x-auto">
         <div class="flex justify-between mb-1">
-          <span>Exchange rate</span>
+          <span class="mr-2">Dex contract</span>
+          <span class="font-mono text-gray-400">{{ dexAddress || "-" }}</span>
+        </div>
+
+        <div class="flex justify-between mb-1">
+          <span class="mr-2">Exchange rate</span>
           <span>{{ exchangeRate || "-" }}</span>
         </div>
 
         <div class="flex justify-between mb-1">
-          <span>Pooled Tokens</span>
+          <span class="mr-2">Pooled Tokens</span>
           <span>{{ poolMeta ? poolMeta.tokenFull : "-" }}</span>
         </div>
 
         <div class="flex justify-between mb-1">
-          <span>Pooled XTZ</span>
+          <span class="mr-2">Pooled XTZ</span>
           <span>{{ poolMeta ? poolMeta.tezFull : "-" }}</span>
         </div>
 
         <div class="flex justify-between mb-1">
-          <span>Your pool tokens</span>
+          <span class="mr-2">Your pool tokens</span>
           <span>{{ poolMeta ? poolMeta.myTokens : "-" }}</span>
         </div>
 
         <div class="flex justify-between mb-1">
-          <span>Your pool share</span>
+          <span class="mr-2">Your pool share</span>
           <span>{{ poolMeta ? poolMeta.myShare : "-" }}</span>
         </div>
       </FormInfo>
@@ -132,6 +137,7 @@ export default class AddLiquidity extends Vue {
   tokenLoading = false;
 
   poolMeta: PoolMeta | null = null;
+  dexAddress: string | null = null;
 
   processing = false;
   addLiqStatus = this.defaultAddLiqStatus;
@@ -252,6 +258,7 @@ export default class AddLiquidity extends Vue {
 
     this.tokenLoading = true;
     await getDexStorage(token.exchange);
+    this.dexAddress = token.exchange;
     this.tokenLoading = false;
 
     this.calcTokenAmount();
