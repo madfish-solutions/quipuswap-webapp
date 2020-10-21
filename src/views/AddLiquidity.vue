@@ -104,7 +104,7 @@ import {
   mutezToTz,
   clearMem,
 } from "@/core";
-import { TEZOS_TOKEN } from "@/core/defaults";
+import { XTZ_TOKEN } from "@/core/defaults";
 
 type PoolMeta = {
   tezFull: string;
@@ -126,7 +126,7 @@ type PoolMeta = {
   },
 })
 export default class AddLiquidity extends Vue {
-  tezToken: QSAsset | null = TEZOS_TOKEN;
+  tezToken: QSAsset | null = XTZ_TOKEN;
   tezAmount = "";
   tezBalance: string | null = null;
   tezLoading = false;

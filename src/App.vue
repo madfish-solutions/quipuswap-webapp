@@ -167,7 +167,7 @@ import Loader from "@/components/Loader.vue";
 import {
   CARTHAGE_NETWORK,
   ALL_NETWORKS,
-  TEZOS_TOKEN,
+  XTZ_TOKEN,
   QSNetwork,
   getBalance,
   getNetwork,
@@ -217,7 +217,7 @@ export default class App extends Vue {
   async loadAccBalance() {
     this.accountBalance = null;
     if (this.account.pkh) {
-      const bal = await getBalance(this.account.pkh, TEZOS_TOKEN);
+      const bal = await getBalance(this.account.pkh, XTZ_TOKEN);
       this.accountBalance = bal.toFormat(2);
     }
   }

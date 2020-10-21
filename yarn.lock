@@ -855,6 +855,14 @@
   dependencies:
     xhr2-cookies "^1.1.0"
 
+"@taquito/local-forging@^6.3.5-beta.0":
+  version "6.3.5-beta.0"
+  resolved "https://registry.yarnpkg.com/@taquito/local-forging/-/local-forging-6.3.5-beta.0.tgz#61026d2467eea71993f4ed024b1f7049803f0df9"
+  integrity sha512-p0E3Ww3kg+YQYPmp/XK4YKZpWdKqtIg1ZlDtptLn66nbDA3ivzbiFHe3LxceJsYnaCcoWTXl/sRf34VKTkMK3Q==
+  dependencies:
+    "@taquito/utils" "^6.3.5-beta.0"
+    bignumber.js "^9.0.0"
+
 "@taquito/michel-codec@^6.3.5-beta.0":
   version "6.3.5-beta.0"
   resolved "https://registry.yarnpkg.com/@taquito/michel-codec/-/michel-codec-6.3.5-beta.0.tgz#b220a772b69130abd2852294d1b5cf4d5664dd8c"
@@ -2302,9 +2310,9 @@ caniuse-api@^3.0.0:
     lodash.uniq "^4.5.0"
 
 caniuse-lite@^1.0.0, caniuse-lite@^1.0.30001020, caniuse-lite@^1.0.30001027:
-  version "1.0.30001027"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001027.tgz#283e2ef17d94889cc216a22c6f85303d78ca852d"
-  integrity sha512-7xvKeErvXZFtUItTHgNtLgS9RJpVnwBlWX8jSo/BO8VsF6deszemZSkJJJA1KOKrXuzZH4WALpAJdq5EyfgMLg==
+  version "1.0.30001150"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001150.tgz"
+  integrity sha512-kiNKvihW0m36UhAFnl7bOAv0i1K1f6wpfVtTF5O5O82XzgtBnb05V0XeV3oZ968vfg2sRNChsHw8ASH2hDfoYQ==
 
 case-sensitive-paths-webpack-plugin@^2.3.0:
   version "2.3.0"

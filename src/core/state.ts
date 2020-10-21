@@ -1,13 +1,13 @@
 import { Tezos } from "@taquito/taquito";
 import BigNumber from "bignumber.js";
 import mem from "mem";
-import { QSAsset, QSNetwork } from "./types";
+import { QSAsset, QSNetwork, QSTokenType } from "./types";
 import {
   ALL_NETWORKS,
   DEFAULT_NETWORK,
   DEFAULT_TOKEN_LOGO_URL,
+  MAINNET_TOKENS,
 } from "./defaults";
-import { mutezToTz } from "./helpers";
 
 Tezos.setProvider({ rpc: getNetwork().rpcBaseURL });
 
@@ -20,18 +20,8 @@ export async function getNewTokenBalance(
   return new BigNumber(val && val.balance ? val.balance : val ? val : 0);
 }
 
-export async function getBalance(accountPkh: string, token: QSAsset) {
-  if (token.type === "xtz") {
-    return mutezToTz(await Tezos.tz.getBalance(accountPkh));
-  } else {
-    const storage = await getStoragePure(token.id);
-    const val = await storage.ledger.get(accountPkh);
-    return new BigNumber(val ? val.balance : 0);
-  }
-}
-
 export async function getTokens() {
-  const { factoryContract } = getNetwork();
+  const { type, factoryContract } = getNetwork();
   if (!factoryContract) {
     throw new Error("Contract for network not found");
   }
@@ -40,16 +30,30 @@ export async function getTokens() {
   return Promise.all(
     facStorage.tokenList.map(async (tAddress: string) => {
       const exchange = await facStorage.tokenToExchange.get(tAddress);
-      return {
-        id: tAddress,
-        name: "Token",
-        type: "token",
-        symbol: tAddress,
-        exchange,
-        imgUrl: DEFAULT_TOKEN_LOGO_URL,
-      };
+
+      if (type === "main") {
+        const knownToken = MAINNET_TOKENS.find(({ id }) => tAddress === id);
+        if (knownToken) {
+          return knownToken;
+        }
+      }
+
+      return toUnknownToken(tAddress, exchange);
     })
   );
+}
+
+function toUnknownToken(address: string, exchange: string): QSAsset {
+  return {
+    type: "token",
+    tokenType: QSTokenType.FA1_2,
+    id: address,
+    decimals: 0,
+    symbol: address,
+    name: "Token",
+    imgUrl: DEFAULT_TOKEN_LOGO_URL,
+    exchange,
+  };
 }
 
 /**

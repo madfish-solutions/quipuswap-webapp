@@ -1,4 +1,4 @@
-import { QSAsset, QSNetwork } from "@/core/types";
+import { QSAsset, QSTokenType, QSNetwork } from "@/core/types";
 
 export const FACTORY_CONTRACT_CARTHAGENET =
   process.env.VUE_APP_FACTORY_CONTRACT_CARTHAGENET || null;
@@ -31,13 +31,49 @@ export const MAINNET_NETWORK: QSNetwork = {
 export const ALL_NETWORKS = [MAINNET_NETWORK, CARTHAGE_NETWORK];
 export const DEFAULT_NETWORK = CARTHAGE_NETWORK;
 
-export const TEZOS_TOKEN: QSAsset = {
-  id: "XTZ",
-  name: "Tezos",
+export const XTZ_TOKEN: QSAsset = {
   type: "xtz",
+  tokenType: QSTokenType.XTZ,
+  id: "XTZ",
+  decimals: 6,
   symbol: "XTZ",
-  exchange: "",
+  name: "Tezos",
   imgUrl: require("@/assets/xtz.png"),
+  exchange: "",
 };
 
 export const DEFAULT_TOKEN_LOGO_URL = require("@/assets/token-logo.png");
+
+export const MAINNET_TOKENS: QSAsset[] = [
+  {
+    type: "token",
+    tokenType: QSTokenType.FA1_2,
+    id: "KT1LN4LPSqTMS7Sd2CJw4bbDGRkMv2t68Fy9",
+    decimals: 6,
+    symbol: "USDtz",
+    name: "USD Tez",
+    imgUrl: "https://usdtz.com/lightlogo10USDtz.png",
+    exchange: "",
+  },
+  {
+    type: "token",
+    tokenType: QSTokenType.Staker,
+    id: "KT1EctCuorV2NfVb1XTQgvzJ88MQtWP8cMMv",
+    decimals: 0,
+    symbol: "STKR",
+    name: "Staker",
+    imgUrl:
+      "https://miro.medium.com/fit/c/160/160/1*LzmHCYryGmuN9ZR7JX951w.png",
+    exchange: "",
+  },
+  {
+    type: "token",
+    tokenType: QSTokenType.TzBTC,
+    id: "KT1PWx2mnDueood7fEmfbBDKx1D9BAnnXitn",
+    decimals: 8,
+    symbol: "tzBTC",
+    name: "tzBTC",
+    imgUrl: "https://tzbtc.io/wp-content/uploads/2020/03/tzbtc_logo_single.svg",
+    exchange: "",
+  },
+];

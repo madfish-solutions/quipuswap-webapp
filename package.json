@@ -9,6 +9,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@taquito/local-forging": "^6.3.5-beta.0",
     "@taquito/michelson-encoder": "^6.3.5-beta.0",
     "@taquito/signer": "^6.3.5-beta.0",
     "@taquito/taquito": "^6.3.5-beta.0",

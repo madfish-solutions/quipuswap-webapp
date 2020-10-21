@@ -1,10 +1,20 @@
 export interface QSAsset {
-  id: string;
+  type: "xtz" | "token";
+  tokenType: QSTokenType;
+  id: string; // token contract address or "XTZ" for XTZ 🙈
+  decimals: number;
   symbol: string;
   name: string;
   imgUrl: string;
-  type?: string;
   exchange: string;
+}
+
+export enum QSTokenType {
+  XTZ = "XTZ",
+  TzBTC = "TzBTC",
+  Staker = "STAKER",
+  FA1_2 = "FA1_2",
+  FA2 = "FA2",
 }
 
 export interface QSNetwork {

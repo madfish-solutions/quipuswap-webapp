@@ -91,7 +91,7 @@ import Loader from "@/components/Loader.vue";
 
 import store from "@/store";
 import { QSAsset, isAddressValid } from "@/core";
-import { TEZOS_TOKEN } from "@/core/defaults";
+import { XTZ_TOKEN } from "@/core/defaults";
 
 @Component({
   components: { TokenItem, Loader },
@@ -124,7 +124,7 @@ export default class FormField extends Vue {
 
   get filteredTokens(): QSAsset[] {
     return [
-      ...(this.withTezos ? [TEZOS_TOKEN] : []),
+      ...(this.withTezos ? [XTZ_TOKEN] : []),
       ...store.state.tokens.filter(
         (t: QSAsset) =>
           t.name.toLowerCase().includes(this.searchValue.toLowerCase()) ||
@@ -135,7 +135,7 @@ export default class FormField extends Vue {
 
   created() {
     if (this.onlyTezos) {
-      this.localToken = TEZOS_TOKEN;
+      this.localToken = XTZ_TOKEN;
     } else if (this.selectedToken) {
       this.localToken = this.selectedToken;
     }

@@ -127,7 +127,7 @@ import {
   mutezToTz,
   clearMem,
 } from "@/core";
-import { TEZOS_TOKEN } from "@/core/defaults";
+import { XTZ_TOKEN } from "@/core/defaults";
 
 @Component({
   components: {
@@ -143,7 +143,7 @@ import { TEZOS_TOKEN } from "@/core/defaults";
 export default class SwapOrSend extends Vue {
   @Prop({ default: false }) send?: boolean;
 
-  inputToken: QSAsset | null = TEZOS_TOKEN;
+  inputToken: QSAsset | null = XTZ_TOKEN;
   inputAmount = "";
   inputBalance: string | null = null;
   inputLoading = false;

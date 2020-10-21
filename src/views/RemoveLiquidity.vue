@@ -126,7 +126,7 @@ import {
   mutezToTz,
   clearMem,
 } from "@/core";
-import { TEZOS_TOKEN } from "@/core/defaults";
+import { XTZ_TOKEN } from "@/core/defaults";
 
 type InTokens = {
   tezos: string;
