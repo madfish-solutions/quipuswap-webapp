@@ -35,15 +35,15 @@
 
         <FormInfo>
           <div class="flex justify-between mb-1">
-            <span class="whitespace-no-wrap mr-2">Total votes</span>
+            <span class="mr-2 whitespace-no-wrap">Total votes</span>
             <span>{{ totalVotes !== null ? totalVotes : "-" }}</span>
           </div>
           <div class="flex justify-between mb-1">
-            <span class="whitespace-no-wrap mr-2">Total shares</span>
+            <span class="mr-2 whitespace-no-wrap">Total shares</span>
             <span>{{ totalShares !== null ? totalShares : "-" }}</span>
           </div>
           <div class="flex justify-between mb-1">
-            <span class="whitespace-no-wrap mr-2">Your shares</span>
+            <span class="mr-2 whitespace-no-wrap">Your shares</span>
             <span>
               {{
                 yourShares !== null
@@ -53,7 +53,7 @@
             </span>
           </div>
           <div class="flex justify-between">
-            <span class="whitespace-no-wrap mr-2">Your candidate</span>
+            <span class="mr-2 whitespace-no-wrap">Your candidate</span>
             <span class="truncate">{{ yourCandidate }}</span>
           </div>
         </FormInfo>
@@ -91,7 +91,7 @@
         />
       </Form>
 
-      <div class="mt-8 flex justify-center align-center text-center">
+      <div class="flex justify-center mt-8 text-center align-center">
         <SubmitBtn :disabled="!valid" @click="handleVote">
           <template v-if="!processing">{{ voteStatus }}</template>
           <template v-if="processing">
@@ -136,7 +136,7 @@ export default class VoteBaker extends Vue {
 
   currentCandidate: string = "-";
   nextCandidate: string = "-";
-  totalShares: number | null = null;
+  totalSupply: number | null = null;
   totalVotes: number | null = null;
   yourShares: number | null = null;
   yourCandidate: string = "-";
@@ -194,7 +194,7 @@ export default class VoteBaker extends Vue {
 
       this.currentCandidate = storage.currentDelegated || "-";
       this.nextCandidate = storage.delegated || "-";
-      this.totalShares = storage.totalShares;
+      this.totalSupply = storage.totalSupply;
       this.totalVotes = storage.totalVotes;
 
       const me = this.account.pkh || "";

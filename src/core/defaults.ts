@@ -6,6 +6,8 @@ export const FACTORY_CONTRACT_CARTHAGENET =
 export const FACTORY_CONTRACT_MAINNET =
   process.env.VUE_APP_FACTORY_CONTRACT_MAINNET || null;
 
+export const FEE_RATE = parseInt(process.env.VUE_APP_FEE_RATE) || 1;
+
 export const CARTHAGE_NETWORK: QSNetwork = {
   id: "carthagenet",
   name: "Carthage Testnet",

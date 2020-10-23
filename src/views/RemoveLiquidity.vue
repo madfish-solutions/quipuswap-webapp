@@ -237,7 +237,7 @@ export default class RemoveLiquidity extends Vue {
       const myShares = await dexStorage.shares.get(this.account.pkh);
 
       const myShare =
-        myShares && new BigNumber(myShares).div(dexStorage.totalShares);
+        myShares && new BigNumber(myShares).div(dexStorage.totalSupply);
       const myTokens =
         myShare &&
         new BigNumber(dexStorage.tokenPool)
