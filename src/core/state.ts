@@ -25,7 +25,7 @@ export async function getTokens() {
   if (!factoryContract) {
     throw new Error("Contract for network not found");
   }
-  const facStorage = await getFactoryStorage(factoryContract);
+  const facStorage = await getStorage(factoryContract);
 
   return Promise.all(
     facStorage.tokenList.map(async (tAddress: string) => {
@@ -66,9 +66,6 @@ export function clearMem() {
 }
 
 export const getDexStorage = (contractAddress: string) =>
-  getStorage(contractAddress).then(s => s.storage);
-
-export const getFactoryStorage = (contractAddress: string) =>
   getStorage(contractAddress).then(s => s.storage);
 
 export const getStorage = mem(getStoragePure, { maxAge: 30000 });
