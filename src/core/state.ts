@@ -56,6 +56,17 @@ function toUnknownToken(address: string, exchange: string): QSAsset {
   };
 }
 
+export async function getDexShares(
+  address: string,
+  exchange: string,
+  decimals = 0
+) {
+  const storage = await getDexStorage(exchange);
+  const ledger = storage.ledger || storage.accounts;
+  const nat = (await ledger.get(address))?.balance;
+  return nat ? new BigNumber(nat).div(10 ** decimals) : null;
+}
+
 /**
  * Storage
  */

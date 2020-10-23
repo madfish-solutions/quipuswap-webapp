@@ -108,7 +108,7 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 import * as NP from "number-precision";
 import store, { getAccount, useThanosWallet } from "@/store";
 import { BBKnownBaker } from "@/baking-bad";
-import { QSAsset, getDexStorage, isAddressValid, clearMem } from "@/core";
+import { QSAsset, getDexStorage, getDexShares, isAddressValid, clearMem } from "@/core";
 import NavTabs from "@/components/NavTabs.vue";
 import NavGovernance from "@/components/NavGovernance.vue";
 import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
@@ -201,7 +201,7 @@ export default class VoteBaker extends Vue {
 
       if (me) {
         const [myShares, myCandidate] = await Promise.all([
-          storage.shares.get(me),
+          getDexShares(me, this.selectedToken.exchange),
           storage.voters.get(me),
         ]);
 

@@ -33,7 +33,7 @@
         :selectedToken="selectedToken"
       />
 
-      <FormInfo class="whitespace-no-wrap overflow-x-auto">
+      <FormInfo class="overflow-x-auto whitespace-no-wrap">
         <div class="flex justify-between mb-1">
           <span class="mr-2">Dex contract</span>
           <span class="font-mono text-gray-400">{{ dexAddress || "-" }}</span>
@@ -66,7 +66,7 @@
       </FormInfo>
     </Form>
 
-    <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal"></div>
+    <div class="mx-auto mt-8 mb-8 text-sm font-normal text-center text-text"></div>
     <div class="flex justify-center text-center">
       <SubmitBtn @click="addLiquidity" :disabled="!valid">
         <template v-if="!processing">{{ addLiqStatus }}</template>
@@ -94,6 +94,7 @@ import {
   toValidAmount,
   getBalance,
   getDexStorage,
+  getDexShares,
   getContract,
   estimateShares,
   estimateSharesInverse,
@@ -229,8 +230,8 @@ export default class AddLiquidity extends Vue {
     this.poolMeta = null;
 
     if (this.selectedToken && this.account.pkh) {
+      const myShares = await getDexShares(this.account.pkh, this.selectedToken.exchange);
       const dexStorage = await getDexStorage(this.selectedToken.exchange);
-      const myShares = await dexStorage.shares.get(this.account.pkh);
 
       const myShare =
         myShares && new BigNumber(myShares).div(dexStorage.totalSupply);
@@ -298,7 +299,8 @@ export default class AddLiquidity extends Vue {
     if (!this.selectedToken) return;
 
     const dexStorage = await getDexStorage(this.selectedToken.exchange);
-    const amount = estimateToTezos(this.tokenAmount, dexStorage);
+    const shares = estimateSharesInverse(this.tokenAmount, dexStorage);
+    const amount = estimateInTezos(shares, dexStorage);
 
     this.tezAmount = toValidAmount(amount);
   }
@@ -312,11 +314,15 @@ export default class AddLiquidity extends Vue {
 
       const tezTk = this.tezToken!;
       const selTk = this.selectedToken!;
-      const tokenAmount = new BigNumber(this.tokenAmount);
+      const initialTezAmount = new BigNumber(this.tezAmount);
+      const initialTokenAmount = new BigNumber(this.tokenAmount);
 
       const dexStorage = await getDexStorage(selTk.exchange);
-      const tezAmount = estimateToTezos(tokenAmount, dexStorage);
+      const tezShares = estimateShares(initialTezAmount, dexStorage);
+      const tokensShares = estimateSharesInverse(initialTokenAmount, dexStorage);
+      const tezAmount = estimateInTezos(BigNumber.max(tezShares, tokensShares), dexStorage);
       const shares = estimateShares(tezAmount, dexStorage);
+      const tokenAmount = estimateInTokens(shares, dexStorage);
 
       const toCheck = [
         {
