@@ -320,6 +320,7 @@ export default class AddLiquidity extends Vue {
       const dexStorage = await getDexStorage(selTk.exchange);
       const tezShares = estimateShares(initialTezAmount, dexStorage);
       const tokensShares = estimateSharesInverse(initialTokenAmount, dexStorage);
+      // console.info(JSON.parse(JSON.stringify({ tezShares, tokensShares })))
       const tezAmount = estimateInTezos(BigNumber.max(tezShares, tokensShares), dexStorage);
       const shares = estimateShares(tezAmount, dexStorage);
       const tokenAmount = estimateInTokens(shares, dexStorage);

@@ -119,8 +119,6 @@ import {
   getDexStorage,
   getDexShares,
   getContract,
-  estimateShares,
-  estimateSharesInverse,
   estimateInTokens,
   estimateInTezos,
   tzToMutez,
