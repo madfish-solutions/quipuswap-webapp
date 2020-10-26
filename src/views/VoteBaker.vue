@@ -13,22 +13,22 @@
 
         <FormField
           placeholder="tz.."
-          label="Current candidate"
+          label="Delegated to"
           :withSelect="false"
-          v-model="currentCandidate"
+          v-model="nextCandidate"
           :isLoading="isLoading"
           readonly
         />
 
         <FormIcon>
-          <img src="@/assets/arrow-down.svg" />
+          <img src="@/assets/arrow-down.svg" class="transform rotate-180" />
         </FormIcon>
 
         <FormField
           placeholder="tz.."
           label="Next candidate"
           :withSelect="false"
-          v-model="nextCandidate"
+          v-model="currentCandidate"
           :isLoading="isLoading"
           readonly
         />
@@ -89,6 +89,21 @@
           v-on:baker-selected="selectBaker"
           :spellcheck="false"
         />
+
+        <FormIcon>
+          <img :src="require('@/assets/plus.svg')" />
+        </FormIcon>
+
+        <FormField
+          placeholder="0"
+          label="Shares to vote"
+          :withSelect="false"
+          :withTezos="false"
+          :subLabel="availableSharesToVote ? `Your shares: ${availableSharesToVote}` : ''"
+          :isLoading="isLoading"
+          v-model="sharesToVote"
+          @input="e => handleSharesToVoteChange(e.target.value)"
+        />
       </Form>
 
       <div class="flex justify-center mt-8 text-center align-center">
@@ -139,12 +154,14 @@ export default class VoteBaker extends Vue {
   totalShares: number | null = null;
   totalVotes: number | null = null;
   yourShares: number | null = null;
+  availableSharesToVote: number | null = null;
   yourCandidate: string = "-";
 
   bakerAddress: string = "";
   selectedBaker: BBKnownBaker | null = null;
 
   voter: string = "";
+  sharesToVote = "";
   processing: boolean = false;
   voteStatus: string = "Vote";
   readyToVote: boolean = false;
@@ -161,7 +178,7 @@ export default class VoteBaker extends Vue {
   }
 
   get valid() {
-    return isAddressValid(this.bakerAddress) && isAddressValid(this.voter);
+    return isAddressValid(this.bakerAddress) && isAddressValid(this.voter) && +(this.sharesToVote) > 0;
   }
 
   created() {
@@ -205,7 +222,8 @@ export default class VoteBaker extends Vue {
           storage.voters.get(me),
         ]);
 
-        this.yourShares = myShares ? +myShares : null;
+        this.yourShares = myShares ? myShares.total.toNumber() : null;
+        this.availableSharesToVote = myShares ? myShares.unfrozen.toNumber() : null;
         this.yourCandidate = myCandidate ? myCandidate.candidate : "-";
       }
 
@@ -230,15 +248,34 @@ export default class VoteBaker extends Vue {
     return NP.round(val * 100, 2);
   }
 
+  handleSharesToVoteChange(amount: string) {
+    const isNum = /^[0-9.]*$/g.test(amount);
+    this.sharesToVote = isNum ? amount : "";
+  }
+
   async handleVote() {
     if (this.processing) return;
     this.processing = true;
+
     try {
+      const sharesToVote = +this.sharesToVote;
+
       const tezos = await useThanosWallet();
       const contract = await tezos.wallet.at(this.selectedToken!.exchange);
-      const operation = await contract.methods
-        .use(7, "vote", this.bakerAddress, this.voter)
-        .send();
+
+      const batch = tezos.wallet.batch([])
+        .withTransfer(
+          contract.methods
+            .approve(contract.address, sharesToVote)
+            .toTransferParams()
+        )
+        .withTransfer(
+          contract.methods
+            .use(6, "vote", this.bakerAddress, sharesToVote, this.voter)
+            .toTransferParams()
+        );
+
+      const operation = await batch.send();
       await operation.confirmation();
 
       this.voteStatus = "Success";

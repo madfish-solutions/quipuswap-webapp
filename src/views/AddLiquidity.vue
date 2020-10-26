@@ -234,7 +234,7 @@ export default class AddLiquidity extends Vue {
       const dexStorage = await getDexStorage(this.selectedToken.exchange);
 
       const myShare =
-        myShares && new BigNumber(myShares).div(dexStorage.totalSupply);
+        myShares && new BigNumber(myShares.total).div(dexStorage.totalSupply);
       const myTokens =
         myShare &&
         new BigNumber(dexStorage.tokenPool)

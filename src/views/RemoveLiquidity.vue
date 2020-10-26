@@ -214,9 +214,17 @@ export default class RemoveLiquidity extends Vue {
     try {
       this.tokenLoading = true;
       if (this.selectedToken && this.account.pkh) {
+        const dexStorage = await getDexStorage(this.selectedToken.exchange);
         const shares = await getDexShares(this.account.pkh, this.selectedToken.exchange);
-        const val = shares ? shares.toString() : "0";
-        this.myShares = val === "1000" ? "999" : val;
+        if (!shares) {
+          this.myShares = "0";
+        } else {
+          this.myShares = (
+            shares.unfrozen.isEqualTo(dexStorage.totalSupply)
+            ? shares.unfrozen.minus(1)
+            : shares.unfrozen
+          ).toString();
+        }
       }
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
@@ -235,7 +243,7 @@ export default class RemoveLiquidity extends Vue {
       const dexStorage = await getDexStorage(this.selectedToken.exchange);
 
       const myShare =
-        myShares && new BigNumber(myShares).div(dexStorage.totalSupply);
+        myShares && new BigNumber(myShares.unfrozen).div(dexStorage.totalSupply);
       const myTokens =
         myShare &&
         new BigNumber(dexStorage.tokenPool)
@@ -295,10 +303,16 @@ export default class RemoveLiquidity extends Vue {
       const shares = new BigNumber(this.sharesToRemove!);
       const selTk = this.selectedToken!;
 
+      const dexStorage = await getDexStorage(selTk.exchange);
       const mySharesPure = await getDexShares(this.account.pkh, selTk.exchange);
-      const myShares = mySharesPure && new BigNumber(mySharesPure).isEqualTo(1000)
-        ? "999"
-        : mySharesPure;
+      let myShares: string | undefined;
+      if (mySharesPure) {
+        myShares = (
+          mySharesPure.unfrozen.isEqualTo(dexStorage.totalSupply)
+          ? mySharesPure.unfrozen.minus(1)
+          : mySharesPure.unfrozen
+        ).toString();
+      }
 
       if (!myShares || shares.isGreaterThan(myShares)) {
         throw new Error("Not Enough Shares");

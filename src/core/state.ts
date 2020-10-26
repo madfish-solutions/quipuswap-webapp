@@ -63,8 +63,17 @@ export async function getDexShares(
 ) {
   const storage = await getDexStorage(exchange);
   const ledger = storage.ledger || storage.accounts;
-  const nat = (await ledger.get(address))?.balance;
-  return nat ? new BigNumber(nat).div(10 ** decimals) : null;
+  const val = await ledger.get(address);
+  if (!val) return null;
+
+  const unfrozen = new BigNumber(val.balance).div(10 ** decimals);
+  const frozen = new BigNumber(val.frozenBalance).div(10 ** decimals);
+
+  return {
+    unfrozen,
+    frozen,
+    total: unfrozen.plus(frozen),
+  };
 }
 
 /**
