@@ -136,7 +136,7 @@ export default class VoteBaker extends Vue {
 
   currentCandidate: string = "-";
   nextCandidate: string = "-";
-  totalSupply: number | null = null;
+  totalShares: number | null = null;
   totalVotes: number | null = null;
   yourShares: number | null = null;
   yourCandidate: string = "-";
@@ -192,9 +192,9 @@ export default class VoteBaker extends Vue {
     try {
       const storage = await getDexStorage(this.selectedToken.exchange);
 
-      this.currentCandidate = storage.currentDelegated || "-";
-      this.nextCandidate = storage.delegated || "-";
-      this.totalSupply = storage.totalSupply;
+      this.currentCandidate = storage.currentCandidate || "-";
+      this.nextCandidate = storage.currentDelegated || "-";
+      this.totalShares = storage.totalSupply;
       this.totalVotes = storage.totalVotes;
 
       const me = this.account.pkh || "";

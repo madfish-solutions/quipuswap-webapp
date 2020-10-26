@@ -155,8 +155,8 @@ export default class Veto extends Vue {
     try {
       const storage = await getDexStorage(this.selectedToken.exchange);
 
-      this.currentCandidate = storage.currentDelegated || "-";
-      this.currentCandidateExist = Boolean(storage.currentDelegated);
+      this.currentCandidate = storage.currentCandidate || "-";
+      this.currentCandidateExist = Boolean(storage.currentCandidate);
       this.totalVotes = storage.totalVotes;
       this.totalVetos = storage.veto;
       this.votesToVeto = new BigNumber(storage.totalVotes)
