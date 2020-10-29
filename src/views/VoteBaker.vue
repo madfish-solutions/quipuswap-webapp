@@ -46,8 +46,8 @@
             <span class="mr-2 whitespace-no-wrap">Your shares</span>
             <span>
               {{
-                yourShares !== null
-                  ? `${yourShares} (${toPercentage(yourShares / totalShares)}%)`
+                yourTotalShares !== null
+                  ? `${yourTotalShares} (${toPercentage(yourTotalShares / totalShares)}%)`
                   : "-"
               }}
             </span>
@@ -113,6 +113,17 @@
             <Loader size="large" />
           </template>
         </SubmitBtn>
+
+        <template v-if="availableSharesToExit">
+          <div class="w-8" />
+
+          <SubmitBtn class="truncate whitespace-no-wrap bg-accent text-primary border-2 border-primary" @click="handleExit">
+            <template v-if="!exiting">{{ exitStatus }}<span v-if="exitStatus === 'Exit'" class="ml-1">({{ availableSharesToExit }} shares)</span></template>
+            <template v-if="exiting">
+              <Loader size="large" />
+            </template>
+          </SubmitBtn>
+        </template>
       </div>
     </template>
   </div>
@@ -153,8 +164,9 @@ export default class VoteBaker extends Vue {
   nextCandidate: string = "-";
   totalShares: number | null = null;
   totalVotes: number | null = null;
-  yourShares: number | null = null;
+  yourTotalShares: number | null = null;
   availableSharesToVote: number | null = null;
+  availableSharesToExit: number | null = null;
   yourCandidate: string = "-";
 
   bakerAddress: string = "";
@@ -163,7 +175,9 @@ export default class VoteBaker extends Vue {
   voter: string = "";
   sharesToVote = "";
   processing: boolean = false;
+  exiting: boolean = false;
   voteStatus: string = "Vote";
+  exitStatus: string = "Exit";
   readyToVote: boolean = false;
 
   get account() {
@@ -179,6 +193,13 @@ export default class VoteBaker extends Vue {
 
   get valid() {
     return isAddressValid(this.bakerAddress) && isAddressValid(this.voter) && +(this.sharesToVote) > 0;
+  }
+
+  get yourFrozenShares() {
+    if (this.yourTotalShares === null || this.availableSharesToVote === null) {
+      return null;
+    }
+    return this.yourTotalShares - this.availableSharesToVote;
   }
 
   created() {
@@ -217,14 +238,15 @@ export default class VoteBaker extends Vue {
       const me = this.account.pkh || "";
 
       if (me) {
-        const [myShares, myCandidate] = await Promise.all([
+        const [myShares, voter] = await Promise.all([
           getDexShares(me, this.selectedToken.exchange),
           storage.voters.get(me),
         ]);
 
-        this.yourShares = myShares ? myShares.total.toNumber() : null;
+        this.yourTotalShares = myShares ? myShares.total.toNumber() : null;
         this.availableSharesToVote = myShares ? myShares.unfrozen.toNumber() : null;
-        this.yourCandidate = myCandidate ? myCandidate.candidate : "-";
+        this.availableSharesToExit = voter ? voter.vote.toNumber() : null;
+        this.yourCandidate = voter ? voter.candidate : "-";
       }
 
       this.voter = me;
@@ -293,6 +315,42 @@ export default class VoteBaker extends Vue {
       this.processing = false;
       await new Promise(r => setTimeout(r, 5000));
       this.voteStatus = "Vote";
+    }
+  }
+
+  async handleExit() {
+    if (this.exiting) return;
+    this.exiting = true;
+
+    try {
+      const tezos = await useThanosWallet();
+      const contract = await tezos.wallet.at(this.selectedToken!.exchange);
+
+      const batch = tezos.wallet.batch([])
+        .withTransfer(
+          contract.methods
+            .use(6, "vote", this.bakerAddress, 0, this.voter)
+            .toTransferParams()
+        );
+
+      const operation = await batch.send();
+      await operation.confirmation();
+
+      this.exitStatus = "Success";
+      this.refresh();
+    } catch (err) {
+      console.error(err);
+      const msg = err.message;
+      this.exitStatus =
+        msg && msg.length < 30
+          ? msg.startsWith("Dex/")
+            ? msg.replace("Dex/", "")
+            : msg
+          : "Something went wrong";
+    } finally {
+      this.exiting = false;
+      await new Promise(r => setTimeout(r, 5000));
+      this.exitStatus = "Exit";
     }
   }
 
