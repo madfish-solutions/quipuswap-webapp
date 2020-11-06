@@ -70,7 +70,7 @@ export async function getDexShares(
   if (!val) return null;
 
   const unfrozen = new BigNumber(val.balance).div(10 ** decimals);
-  const frozen = new BigNumber(val.frozenBalance).div(10 ** decimals);
+  const frozen = new BigNumber(val.frozen_balance).div(10 ** decimals);
 
   return {
     unfrozen,

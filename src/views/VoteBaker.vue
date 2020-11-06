@@ -85,6 +85,7 @@
           placeholder="tz1v7h3s..."
           v-model="bakerAddress"
           v-on:input="bakerAddress = $event.target.value"
+          :with-select="withBakersSelect"
           :selectedBaker="selectedBaker"
           v-on:baker-selected="selectBaker"
           :spellcheck="false"
@@ -99,7 +100,7 @@
           label="Shares to vote"
           :withSelect="false"
           :withTezos="false"
-          :subLabel="availableSharesToVote ? `Your shares: ${availableSharesToVote}` : ''"
+          :subLabel="yourTotalShares ? `Your shares: ${yourTotalShares}` : ''"
           :isLoading="isLoading"
           v-model="sharesToVote"
           @input="e => handleSharesToVoteChange(e.target.value)"
@@ -108,7 +109,7 @@
 
       <div class="flex justify-center mt-8 text-center align-center">
         <SubmitBtn :disabled="!valid" @click="handleVote">
-          <template v-if="!processing">{{ voteStatus }}</template>
+          <template v-if="!processing">{{ voteStatus === "Vote" && availableSharesToExit ? "Revote" : voteStatus }}</template>
           <template v-if="processing">
             <Loader size="large" />
           </template>
@@ -134,7 +135,7 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 import * as NP from "number-precision";
 import store, { getAccount, useThanosWallet } from "@/store";
 import { BBKnownBaker } from "@/baking-bad";
-import { QSAsset, getDexStorage, getDexShares, isAddressValid, clearMem } from "@/core";
+import { QSAsset, getDexStorage, getDexShares, isAddressValid, clearMem, getNetwork } from "@/core";
 import NavTabs from "@/components/NavTabs.vue";
 import NavGovernance from "@/components/NavGovernance.vue";
 import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
@@ -179,6 +180,7 @@ export default class VoteBaker extends Vue {
   voteStatus: string = "Vote";
   exitStatus: string = "Exit";
   readyToVote: boolean = false;
+  withBakersSelect = getNetwork().type === "main";
 
   get account() {
     return getAccount();
@@ -329,7 +331,7 @@ export default class VoteBaker extends Vue {
       const batch = tezos.wallet.batch([])
         .withTransfer(
           contract.methods
-            .use(6, "vote", this.bakerAddress, 0, this.voter)
+            .use(6, "vote", this.nextCandidate, 0, this.voter)
             .toTransferParams()
         );
 
