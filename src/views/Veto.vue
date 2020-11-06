@@ -89,7 +89,7 @@
         <template v-if="availableSharesToExit">
           <div class="w-8" />
 
-          <SubmitBtn class="truncate whitespace-no-wrap bg-accent text-primary border-2 border-primary" @click="handleExit">
+          <SubmitBtn class="truncate whitespace-no-wrap bg-accent border-2 border-gray-800 text-gray-800" @click="handleExit">
             <template v-if="!exiting">{{ exitStatus }}<span v-if="exitStatus === 'Exit'" class="ml-1">({{ availableSharesToExit }} shares)</span></template>
             <template v-if="exiting">
               <Loader size="large" />

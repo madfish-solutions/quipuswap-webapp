@@ -89,7 +89,7 @@
       </FormInfo>
     </Form>
 
-    <div class="mx-auto mt-8 mb-8 text-sm font-normal text-center text-text"></div>
+    <div class="mx-auto mt-8 mb-8 text-sm font-normal text-center text-lightgray"></div>
     <div class="flex justify-center text-center">
       <SubmitBtn @click="removeLiquidity" :disabled="!valid">
         <template v-if="!processing">{{ remLiqStatus }}</template>
