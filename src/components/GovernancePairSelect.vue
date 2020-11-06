@@ -1,12 +1,12 @@
 <template>
-  <div class="mb-4 text-white -mx-3 xs:-mx-4 shadow-lg">
+  <div class="mb-4 -mx-3 text-white shadow-lg xs:-mx-4">
     <button
-      class="relative field rounded-t-3px flex items-stretch text-left focus:outline-none"
+      class="relative flex items-stretch text-left field rounded-t-3px focus:outline-none"
       :class="isSearchOpened ? '' : 'rounded-b-3px'"
       @click="toggleSearch"
     >
       <div class="flex flex-col max-w-full overflow-x-auto">
-        <div class="label mb-1 sm:text-lg font-light w-full">{{ label }}</div>
+        <div class="w-full mb-1 font-light label sm:text-lg">{{ label }}</div>
 
         <div class="w-full">
           <template v-if="selectedToken">
@@ -15,7 +15,7 @@
               <span class="truncate">{{ formattedSelectedTokenSymbol }}</span>
             </div>
 
-            <div class="mt-1 text-sm text-gray-500 font-light whitespace-no-wrap">
+            <div class="mt-1 text-sm font-light text-gray-500 whitespace-no-wrap">
               <span class="mr-1">Dex contract:</span>
               <span class="font-mono text-gray-400">{{ selectedToken.exchange }}</span>
             </div>
@@ -30,7 +30,7 @@
     </button>
 
     <div class="field-search rounded-b-3px" v-if="isSearchOpened">
-      <div class="px-3 xs:px-6 py-3 text-sm border-b border-gray-800">
+      <div class="px-3 py-3 text-sm border-b border-gray-800 xs:px-6">
         <input
           v-model="searchValue"
           @keydown="searchValue = $event.target.value"
@@ -73,7 +73,7 @@ export default class GovernancePairSelect extends Vue {
   label: string = "Select Token";
 
   searchValue: string = "";
-  isSearchOpened: boolean = !Boolean(this.selectedToken);
+  isSearchOpened: boolean = !Boolean((this as any).selectedToken);
   isLoading: boolean = false;
 
   @Watch("selectedToken")

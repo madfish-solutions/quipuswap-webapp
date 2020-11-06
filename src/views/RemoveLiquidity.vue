@@ -21,17 +21,17 @@
         <img :src="require('@/assets/arrow-down.svg')" />
       </FormIcon>
 
-      <div class="-mx-3 xs:-mx-4 shadow-lg">
-        <div class="field rounded-3px relative">
-          <div class="py-6 flex-1 flex flex-col justify-start">
-            <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">
+      <div class="-mx-3 shadow-lg xs:-mx-4">
+        <div class="relative field rounded-3px">
+          <div class="flex flex-col justify-start flex-1 py-6">
+            <div class="w-full mb-1 font-light label xs:mb-2 sm:text-lg">
               Output
               <span class="text-sm">(estimated)</span>
             </div>
 
             <div v-if="inTokens" class="flex flex-col fieldval">
               <div class="mb-1">
-                <span class="opacity-75 mr-1">+</span>
+                <span class="mr-1 opacity-75">+</span>
                 <span class="tracking-wide">
                   {{
                   formatNum(inTokens.tezos, 6)
@@ -41,7 +41,7 @@
               </div>
 
               <div class="mb-1">
-                <span class="opacity-75 mr-1">+</span>
+                <span class="mr-1 opacity-75">+</span>
                 <span class="tracking-wide">
                   {{
                   formatNum(inTokens.token, 0)
@@ -56,7 +56,7 @@
         </div>
       </div>
 
-      <FormInfo class="whitespace-no-wrap overflow-x-auto">
+      <FormInfo class="overflow-x-auto whitespace-no-wrap">
         <div class="flex justify-between mb-1">
           <span class="mr-2">Dex contract</span>
           <span class="font-mono text-gray-400">{{ dexAddress || "-" }}</span>
@@ -89,7 +89,7 @@
       </FormInfo>
     </Form>
 
-    <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal"></div>
+    <div class="mx-auto mt-8 mb-8 text-sm font-normal text-center text-text"></div>
     <div class="flex justify-center text-center">
       <SubmitBtn @click="removeLiquidity" :disabled="!valid">
         <template v-if="!processing">{{ remLiqStatus }}</template>
@@ -117,9 +117,8 @@ import {
   toValidAmount,
   getBalance,
   getDexStorage,
+  getDexShares,
   getContract,
-  estimateShares,
-  estimateSharesInverse,
   estimateInTokens,
   estimateInTezos,
   tzToMutez,
@@ -216,9 +215,16 @@ export default class RemoveLiquidity extends Vue {
       this.tokenLoading = true;
       if (this.selectedToken && this.account.pkh) {
         const dexStorage = await getDexStorage(this.selectedToken.exchange);
-        const shares = await dexStorage.shares.get(this.account.pkh);
-        const val = shares ? shares.toString() : "0";
-        this.myShares = val === "1000" ? "999" : val;
+        const shares = await getDexShares(this.account.pkh, this.selectedToken.exchange);
+        if (!shares) {
+          this.myShares = "0";
+        } else {
+          this.myShares = (
+            shares.unfrozen.isEqualTo(dexStorage.totalSupply)
+            ? shares.unfrozen.minus(1)
+            : shares.unfrozen
+          ).toString();
+        }
       }
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
@@ -233,11 +239,11 @@ export default class RemoveLiquidity extends Vue {
     this.poolMeta = null;
 
     if (this.selectedToken && this.account.pkh) {
+      const myShares = await getDexShares(this.account.pkh, this.selectedToken.exchange);
       const dexStorage = await getDexStorage(this.selectedToken.exchange);
-      const myShares = await dexStorage.shares.get(this.account.pkh);
 
       const myShare =
-        myShares && new BigNumber(myShares).div(dexStorage.totalShares);
+        myShares && new BigNumber(myShares.unfrozen).div(dexStorage.totalSupply);
       const myTokens =
         myShare &&
         new BigNumber(dexStorage.tokenPool)
@@ -298,10 +304,15 @@ export default class RemoveLiquidity extends Vue {
       const selTk = this.selectedToken!;
 
       const dexStorage = await getDexStorage(selTk.exchange);
-      const mySharesPure = await dexStorage.shares.get(this.account.pkh);
-      const myShares = new BigNumber(mySharesPure).isEqualTo(1000)
-        ? "999"
-        : mySharesPure;
+      const mySharesPure = await getDexShares(this.account.pkh, selTk.exchange);
+      let myShares: string | undefined;
+      if (mySharesPure) {
+        myShares = (
+          mySharesPure.unfrozen.isEqualTo(dexStorage.totalSupply)
+          ? mySharesPure.unfrozen.minus(1)
+          : mySharesPure.unfrozen
+        ).toString();
+      }
 
       if (!myShares || shares.isGreaterThan(myShares)) {
         throw new Error("Not Enough Shares");

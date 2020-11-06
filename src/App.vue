@@ -165,7 +165,6 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 import { ThanosWallet } from "@thanos-wallet/dapp";
 import Loader from "@/components/Loader.vue";
 import {
-  CARTHAGE_NETWORK,
   ALL_NETWORKS,
   XTZ_TOKEN,
   QSNetwork,

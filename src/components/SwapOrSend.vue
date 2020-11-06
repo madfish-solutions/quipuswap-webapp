@@ -43,7 +43,7 @@
         />
       </template>
 
-      <FormInfo class="whitespace-no-wrap overflow-x-auto">
+      <FormInfo class="overflow-x-auto whitespace-no-wrap">
         <div class="flex justify-between mb-1">
           <span class="mr-2">Input Dex contract</span>
           <span class="font-mono text-gray-400">{{ inputDexAddress || "-" }}</span>
@@ -70,7 +70,7 @@
           <button
             v-for="percentage in slippagePercentages"
             :key="percentage"
-            class="py-px px-2 ml-2 text-xs rounded-md shadow-xs focus:outline-none"
+            class="px-2 py-px ml-2 text-xs rounded-md shadow-xs focus:outline-none"
             :class="
               activeSlippagePercentage === percentage ? 'bg-alphawhite' : ''
             "
@@ -92,7 +92,7 @@
       </FormInfo>
     </Form>
 
-    <div class="mt-8 flex justify-center align-center text-center">
+    <div class="flex justify-center mt-8 text-center align-center">
       <SubmitBtn :disabled="!canSwap" @click="swap">
         <template v-if="!swapping">{{ swapStatus }}</template>
         <template v-if="swapping">
@@ -113,6 +113,7 @@ import Loader from "@/components/Loader.vue";
 import BigNumber from "bignumber.js";
 import store, { getAccount, useThanosWallet } from "@/store";
 import {
+  FEE_RATE,
   QSAsset,
   isAddressValid,
   toValidAmount,
@@ -255,7 +256,7 @@ export default class SwapOrSend extends Vue {
       const token = store.state.tokens[0];
       if (token) {
         const dexStorage = await getDexStorage(token.exchange);
-        const feeBn = new BigNumber(1).div(dexStorage.feeRate).times(100);
+        const feeBn = new BigNumber(1).div(FEE_RATE).times(100);
         this.fee = `${+feeBn.toFixed(2)}%`;
       }
     } catch (err) {

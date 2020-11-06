@@ -1,5 +1,6 @@
 import BigNumber from "bignumber.js";
 import { tzToMutez, mutezToTz } from "./helpers";
+import { FEE_RATE } from "./defaults";
 
 const PENNY = 0.000001;
 
@@ -7,9 +8,7 @@ export function estimateTezToToken(tezAmount: any, dexStorage: any) {
   if (!tezAmount) return new BigNumber(0);
 
   const mutezAmount = tzToMutez(tezAmount);
-  const fee = mutezAmount
-    .div(dexStorage.feeRate)
-    .integerValue(BigNumber.ROUND_DOWN);
+  const fee = mutezAmount.div(FEE_RATE).integerValue(BigNumber.ROUND_DOWN);
   const newTezPool = mutezAmount.plus(dexStorage.tezPool);
   const tempTezPool = newTezPool.minus(fee);
   const newTokenPool = new BigNumber(dexStorage.invariant)
@@ -27,16 +26,16 @@ export function estimateTezToTokenInverse(tokenAmount: any, dexStorage: any) {
     .integerValue(BigNumber.ROUND_DOWN);
   const fee = tempTezPool
     .minus(dexStorage.tezPool)
-    .div(new BigNumber(dexStorage.feeRate).minus(1))
+    .div(new BigNumber(FEE_RATE).minus(1))
     .integerValue(BigNumber.ROUND_DOWN);
-  return mutezToTz(fee.times(dexStorage.feeRate));
+  return mutezToTz(fee.times(FEE_RATE));
 }
 
 export function estimateTokenToTez(tokenAmount: any, dexStorage: any) {
   if (!tokenAmount) return new BigNumber(0);
 
   const fee = new BigNumber(tokenAmount)
-    .div(dexStorage.feeRate)
+    .div(FEE_RATE)
     .integerValue(BigNumber.ROUND_DOWN);
   const newTokenPool = new BigNumber(dexStorage.tokenPool).plus(tokenAmount);
   const tempTokenPool = newTokenPool.minus(fee);
@@ -57,9 +56,9 @@ export function estimateTokenToTezInverse(tezAmount: any, dexStorage: any) {
     .integerValue(BigNumber.ROUND_DOWN);
   const fee = tempTokenPool
     .minus(dexStorage.tokenPool)
-    .div(new BigNumber(dexStorage.feeRate).minus(1))
+    .div(new BigNumber(FEE_RATE).minus(1))
     .integerValue(BigNumber.ROUND_DOWN);
-  return fee.times(dexStorage.feeRate);
+  return fee.times(FEE_RATE);
 }
 
 export function estimateShares(tezAmount: any, dexStorage: any) {
@@ -67,7 +66,7 @@ export function estimateShares(tezAmount: any, dexStorage: any) {
 
   return tzToMutez(tezAmount)
     .integerValue(BigNumber.ROUND_DOWN)
-    .times(dexStorage.totalShares)
+    .times(dexStorage.totalSupply)
     .div(dexStorage.tezPool)
     .integerValue(BigNumber.ROUND_DOWN);
 }
@@ -77,7 +76,7 @@ export function estimateSharesInverse(tokenAmount: any, dexStorage: any) {
 
   return new BigNumber(tokenAmount)
     .integerValue(BigNumber.ROUND_DOWN)
-    .times(dexStorage.totalShares)
+    .times(dexStorage.totalSupply)
     .div(dexStorage.tokenPool)
     .integerValue(BigNumber.ROUND_DOWN);
 }
@@ -88,7 +87,7 @@ export function estimateInTezos(shares: any, dexStorage: any) {
   return mutezToTz(
     new BigNumber(shares)
       .times(dexStorage.tezPool)
-      .div(dexStorage.totalShares)
+      .div(dexStorage.totalSupply)
       .integerValue(BigNumber.ROUND_DOWN)
   );
 }
@@ -98,7 +97,7 @@ export function estimateInTokens(shares: any, dexStorage: any) {
 
   return new BigNumber(shares)
     .times(dexStorage.tokenPool)
-    .div(dexStorage.totalShares)
+    .div(dexStorage.totalSupply)
     .integerValue(BigNumber.ROUND_DOWN);
 }
 

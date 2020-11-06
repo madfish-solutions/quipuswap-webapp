@@ -1,7 +1,8 @@
-import { Tezos } from "@taquito/taquito";
+import { TezosToolkit } from "@taquito/taquito";
 import BigNumber from "bignumber.js";
 import mem from "mem";
 import { QSAsset, QSNetwork, QSTokenType } from "./types";
+import { snakeToCamelKeys } from "./helpers";
 import {
   ALL_NETWORKS,
   DEFAULT_NETWORK,
@@ -9,7 +10,7 @@ import {
   MAINNET_TOKENS,
 } from "./defaults";
 
-Tezos.setProvider({ rpc: getNetwork().rpcBaseURL });
+export const Tezos = new TezosToolkit(getNetwork().rpcBaseURL);
 
 export async function getNewTokenBalance(
   accountPkh: string,
@@ -25,7 +26,9 @@ export async function getTokens() {
   if (!factoryContract) {
     throw new Error("Contract for network not found");
   }
-  const facStorage = await getFactoryStorage(factoryContract);
+  const facStorage = await getStorage(factoryContract).then(s =>
+    snakeToCamelKeys(s)
+  );
 
   return Promise.all(
     facStorage.tokenList.map(async (tAddress: string) => {
@@ -56,6 +59,26 @@ function toUnknownToken(address: string, exchange: string): QSAsset {
   };
 }
 
+export async function getDexShares(
+  address: string,
+  exchange: string,
+  decimals = 0
+) {
+  const storage = await getDexStorage(exchange);
+  const ledger = storage.ledger || storage.accounts;
+  const val = await ledger.get(address);
+  if (!val) return null;
+
+  const unfrozen = new BigNumber(val.balance).div(10 ** decimals);
+  const frozen = new BigNumber(val.frozen_balance).div(10 ** decimals);
+
+  return {
+    unfrozen,
+    frozen,
+    total: unfrozen.plus(frozen),
+  };
+}
+
 /**
  * Storage
  */
@@ -66,10 +89,7 @@ export function clearMem() {
 }
 
 export const getDexStorage = (contractAddress: string) =>
-  getStorage(contractAddress).then(s => s.storage);
-
-export const getFactoryStorage = (contractAddress: string) =>
-  getStorage(contractAddress).then(s => s.storage);
+  getStorage(contractAddress).then(s => snakeToCamelKeys(s.storage));
 
 export const getStorage = mem(getStoragePure, { maxAge: 30000 });
 

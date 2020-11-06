@@ -1,9 +1,9 @@
 import BigNumber from "bignumber.js";
-import { Tezos, TezosToolkit } from "@taquito/taquito";
+import { TezosToolkit } from "@taquito/taquito";
 import { Uint8ArrayConsumer } from "@taquito/local-forging/dist/lib/uint8array-consumer";
 import { valueDecoder } from "@taquito/local-forging/dist/lib/michelson/codec";
 import { QSAsset, QSTokenType } from "./types";
-import { getContract } from "./state";
+import { Tezos, getContract } from "./state";
 import { mutezToTz } from "./helpers";
 
 export async function getBalance(accountPkh: string, asset: QSAsset) {

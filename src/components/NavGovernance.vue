@@ -7,24 +7,24 @@
           : '/governance/vote-baker'
       "
       active-class="active"
-      class="w-1/4 flex flex-col justify-around text-center leading-tight"
+      class="flex flex-col justify-around w-1/3 leading-tight text-center"
     >
       <span class="text-base xs:text-xl">Vote</span>
       <span class="text-xs">for Baker</span>
     </router-link>
 
-    <router-link
+    <!-- <router-link
       :to="
         $route.params.token
           ? `/governance/delegate-vote/${$route.params.token}`
           : '/governance/delegate-vote'
       "
       active-class="active"
-      class="w-1/4 flex flex-col justify-around text-center leading-tight"
+      class="flex flex-col justify-around w-1/4 leading-tight text-center"
     >
       <span class="text-base xs:text-xl">Delegate</span>
       <span class="text-xs">Vote</span>
-    </router-link>
+    </router-link> -->
 
     <router-link
       :to="
@@ -33,7 +33,7 @@
           : '/governance/veto'
       "
       active-class="active"
-      class="w-1/4 flex flex-col justify-around text-center leading-tight"
+      class="flex flex-col justify-around w-1/3 leading-tight text-center"
     >
       <span class="text-base xs:text-xl">Veto</span>
     </router-link>
@@ -45,7 +45,7 @@
           : '/governance/rewards'
       "
       active-class="active"
-      class="w-1/4 flex flex-col justify-around text-center leading-tight"
+      class="flex flex-col justify-around w-1/3 leading-tight text-center"
     >
       <span class="text-base xs:text-xl">Rewards</span>
     </router-link>
