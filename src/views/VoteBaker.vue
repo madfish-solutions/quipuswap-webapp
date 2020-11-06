@@ -307,12 +307,13 @@ export default class VoteBaker extends Vue {
     } catch (err) {
       console.error(err);
       const msg = err.message;
-      this.voteStatus =
+      const tmp =
         msg && msg.length < 30
           ? msg.startsWith("Dex/")
             ? msg.replace("Dex/", "")
             : msg
           : "Something went wrong";
+      this.voteStatus = tmp === "veto-candidate" ? "Baker under Veto" : tmp;
     } finally {
       this.processing = false;
       await new Promise(r => setTimeout(r, 5000));

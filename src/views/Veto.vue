@@ -45,7 +45,7 @@
           </p>
         </FormInfo>
 
-        <FormField
+        <!-- <FormField
           placeholder="tz1v7h3s..."
           label="Voter"
           :withSelect="false"
@@ -56,7 +56,7 @@
 
         <FormIcon>
           <img :src="require('@/assets/plus.svg')" />
-        </FormIcon>
+        </FormIcon> -->
 
         <FormField
           placeholder="0"
@@ -195,8 +195,8 @@ export default class Veto extends Vue {
         storage.voters.get(me),
       ]);
 
-      this.currentCandidate = storage.currentCandidate || "-";
-      this.currentCandidateExist = Boolean(storage.currentCandidate);
+      this.currentCandidate = storage.currentDelegated || "-";
+      this.currentCandidateExist = Boolean(storage.currentDelegated);
       this.totalVotes = storage.totalVotes;
       this.totalVetos = storage.veto;
       this.votesToVeto = new BigNumber(storage.totalVotes)
