@@ -18,7 +18,7 @@ export enum QSTokenType {
 }
 
 export interface QSNetwork {
-  id: "mainnet" | "carthagenet";
+  id: "mainnet" | "delphinet" | "carthagenet";
   name: string;
   type: "main" | "test";
   rpcBaseURL: string;

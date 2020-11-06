@@ -1,7 +1,7 @@
 import { QSAsset, QSTokenType, QSNetwork } from "@/core/types";
 
-export const FACTORY_CONTRACT_CARTHAGENET =
-  process.env.VUE_APP_FACTORY_CONTRACT_CARTHAGENET || null;
+export const FACTORY_CONTRACT_DELPHINET =
+  process.env.VUE_APP_FACTORY_CONTRACT_DELPHINET || null;
 
 export const FACTORY_CONTRACT_MAINNET =
   process.env.VUE_APP_FACTORY_CONTRACT_MAINNET || null;
@@ -12,13 +12,13 @@ export const ACCURANCY_MULTIPLIER = parseInt(
   process.env.VUE_APP_ACCURANCY_MULTIPLIER
 );
 
-export const CARTHAGE_NETWORK: QSNetwork = {
-  id: "carthagenet",
-  name: "Carthage Testnet",
+export const DEPLHINET_NETWORK: QSNetwork = {
+  id: "delphinet",
+  name: "Delphi Testnet",
   type: "test",
-  rpcBaseURL: "https://testnet-tezos.giganode.io",
-  factoryContract: FACTORY_CONTRACT_CARTHAGENET,
-  description: "Carthage testnet",
+  rpcBaseURL: "https://delphinet-tezos.giganode.io",
+  factoryContract: FACTORY_CONTRACT_DELPHINET,
+  description: "Delphi testnet",
   color: "#0f4c81",
   disabled: false,
 };
@@ -34,8 +34,8 @@ export const MAINNET_NETWORK: QSNetwork = {
   disabled: true,
 };
 
-export const ALL_NETWORKS = [MAINNET_NETWORK, CARTHAGE_NETWORK];
-export const DEFAULT_NETWORK = CARTHAGE_NETWORK;
+export const ALL_NETWORKS = [MAINNET_NETWORK, DEPLHINET_NETWORK];
+export const DEFAULT_NETWORK = DEPLHINET_NETWORK;
 
 export const XTZ_TOKEN: QSAsset = {
   type: "xtz",
