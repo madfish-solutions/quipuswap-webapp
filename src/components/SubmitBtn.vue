@@ -2,7 +2,7 @@
   <button
     v-bind="$attrs"
     v-on="$listeners"
-    class="flex justify-center items-center bg-primary text-text h-12 w-full max-w-xs rounded-3px text-lg focus:outline-none"
+    class="flex justify-center items-center bg-primary text-lightgray h-12 w-full max-w-xs rounded-3px text-lg focus:outline-none"
   >
     <slot />
   </button>

@@ -100,7 +100,7 @@
           label="Shares to vote"
           :withSelect="false"
           :withTezos="false"
-          :subLabel="yourTotalShares ? `Your shares: ${yourTotalShares}` : ''"
+          :subLabel="availableSharesToVote ? `Your shares: ${availableSharesToVote}` : ''"
           :isLoading="isLoading"
           v-model="sharesToVote"
           @input="e => handleSharesToVoteChange(e.target.value)"
@@ -118,7 +118,7 @@
         <template v-if="availableSharesToExit">
           <div class="w-8" />
 
-          <SubmitBtn class="truncate whitespace-no-wrap bg-accent text-primary border-2 border-primary" @click="handleExit">
+          <SubmitBtn class="truncate whitespace-no-wrap bg-accent border-2 border-gray-800 text-gray-800" @click="handleExit">
             <template v-if="!exiting">{{ exitStatus }}<span v-if="exitStatus === 'Exit'" class="ml-1">({{ availableSharesToExit }} shares)</span></template>
             <template v-if="exiting">
               <Loader size="large" />
@@ -197,13 +197,6 @@ export default class VoteBaker extends Vue {
     return isAddressValid(this.bakerAddress) && isAddressValid(this.voter) && +(this.sharesToVote) > 0;
   }
 
-  get yourFrozenShares() {
-    if (this.yourTotalShares === null || this.availableSharesToVote === null) {
-      return null;
-    }
-    return this.yourTotalShares - this.availableSharesToVote;
-  }
-
   created() {
     this.loadData();
   }
@@ -247,6 +240,9 @@ export default class VoteBaker extends Vue {
 
         this.yourTotalShares = myShares ? myShares.total.toNumber() : null;
         this.availableSharesToVote = myShares ? myShares.unfrozen.toNumber() : null;
+        if (this.availableSharesToVote !== null && voter) {
+          this.availableSharesToVote += voter.vote.toNumber();
+        }
         this.availableSharesToExit = voter ? voter.vote.toNumber() : null;
         this.yourCandidate = voter ? voter.candidate : "-";
       }
@@ -332,7 +328,7 @@ export default class VoteBaker extends Vue {
       const batch = tezos.wallet.batch([])
         .withTransfer(
           contract.methods
-            .use(6, "vote", this.nextCandidate, 0, this.voter)
+            .use(6, "vote", this.nextCandidate || this.voter, 0, this.voter)
             .toTransferParams()
         );
 
