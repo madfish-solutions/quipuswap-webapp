@@ -204,6 +204,9 @@ export default class Veto extends Vue {
         .minus(storage.veto)
         .toNumber();
       this.availableSharesToVeto = myShares ? myShares.unfrozen.toNumber() : null;
+      if (this.availableSharesToVeto !== null && voter) {
+        this.availableSharesToVeto += voter.veto.toNumber();
+      }
       this.availableSharesToExit = voter ? voter.veto.toNumber() : null;
 
       if (me) {
