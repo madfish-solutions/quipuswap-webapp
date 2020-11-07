@@ -8,7 +8,13 @@
           <div class="text-base font-normal xs:text-lg">
             {{ formattedTokenSymbol }}
           </div>
-          <div class="text-xs text-gray-600 xs:text-sm">{{ name }}</div>
+          <div class="flex items-center">
+            <div class="text-xs text-gray-600 xs:text-sm">{{ name }}</div>
+            <template v-if="token.type === 'token'">
+              <div class="ml-2 opacity-50 text-xs text-yellow-600 rounded-sm border border-yellow-600 px-1">{{token.tokenType === "FA2" ? "FA2" : "FA1.2"}}</div>
+              <div v-if="token.fa2TokenId !== undefined" class="ml-1 opacity-50 text-xs text-yellow-600 rounded-sm border border-yellow-600 px-1">id: {{token.fa2TokenId}}</div>
+            </template>
+          </div>
         </div>
       </div>
     </div>

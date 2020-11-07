@@ -22,17 +22,21 @@ export async function getNewTokenBalance(
 }
 
 export async function getTokens() {
-  const { type, factoryContract } = getNetwork();
-  if (!factoryContract) {
-    throw new Error("Contract for network not found");
+  const { type, fa1_2FactoryContract, fa2FactoryContract } = getNetwork();
+  if (!fa1_2FactoryContract && !fa2FactoryContract) {
+    throw new Error("Contracts for this network not found");
   }
-  const facStorage = await getStorage(factoryContract).then(s =>
-    snakeToCamelKeys(s)
-  );
 
-  return Promise.all(
-    facStorage.tokenList.map(async (tAddress: string) => {
-      const exchange = await facStorage.tokenToExchange.get(tAddress);
+  const [fa1_2FacStorage, fa2FacStorage] = await Promise.all([
+    fa1_2FactoryContract &&
+      getStorage(fa1_2FactoryContract).then(s => snakeToCamelKeys(s)),
+    fa2FactoryContract &&
+      getStorage(fa2FactoryContract).then(s => snakeToCamelKeys(s)),
+  ]);
+
+  return Promise.all([
+    ...(fa1_2FacStorage?.tokenList ?? []).map(async (tAddress: string) => {
+      const exchange = await fa1_2FacStorage.tokenToExchange.get(tAddress);
 
       if (type === "main") {
         const knownToken = MAINNET_TOKENS.find(({ id }) => tAddress === id);
@@ -41,21 +45,37 @@ export async function getTokens() {
         }
       }
 
-      return toUnknownToken(tAddress, exchange);
-    })
-  );
+      return toUnknownToken(tAddress, exchange, QSTokenType.FA1_2);
+    }),
+    ...(fa2FacStorage?.tokenList ?? []).map(
+      async ({ 0: tAddress, 1: tId }: { 0: string; 1: BigNumber }) => {
+        const exchange = await fa2FacStorage.tokenToExchange.get([
+          tAddress,
+          +tId,
+        ]);
+
+        return toUnknownToken(tAddress, exchange, QSTokenType.FA2, +tId);
+      }
+    ),
+  ]);
 }
 
-function toUnknownToken(address: string, exchange: string): QSAsset {
+function toUnknownToken(
+  address: string,
+  exchange: string,
+  tokenType: QSTokenType,
+  fa2TokenId?: number
+): QSAsset {
   return {
     type: "token",
-    tokenType: QSTokenType.FA1_2,
+    tokenType,
     id: address,
     decimals: 0,
     symbol: address,
     name: "Token",
     imgUrl: DEFAULT_TOKEN_LOGO_URL,
     exchange,
+    fa2TokenId,
   };
 }
 

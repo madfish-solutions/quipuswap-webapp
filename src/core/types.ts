@@ -7,13 +7,14 @@ export interface QSAsset {
   name: string;
   imgUrl: string;
   exchange: string;
+  fa2TokenId?: number;
 }
 
 export enum QSTokenType {
   XTZ = "XTZ",
   TzBTC = "TzBTC",
   Staker = "STAKER",
-  FA1_2 = "FA1_2",
+  FA1_2 = "FA1.2",
   FA2 = "FA2",
 }
 
@@ -22,7 +23,8 @@ export interface QSNetwork {
   name: string;
   type: "main" | "test";
   rpcBaseURL: string;
-  factoryContract: string | null;
+  fa1_2FactoryContract: string | null;
+  fa2FactoryContract: string | null;
   description: string;
   color: string;
   disabled: boolean;

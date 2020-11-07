@@ -39,6 +39,7 @@ export async function getBalance(accountPkh: string, asset: QSAsset) {
       return new BigNumber(val.args[0].int).div(10 ** asset.decimals);
 
     case QSTokenType.FA1_2:
+    case QSTokenType.FA2:
       const fa1_2 = await getContract(asset.id);
       const storage = await fa1_2.storage<any>();
       ledger = storage.ledger || storage.accounts;
