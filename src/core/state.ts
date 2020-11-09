@@ -1,4 +1,9 @@
-import { TezosToolkit } from "@taquito/taquito";
+import {
+  TezosToolkit,
+  WalletContract,
+  ContractMethod,
+  Wallet,
+} from "@taquito/taquito";
 import BigNumber from "bignumber.js";
 import mem from "mem";
 import { QSAsset, QSNetwork, QSTokenType } from "./types";
@@ -58,6 +63,28 @@ export async function getTokens() {
       }
     ),
   ]);
+}
+
+export function approveToken(
+  token: Pick<QSAsset, "tokenType" | "fa2TokenId">,
+  tokenContract: WalletContract,
+  from: string,
+  to: string,
+  amount: number
+): ContractMethod<Wallet> {
+  if (token.tokenType === QSTokenType.FA2) {
+    return tokenContract.methods.update_operators([
+      {
+        ["add_operator"]: {
+          owner: from,
+          operator: to,
+          token_id: token.fa2TokenId,
+        },
+      },
+    ]);
+  } else {
+    return tokenContract.methods.approve(to, amount);
+  }
 }
 
 function toUnknownToken(

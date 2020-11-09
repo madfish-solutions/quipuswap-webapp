@@ -104,6 +104,7 @@ import {
   tzToMutez,
   mutezToTz,
   clearMem,
+  approveToken,
 } from "@/core";
 import { XTZ_TOKEN } from "@/core/defaults";
 
@@ -353,9 +354,13 @@ export default class AddLiquidity extends Vue {
       const batch = tezos.wallet
         .batch([])
         .withTransfer(
-          tokenContract.methods
-            .approve(selTk.exchange, tokenAmount.toNumber())
-            .toTransferParams()
+          approveToken(
+            selTk,
+            tokenContract,
+            me,
+            selTk.exchange,
+            tokenAmount.toNumber()
+          ).toTransferParams()
         )
         .withTransfer(
           dexContract.methods

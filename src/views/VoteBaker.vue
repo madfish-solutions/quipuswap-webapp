@@ -135,7 +135,7 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 import * as NP from "number-precision";
 import store, { getAccount, useThanosWallet } from "@/store";
 import { BBKnownBaker } from "@/baking-bad";
-import { QSAsset, getDexStorage, getDexShares, isAddressValid, clearMem, getNetwork } from "@/core";
+import { QSAsset, getDexStorage, getDexShares, isAddressValid, clearMem, getNetwork, approveToken } from "@/core";
 import NavTabs from "@/components/NavTabs.vue";
 import NavGovernance from "@/components/NavGovernance.vue";
 import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
@@ -281,13 +281,21 @@ export default class VoteBaker extends Vue {
       const sharesToVote = +this.sharesToVote;
 
       const tezos = await useThanosWallet();
+      const me = await tezos.wallet.pkh();
       const contract = await tezos.wallet.at(this.selectedToken!.exchange);
 
       const batch = tezos.wallet.batch([])
         .withTransfer(
-          contract.methods
-            .approve(contract.address, sharesToVote)
-            .toTransferParams()
+          approveToken(
+            {
+              tokenType: this.selectedToken!.tokenType,
+              fa2TokenId: 0
+            },
+            contract,
+            me,
+            contract.address,
+            sharesToVote
+          ).toTransferParams()
         )
         .withTransfer(
           contract.methods
@@ -325,10 +333,16 @@ export default class VoteBaker extends Vue {
       const tezos = await useThanosWallet();
       const contract = await tezos.wallet.at(this.selectedToken!.exchange);
 
+      const bakerStub = [
+        this.nextCandidate,
+        this.bakerAddress,
+        this.voter
+      ].find(isAddressValid) ?? "";
+
       const batch = tezos.wallet.batch([])
         .withTransfer(
           contract.methods
-            .use(6, "vote", this.nextCandidate || this.voter, 0, this.voter)
+            .use(6, "vote", bakerStub, 0, this.voter)
             .toTransferParams()
         );
 

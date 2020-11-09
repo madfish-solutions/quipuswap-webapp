@@ -91,6 +91,8 @@ import {
   tzToMutez,
   mutezToTz,
   clearMem,
+  approveToken,
+  QSTokenType
 } from "@/core";
 import { XTZ_TOKEN } from "@/core/defaults";
 
@@ -268,9 +270,15 @@ export default class AddToken extends Vue {
       const batch = tezos.wallet
         .batch([])
         .withTransfer(
-          tokenContract.methods
-            .approve(fa1_2FactoryContract, tokenAmount.toNumber())
-            .toTransferParams()
+          approveToken(
+            {
+              tokenType: QSTokenType.FA1_2,
+            },
+            tokenContract,
+            me,
+            fa1_2FactoryContract,
+            tokenAmount.toNumber()
+          ).toTransferParams()
         )
         .withTransfer(
           facContract.methods
