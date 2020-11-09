@@ -91,6 +91,8 @@ import {
   tzToMutez,
   mutezToTz,
   clearMem,
+  approveToken,
+  QSTokenType
 } from "@/core";
 import { XTZ_TOKEN } from "@/core/defaults";
 
@@ -251,13 +253,13 @@ export default class AddToken extends Vue {
         }
       }
 
-      const { factoryContract } = getNetwork();
-      if (!factoryContract) {
+      const { fa1_2FactoryContract } = getNetwork();
+      if (!fa1_2FactoryContract) {
         throw new Error("Factory contract for network not found");
       }
 
       const [facContract, tokenContract] = await Promise.all([
-        tezos.wallet.at(factoryContract),
+        tezos.wallet.at(fa1_2FactoryContract),
         tezos.wallet.at(this.tokenAddress),
       ]);
 
@@ -268,9 +270,15 @@ export default class AddToken extends Vue {
       const batch = tezos.wallet
         .batch([])
         .withTransfer(
-          tokenContract.methods
-            .approve(factoryContract, tokenAmount.toNumber())
-            .toTransferParams()
+          approveToken(
+            {
+              tokenType: QSTokenType.FA1_2,
+            },
+            tokenContract,
+            me,
+            fa1_2FactoryContract,
+            tokenAmount.toNumber()
+          ).toTransferParams()
         )
         .withTransfer(
           facContract.methods

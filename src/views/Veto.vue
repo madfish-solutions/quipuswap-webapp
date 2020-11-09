@@ -106,7 +106,7 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 import * as NP from "number-precision";
 import store, { getAccount, useThanosWallet } from "@/store";
 import { BBKnownBaker } from "@/baking-bad";
-import { QSAsset, getDexStorage, getDexShares, isAddressValid, clearMem } from "@/core";
+import { QSAsset, getDexStorage, getDexShares, isAddressValid, clearMem, approveToken } from "@/core";
 import NavTabs from "@/components/NavTabs.vue";
 import NavGovernance from "@/components/NavGovernance.vue";
 import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
@@ -255,13 +255,21 @@ export default class Veto extends Vue {
       const sharesToVeto = +this.sharesToVeto;
 
       const tezos = await useThanosWallet();
+      const me = await tezos.wallet.pkh();
       const contract = await tezos.wallet.at(this.selectedToken!.exchange);
 
       const batch = tezos.wallet.batch([])
         .withTransfer(
-          contract.methods
-            .approve(contract.address, sharesToVeto)
-            .toTransferParams()
+          approveToken(
+            {
+              tokenType: this.selectedToken!.tokenType,
+              fa2TokenId: 0
+            },
+            contract,
+            me,
+            contract.address,
+            sharesToVeto
+          ).toTransferParams()
         )
         .withTransfer(
           contract.methods

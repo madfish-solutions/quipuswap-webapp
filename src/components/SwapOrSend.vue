@@ -114,6 +114,7 @@ import BigNumber from "bignumber.js";
 import store, { getAccount, useThanosWallet } from "@/store";
 import {
   FEE_RATE,
+  XTZ_TOKEN,
   QSAsset,
   isAddressValid,
   toValidAmount,
@@ -127,8 +128,8 @@ import {
   tzToMutez,
   mutezToTz,
   clearMem,
+  approveToken,
 } from "@/core";
-import { XTZ_TOKEN } from "@/core/defaults";
 
 @Component({
   components: {
@@ -438,9 +439,13 @@ export default class SwapOrSend extends Vue {
         const batch = tezos.wallet
           .batch([])
           .withTransfer(
-            tokenContract.methods
-              .approve(inTk.exchange, inpAmn)
-              .toTransferParams()
+            approveToken(
+              inTk,
+              tokenContract,
+              me,
+              inTk.exchange,
+              inpAmn
+            ).toTransferParams()
           )
           .withTransfer(
             dexContract.methods
@@ -469,9 +474,13 @@ export default class SwapOrSend extends Vue {
         const batch = tezos.wallet
           .batch([])
           .withTransfer(
-            inTokenContract.methods
-              .approve(inTk.exchange, inpAmn)
-              .toTransferParams()
+            approveToken(
+              inTk,
+              inTokenContract,
+              me,
+              inTk.exchange,
+              inpAmn
+            ).toTransferParams()
           )
           .withTransfer(
             inDexContract.methods
