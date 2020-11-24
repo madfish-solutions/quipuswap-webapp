@@ -53,7 +53,7 @@
       </FormInfo>
     </Form>
 
-    <div class="mx-auto text-center mt-8 mb-8 text-text text-sm font-normal"></div>
+    <div class="mx-auto mt-8 mb-8 text-sm font-normal text-center text-lightgray"></div>
     <div class="flex justify-center text-center">
       <SubmitBtn @click="addToken" :disabled="!valid">
         <template v-if="!processing">{{ addTokenStatus }}</template>
@@ -86,15 +86,15 @@ import {
   getStoragePure,
   getContract,
   getNetwork,
-  estimateShares,
-  estimateSharesInverse,
   estimateInTokens,
   estimateInTezos,
   tzToMutez,
   mutezToTz,
   clearMem,
+  approveToken,
+  QSTokenType
 } from "@/core";
-import { TEZOS_TOKEN } from "@/core/defaults";
+import { XTZ_TOKEN } from "@/core/defaults";
 
 type PoolMeta = {
   tezFull: string;
@@ -118,7 +118,7 @@ type PoolMeta = {
 export default class AddToken extends Vue {
   tokenAddress = "";
 
-  tezToken: QSAsset | null = TEZOS_TOKEN;
+  tezToken: QSAsset | null = XTZ_TOKEN;
   tezAmount = "";
   tezBalance: string | null = null;
   tezLoading = false;
@@ -233,33 +233,33 @@ export default class AddToken extends Vue {
       const tezAmount = new BigNumber(this.tezAmount);
       const tokenAmount = new BigNumber(this.tokenAmount);
 
-      const toCheck = [
-        {
-          promise: getBalance(me, tezTk),
-          amount: tezAmount,
-        },
-        {
-          promise: getNewTokenBalance(me, this.tokenAddress),
-          amount: tokenAmount,
-        },
-      ];
-      for (const { promise, amount } of toCheck) {
-        let bal: BigNumber | undefined;
-        try {
-          bal = await promise;
-        } catch (_err) {}
-        if (bal && bal.isLessThan(amount)) {
-          throw new Error("Not Enough Funds");
-        }
-      }
+      // const toCheck = [
+      //   {
+      //     promise: getBalance(me, tezTk),
+      //     amount: tezAmount,
+      //   },
+      //   {
+      //     promise: getNewTokenBalance(me, this.tokenAddress),
+      //     amount: tokenAmount,
+      //   },
+      // ];
+      // for (const { promise, amount } of toCheck) {
+      //   let bal: BigNumber | undefined;
+      //   try {
+      //     bal = await promise;
+      //   } catch (_err) {}
+      //   if (bal && bal.isLessThan(amount)) {
+      //     throw new Error("Not Enough Funds");
+      //   }
+      // }
 
-      const { factoryContract } = getNetwork();
-      if (!factoryContract) {
+      const { fa1_2FactoryContract } = getNetwork();
+      if (!fa1_2FactoryContract) {
         throw new Error("Factory contract for network not found");
       }
 
       const [facContract, tokenContract] = await Promise.all([
-        tezos.wallet.at(factoryContract),
+        tezos.wallet.at(fa1_2FactoryContract),
         tezos.wallet.at(this.tokenAddress),
       ]);
 
@@ -270,9 +270,15 @@ export default class AddToken extends Vue {
       const batch = tezos.wallet
         .batch([])
         .withTransfer(
-          tokenContract.methods
-            .approve(factoryContract, tokenAmount.toNumber())
-            .toTransferParams()
+          approveToken(
+            {
+              tokenType: QSTokenType.FA1_2,
+            },
+            tokenContract,
+            me,
+            fa1_2FactoryContract,
+            tokenAmount.toNumber()
+          ).toTransferParams()
         )
         .withTransfer(
           facContract.methods

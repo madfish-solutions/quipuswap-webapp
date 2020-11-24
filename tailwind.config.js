@@ -17,7 +17,7 @@ module.exports = {
       white: "#fff",
       alphawhite: "rgba(255, 255, 255, 0.05)",
 
-      text: "#EDEDEE",
+      lightgray: "#EDEDEE",
       primary: "#5B61F6",
       accent: "#F6CC5B",
 

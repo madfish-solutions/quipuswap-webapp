@@ -1,15 +1,21 @@
-import { Tezos } from "@taquito/taquito";
+import {
+  TezosToolkit,
+  WalletContract,
+  ContractMethod,
+  Wallet,
+} from "@taquito/taquito";
 import BigNumber from "bignumber.js";
 import mem from "mem";
-import { QSAsset, QSNetwork } from "./types";
+import { QSAsset, QSNetwork, QSTokenType } from "./types";
+import { snakeToCamelKeys } from "./helpers";
 import {
   ALL_NETWORKS,
   DEFAULT_NETWORK,
   DEFAULT_TOKEN_LOGO_URL,
+  MAINNET_TOKENS,
 } from "./defaults";
-import { mutezToTz } from "./helpers";
 
-Tezos.setProvider({ rpc: getNetwork().rpcBaseURL });
+export const Tezos = new TezosToolkit(getNetwork().rpcBaseURL);
 
 export async function getNewTokenBalance(
   accountPkh: string,
@@ -20,36 +26,104 @@ export async function getNewTokenBalance(
   return new BigNumber(val && val.balance ? val.balance : val ? val : 0);
 }
 
-export async function getBalance(accountPkh: string, token: QSAsset) {
-  if (token.type === "xtz") {
-    return mutezToTz(await Tezos.tz.getBalance(accountPkh));
+export async function getTokens() {
+  const { type, fa1_2FactoryContract, fa2FactoryContract } = getNetwork();
+  if (!fa1_2FactoryContract && !fa2FactoryContract) {
+    throw new Error("Contracts for this network not found");
+  }
+
+  const [fa1_2FacStorage, fa2FacStorage] = await Promise.all([
+    fa1_2FactoryContract &&
+      getStorage(fa1_2FactoryContract).then(s => snakeToCamelKeys(s)),
+    fa2FactoryContract &&
+      getStorage(fa2FactoryContract).then(s => snakeToCamelKeys(s)),
+  ]);
+
+  return Promise.all([
+    ...(fa1_2FacStorage?.tokenList ?? []).map(async (tAddress: string) => {
+      const exchange = await fa1_2FacStorage.tokenToExchange.get(tAddress);
+
+      if (type === "main") {
+        const knownToken = MAINNET_TOKENS.find(({ id }) => tAddress === id);
+        if (knownToken) {
+          return knownToken;
+        }
+      }
+
+      return toUnknownToken(tAddress, exchange, QSTokenType.FA1_2);
+    }),
+    ...(fa2FacStorage?.tokenList ?? []).map(
+      async ({ 0: tAddress, 1: tId }: { 0: string; 1: BigNumber }) => {
+        const exchange = await fa2FacStorage.tokenToExchange.get([
+          tAddress,
+          +tId,
+        ]);
+
+        return toUnknownToken(tAddress, exchange, QSTokenType.FA2, +tId);
+      }
+    ),
+  ]);
+}
+
+export function approveToken(
+  token: Pick<QSAsset, "tokenType" | "fa2TokenId">,
+  tokenContract: WalletContract,
+  from: string,
+  to: string,
+  amount: number
+): ContractMethod<Wallet> {
+  if (token.tokenType === QSTokenType.FA2) {
+    return tokenContract.methods.update_operators([
+      {
+        ["add_operator"]: {
+          owner: from,
+          operator: to,
+          token_id: token.fa2TokenId,
+        },
+      },
+    ]);
   } else {
-    const storage = await getStoragePure(token.id);
-    const val = await storage.ledger.get(accountPkh);
-    return new BigNumber(val ? val.balance : 0);
+    return tokenContract.methods.approve(to, amount);
   }
 }
 
-export async function getTokens() {
-  const { factoryContract } = getNetwork();
-  if (!factoryContract) {
-    throw new Error("Contract for network not found");
-  }
-  const facStorage = await getFactoryStorage(factoryContract);
+function toUnknownToken(
+  address: string,
+  exchange: string,
+  tokenType: QSTokenType,
+  fa2TokenId?: number
+): QSAsset {
+  return {
+    type: "token",
+    tokenType,
+    id: address,
+    decimals: 0,
+    symbol: address,
+    name: "Token",
+    imgUrl: DEFAULT_TOKEN_LOGO_URL,
+    exchange,
+    fa2TokenId,
+  };
+}
 
-  return Promise.all(
-    facStorage.tokenList.map(async (tAddress: string) => {
-      const exchange = await facStorage.tokenToExchange.get(tAddress);
-      return {
-        id: tAddress,
-        name: "Token",
-        type: "token",
-        symbol: tAddress,
-        exchange,
-        imgUrl: DEFAULT_TOKEN_LOGO_URL,
-      };
-    })
-  );
+export async function getDexShares(
+  address: string,
+  exchange: string,
+  decimals = 0
+) {
+  const storage = await getDexStorage(exchange);
+  const ledger = storage.ledger || storage.accounts;
+  const val = await ledger.get(address);
+  if (!val) return null;
+
+  const unfrozen = new BigNumber(val.balance).div(10 ** decimals);
+  const frozen = new BigNumber(val.frozen_balance).div(10 ** decimals);
+
+  return {
+    unfrozen,
+    frozen,
+    total: unfrozen.plus(frozen),
+  };
 }
 
 /**
@@ -62,10 +136,7 @@ export function clearMem() {
 }
 
 export const getDexStorage = (contractAddress: string) =>
-  getStorage(contractAddress).then(s => s.storage);
-
-export const getFactoryStorage = (contractAddress: string) =>
-  getStorage(contractAddress).then(s => s.storage);
+  getStorage(contractAddress).then(s => snakeToCamelKeys(s.storage));
 
 export const getStorage = mem(getStoragePure, { maxAge: 30000 });
 

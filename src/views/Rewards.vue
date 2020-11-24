@@ -18,18 +18,18 @@
         />
 
         <FormInfo>
-          <div v-if="dataLoading" class="p-4 flex items-center justify-center">
+          <div v-if="dataLoading" class="flex items-center justify-center p-4">
             <Loader size="large" />
           </div>
           <p v-else class="py-4 text-xl">
             Your Rewards:
-            <span class="text-accent mr-1">{{ rewards }}</span>
+            <span class="mr-1 text-accent">{{ rewards }}</span>
             <span class="text-sm opacity-90">XTZ</span>
           </p>
         </FormInfo>
       </Form>
 
-      <div class="mt-4 flex justify-center align-center text-center">
+      <div class="flex justify-center mt-4 text-center align-center">
         <SubmitBtn :disabled="!valid" @click="handleWithdraw">
           <template v-if="!processing">{{ withdrawStatus }}</template>
           <template v-if="processing">
@@ -50,6 +50,7 @@ import {
   getDexStorage,
   clearMem,
   mutezToTz,
+  ACCURANCY_MULTIPLIER
 } from "@/core";
 import NavTabs from "@/components/NavTabs.vue";
 import NavGovernance from "@/components/NavGovernance.vue";
@@ -118,9 +119,9 @@ export default class Rewards extends Vue {
     this.dataLoading = true;
     try {
       const storage = await getDexStorage(this.selectedToken.exchange);
-      const myCl = await storage.loyaltyCycle.get(this.account.pkh);
+      const myCl = await storage.userRewards.get(this.account.pkh);
       if (myCl) {
-        this.rewards = mutezToTz(myCl.reward).toFormat(6);
+        this.rewards = mutezToTz(myCl.reward.div(ACCURANCY_MULTIPLIER)).toFormat(6);
       }
     } catch (err) {
       console.error(err);
