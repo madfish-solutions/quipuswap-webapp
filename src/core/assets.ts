@@ -1,50 +1,47 @@
 import BigNumber from "bignumber.js";
 import { TezosToolkit } from "@taquito/taquito";
-import { Uint8ArrayConsumer } from "@taquito/local-forging/dist/lib/uint8array-consumer";
-import { valueDecoder } from "@taquito/local-forging/dist/lib/michelson/codec";
 import { QSAsset, QSTokenType } from "./types";
 import { Tezos, getContract } from "./state";
 import { mutezToTz } from "./helpers";
 
 export async function getBalance(accountPkh: string, asset: QSAsset) {
-  let ledger, nat: BigNumber;
+  let nat: BigNumber | undefined;
+
   switch (asset.tokenType) {
     case QSTokenType.XTZ:
       const amount = await Tezos.tz.getBalance(accountPkh);
       return mutezToTz(amount);
 
     case QSTokenType.Staker:
-      const staker = await getContract(asset.id);
-      ledger = (await staker.storage<any>())[7];
-      nat = await ledger.get(accountPkh);
-      return nat ?? new BigNumber(0);
-
     case QSTokenType.TzBTC:
-      const tzBtc = await getContract(asset.id);
-      ledger = (await tzBtc.storage<any>())[0];
-      const { packed } = await Tezos.rpc.packData({
-        type: { prim: "pair", args: [{ prim: "string" }, { prim: "address" }] },
-        data: {
-          prim: "Pair",
-          args: [{ string: "ledger" }, { string: accountPkh }],
-        },
-      });
-      const bytes = await ledger.get(packed);
-      if (!bytes) {
-        return new BigNumber(0);
-      }
-      const val = valueDecoder(
-        Uint8ArrayConsumer.fromHexString(bytes.slice(2))
-      );
-      return new BigNumber(val.args[0].int).div(10 ** asset.decimals);
-
     case QSTokenType.FA1_2:
+      const contract = await getContract(asset.id);
+
+      try {
+        nat = await contract.views.getBalance(accountPkh).read();
+      } catch {}
+
+      if (!nat || nat.isNaN()) {
+        nat = new BigNumber(0);
+      }
+
+      return nat.div(10 ** asset.decimals);
+
     case QSTokenType.FA2:
-      const fa1_2 = await getContract(asset.id);
-      const storage = await fa1_2.storage<any>();
-      ledger = storage.ledger || storage.accounts;
-      nat = (await ledger.get(accountPkh))?.balance;
-      return nat ? nat.div(10 ** asset.decimals) : new BigNumber(0);
+      const fa2Contract = await getContract(asset.id);
+
+      try {
+        const response = await fa2Contract.views
+          .balance_of([{ owner: accountPkh, token_id: asset.fa2TokenId }])
+          .read();
+        nat = response[0].balance;
+      } catch {}
+
+      if (!nat || nat.isNaN()) {
+        nat = new BigNumber(0);
+      }
+
+      return nat.div(10 ** asset.decimals);
 
     default:
       throw new Error("Not Supported");

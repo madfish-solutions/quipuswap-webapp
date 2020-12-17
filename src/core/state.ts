@@ -8,6 +8,7 @@ import BigNumber from "bignumber.js";
 import mem from "mem";
 import { QSAsset, QSNetwork, QSTokenType } from "./types";
 import { snakeToCamelKeys } from "./helpers";
+import { LambdaViewSigner } from "./lambda-view";
 import {
   ALL_NETWORKS,
   DEFAULT_NETWORK,
@@ -16,6 +17,7 @@ import {
 } from "./defaults";
 
 export const Tezos = new TezosToolkit(getNetwork().rpcBaseURL);
+Tezos.setSignerProvider(new LambdaViewSigner());
 
 export async function getNewTokenBalance(
   accountPkh: string,
