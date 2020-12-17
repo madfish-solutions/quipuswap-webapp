@@ -20,7 +20,7 @@ export const DEPLHINET_NETWORK: QSNetwork = {
   id: "delphinet",
   name: "Delphi Testnet",
   type: "test",
-  rpcBaseURL: "https://delphinet-tezos.giganode.io",
+  rpcBaseURL: "https://testnet-tezos.giganode.io",
   fa1_2FactoryContract: FA1_2_FACTORY_CONTRACT_DELPHINET,
   fa2FactoryContract: FA2_FACTORY_CONTRACT_DELPHINET,
   description: "Delphi testnet",
