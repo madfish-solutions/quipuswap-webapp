@@ -233,25 +233,25 @@ export default class AddToken extends Vue {
       const tezAmount = new BigNumber(this.tezAmount);
       const tokenAmount = new BigNumber(this.tokenAmount);
 
-      // const toCheck = [
-      //   {
-      //     promise: getBalance(me, tezTk),
-      //     amount: tezAmount,
-      //   },
-      //   {
-      //     promise: getNewTokenBalance(me, this.tokenAddress),
-      //     amount: tokenAmount,
-      //   },
-      // ];
-      // for (const { promise, amount } of toCheck) {
-      //   let bal: BigNumber | undefined;
-      //   try {
-      //     bal = await promise;
-      //   } catch (_err) {}
-      //   if (bal && bal.isLessThan(amount)) {
-      //     throw new Error("Not Enough Funds");
-      //   }
-      // }
+      const toCheck = [
+        {
+          promise: getBalance(me, tezTk),
+          amount: tezAmount,
+        },
+        {
+          promise: getNewTokenBalance(me, this.tokenAddress),
+          amount: tokenAmount,
+        },
+      ];
+      for (const { promise, amount } of toCheck) {
+        let bal: BigNumber | undefined;
+        try {
+          bal = await promise;
+        } catch (_err) {}
+        if (bal && bal.isLessThan(amount)) {
+          throw new Error("Not Enough Funds");
+        }
+      }
 
       const { fa1_2FactoryContract } = getNetwork();
       if (!fa1_2FactoryContract) {
