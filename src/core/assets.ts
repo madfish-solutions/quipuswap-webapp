@@ -48,6 +48,53 @@ export async function getBalance(accountPkh: string, asset: QSAsset) {
   }
 }
 
+export async function getNewTokenBalance(
+  accountPkh: string,
+  tokenType: QSTokenType,
+  tokenAddress: string,
+  tokenId?: number
+) {
+  let nat: BigNumber | undefined;
+
+  switch (tokenType) {
+    case QSTokenType.FA1_2:
+      const contract = await getContract(tokenAddress);
+
+      try {
+        nat = await contract.views.getBalance(accountPkh).read();
+      } catch {}
+
+      if (!nat || nat.isNaN()) {
+        nat = new BigNumber(0);
+      }
+
+      return nat;
+
+    case QSTokenType.FA2:
+      const fa2Contract = await getContract(tokenAddress);
+
+      if (typeof tokenId !== "number") {
+        throw new Error("FA2 token type requires token ID");
+      }
+
+      try {
+        const response = await fa2Contract.views
+          .balance_of([{ owner: accountPkh, token_id: tokenId }])
+          .read();
+        nat = response[0].balance;
+      } catch {}
+
+      if (!nat || nat.isNaN()) {
+        nat = new BigNumber(0);
+      }
+
+      return nat;
+
+    default:
+      throw new Error("Token type not supported");
+  }
+}
+
 export async function toTransferParams(
   tezos: TezosToolkit,
   asset: QSAsset,

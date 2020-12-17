@@ -22,15 +22,6 @@ export const Tezos = new TezosToolkit(
 );
 Tezos.setSignerProvider(new LambdaViewSigner());
 
-export async function getNewTokenBalance(
-  accountPkh: string,
-  tokenAddress: string
-) {
-  const storage = await getStoragePure(tokenAddress);
-  const val = await storage.ledger.get(accountPkh);
-  return new BigNumber(val && val.balance ? val.balance : val ? val : 0);
-}
-
 export async function getTokens() {
   const { type, fa1_2FactoryContract, fa2FactoryContract } = getNetwork();
   if (!fa1_2FactoryContract && !fa2FactoryContract) {

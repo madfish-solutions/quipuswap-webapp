@@ -8,8 +8,7 @@
       <div class="py-6 flex-1 flex flex-col justify-start">
         <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">{{ label }}</div>
         <input
-          class="w-full"
-          :class="!withSelect && isLoading && 'hidden'"
+          :class="!withSelect && isLoading ? 'hidden' : `w-full ${extrabutton ? 'pr-32' : ''}`"
           v-bind="$attrs"
           v-on="$listeners"
         />
@@ -102,6 +101,7 @@ export default class FormField extends Vue {
   @Prop({ default: false }) isLoading?: boolean;
   @Prop({ default: true }) withSelect?: boolean;
   @Prop({ default: true }) showSearch?: boolean;
+  @Prop({ default: false }) extrabutton?: boolean;
   @Prop({ default: true }) withTezos?: boolean;
   @Prop({ default: false }) onlyTezos?: boolean;
   @Prop({ default: null }) selectedToken?: QSAsset | null;

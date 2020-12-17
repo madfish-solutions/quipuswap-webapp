@@ -5,17 +5,56 @@
     <Form :style="processing && 'pointer-events:none'">
       <NavInvest />
 
-      <FormField
-        placeholder="KT1v7h3s..."
-        label="Token address"
-        :withSelect="false"
-        v-model="tokenAddress"
-        v-on:input="tokenAddress = $event.target.value"
-        :spellcheck="false"
-      />
+      <div class="relative">
+        <FormField
+          placeholder="KT1v7h3s..."
+          label="Token address"
+          :withSelect="false"
+          v-model="tokenAddress"
+          v-on:input="tokenAddress = $event.target.value"
+          :spellcheck="false"
+          :extrabutton="true"
+        />
+
+        <div class="absolute right-0 top-0 bottom-0 flex items-center pr-3">
+          <div
+            class="flex flex-col items-stretch text-white border-accent border-2 rounded-3px text-sm sm:text-base whitespace-no-wrap"
+          >
+            <button
+              class="text-left font-medium tracking-wider px-3 py-1 focus:outline-none"
+              :class="tokenType === 'FA1.2' ? 'bg-accent text-black' : 'hover:text-accent'"
+              @click="() => setTokenType('FA1.2')"
+            >
+              FA 1.2
+            </button>
+            <button
+              class="text-left font-medium tracking-wider px-3 py-1 focus:outline-none"
+              :class="tokenType === 'FA2' ? 'bg-accent text-black' : 'hover:text-accent'"
+              @click="() => setTokenType('FA2')"
+            >
+              FA 2
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <template v-if="tokenType === 'FA2'">
+        <FormIcon>
+          <img :src="require('@/assets/plus.svg')" />
+        </FormIcon>
+
+        <FormField
+          placeholder="0"
+          label="Token ID"
+          :withSelect="false"
+          v-model="tokenId"
+          v-on:input="tokenId = $event.target.value"
+          :spellcheck="false"
+        />
+      </template>
 
       <FormIcon>
-        <p class="text-center">Please, provide an address of a valid FA1.2 contract.</p>
+        <img :src="require('@/assets/arrow-down.svg')" />
       </FormIcon>
 
       <FormField
@@ -92,7 +131,7 @@ import {
   mutezToTz,
   clearMem,
   approveToken,
-  QSTokenType
+  QSTokenType,
 } from "@/core";
 import { XTZ_TOKEN } from "@/core/defaults";
 
@@ -130,6 +169,9 @@ export default class AddToken extends Vue {
   processing = false;
   addTokenStatus = this.defaultAddTokenStatus;
 
+  tokenType = QSTokenType.FA1_2;
+  tokenId = 0;
+
   get defaultAddTokenStatus() {
     return "Add new token";
   }
@@ -159,6 +201,10 @@ export default class AddToken extends Vue {
     return `1 Token = ${price} XTZ`;
   }
 
+  setTokenType(tokenType: QSTokenType) {
+    this.tokenType = tokenType;
+  }
+
   created() {
     this.loadTezBalance();
   }
@@ -168,8 +214,18 @@ export default class AddToken extends Vue {
     this.loadTezBalance();
   }
 
+  @Watch("tokenType")
+  onTokenTypeChange() {
+    this.loadTokenBalance();
+  }
+
   @Watch("tokenAddress")
   onTokenAddressChange() {
+    this.loadTokenBalance();
+  }
+
+  @Watch("tokenId")
+  onTokenIdChange() {
     this.loadTokenBalance();
   }
 
@@ -195,21 +251,20 @@ export default class AddToken extends Vue {
 
   async loadTokenBalance() {
     this.tokenBalance = null;
-    try {
-      if (isKTAddress(this.tokenAddress) && this.account.pkh) {
-        try {
-          const bal = await getNewTokenBalance(
-            this.account.pkh,
-            this.tokenAddress
-          );
-          this.tokenBalance = bal.toString();
-        } catch (_err) {
-          this.tokenBalance = "?";
+    if (isKTAddress(this.tokenAddress) && this.account.pkh) {
+      try {
+        const bal = await getNewTokenBalance(
+          this.account.pkh,
+          this.tokenType,
+          this.tokenAddress,
+          this.tokenId ? +this.tokenId : 0
+        );
+        this.tokenBalance = bal.toString();
+      } catch (err) {
+        if (process.env.NODE_ENV === "development") {
+          console.error(err);
         }
-      }
-    } catch (err) {
-      if (process.env.NODE_ENV === "development") {
-        console.error(err);
+        this.tokenBalance = "?";
       }
     }
   }
@@ -232,6 +287,7 @@ export default class AddToken extends Vue {
       const tezTk = this.tezToken!;
       const tezAmount = new BigNumber(this.tezAmount);
       const tokenAmount = new BigNumber(this.tokenAmount);
+      const tokenId = this.tokenId ? +this.tokenId : 0;
 
       const toCheck = [
         {
@@ -239,7 +295,12 @@ export default class AddToken extends Vue {
           amount: tezAmount,
         },
         {
-          promise: getNewTokenBalance(me, this.tokenAddress),
+          promise: getNewTokenBalance(
+            me,
+            this.tokenType,
+            this.tokenAddress,
+            tokenId
+          ),
           amount: tokenAmount,
         },
       ];
@@ -253,36 +314,46 @@ export default class AddToken extends Vue {
         }
       }
 
-      const { fa1_2FactoryContract } = getNetwork();
-      if (!fa1_2FactoryContract) {
+      const { fa1_2FactoryContract, fa2FactoryContract } = getNetwork();
+      if (
+        (this.tokenType === "FA1.2" && !fa1_2FactoryContract) ||
+        (this.tokenType === "FA2" && !fa2FactoryContract)
+      ) {
         throw new Error("Factory contract for network not found");
       }
 
+      const factoryContractAddres = this.tokenType === "FA1.2"
+        ? fa1_2FactoryContract!
+        : fa2FactoryContract!;
+
       const [facContract, tokenContract] = await Promise.all([
-        tezos.wallet.at(fa1_2FactoryContract),
+        tezos.wallet.at(factoryContractAddres),
         tezos.wallet.at(this.tokenAddress),
       ]);
-
-      if (typeof tokenContract.methods.approve !== "function") {
-        throw new Error("Invalid token contract");
-      }
 
       const batch = tezos.wallet
         .batch([])
         .withTransfer(
           approveToken(
             {
-              tokenType: QSTokenType.FA1_2,
+              tokenType: this.tokenType,
             },
             tokenContract,
             me,
-            fa1_2FactoryContract,
+            factoryContractAddres,
             tokenAmount.toNumber()
           ).toTransferParams()
         )
         .withTransfer(
           facContract.methods
-            .launchExchange(this.tokenAddress, tokenAmount.toNumber())
+            .launchExchange(
+              ...(
+                this.tokenType === 'FA1.2'
+                  ? [this.tokenAddress]
+                  : [this.tokenAddress, tokenId]
+              ),
+              tokenAmount.toNumber()
+            )
             .toTransferParams({ amount: tezAmount.toNumber() })
         );
 
