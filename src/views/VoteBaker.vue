@@ -133,7 +133,7 @@
 <script lang="ts">
 import { Component, Vue, Watch } from "vue-property-decorator";
 import * as NP from "number-precision";
-import store, { getAccount, useThanosWallet } from "@/store";
+import store, { getAccount, useWallet } from "@/store";
 import { BBKnownBaker } from "@/baking-bad";
 import { QSAsset, getDexStorage, getDexShares, isAddressValid, clearMem, getNetwork, approveToken } from "@/core";
 import NavTabs from "@/components/NavTabs.vue";
@@ -280,7 +280,7 @@ export default class VoteBaker extends Vue {
     try {
       const sharesToVote = +this.sharesToVote;
 
-      const tezos = await useThanosWallet();
+      const tezos = await useWallet();
       const me = await tezos.wallet.pkh();
       const contract = await tezos.wallet.at(this.selectedToken!.exchange);
 
@@ -330,7 +330,7 @@ export default class VoteBaker extends Vue {
     this.exiting = true;
 
     try {
-      const tezos = await useThanosWallet();
+      const tezos = await useWallet();
       const contract = await tezos.wallet.at(this.selectedToken!.exchange);
 
       const bakerStub = [

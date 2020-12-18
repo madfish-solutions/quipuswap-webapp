@@ -43,7 +43,7 @@
 
 <script lang="ts">
 import { Component, Vue, Watch } from "vue-property-decorator";
-import store, { getAccount, useThanosWallet } from "@/store";
+import store, { getAccount, useWallet } from "@/store";
 import {
   QSAsset,
   isAddressValid,
@@ -138,7 +138,7 @@ export default class Rewards extends Vue {
     if (this.processing) return;
     this.processing = true;
     try {
-      const tezos = await useThanosWallet();
+      const tezos = await useWallet();
       const contract = await tezos.wallet.at(this.selectedToken!.exchange);
       const operation = await contract.methods
         .use(3, "withdrawProfit", this.recipientAddress)

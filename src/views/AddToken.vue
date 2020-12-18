@@ -113,7 +113,7 @@ import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
 import SubmitBtn from "@/components/SubmitBtn.vue";
 
 import BigNumber from "bignumber.js";
-import { loadTokens, getAccount, useThanosWallet } from "@/store";
+import { loadTokens, getAccount, useWallet } from "@/store";
 import {
   QSAsset,
   isAddressValid,
@@ -281,7 +281,7 @@ export default class AddToken extends Vue {
     if (this.processing) return;
     this.processing = true;
     try {
-      const tezos = await useThanosWallet();
+      const tezos = await useWallet();
       const me = await tezos.wallet.pkh();
 
       const tezTk = this.tezToken!;

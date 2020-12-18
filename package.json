@@ -9,11 +9,11 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@taquito/beacon-wallet": "7.2.0-alpha.0",
     "@taquito/local-forging": "^7.1.0-preview-lambdaview.0",
     "@taquito/michelson-encoder": "^7.1.0-preview-lambdaview.0",
     "@taquito/taquito": "^7.1.0-preview-lambdaview.0",
     "@taquito/utils": "^7.1.0-preview-lambdaview.0",
-    "@thanos-wallet/dapp": "^1.0.2",
     "axios": "^0.19.2",
     "bignumber.js": "^9.0.0",
     "core-js": "^3.6.4",
