@@ -48,7 +48,7 @@
           label="Token ID"
           :withSelect="false"
           v-model="tokenId"
-          v-on:input="tokenId = $event.target.value"
+          v-on:input="tokenId = !isNaN(parseInt($event.target.value)) ? parseInt($event.target.value) : ''"
           :spellcheck="false"
         />
       </template>
