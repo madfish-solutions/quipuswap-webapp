@@ -1,7 +1,8 @@
 import Vue from "vue";
 import Vuex from "vuex";
-import { ThanosWallet } from "@thanos-wallet/dapp";
-import { QSAsset, getTokens, getNetwork } from "@/core";
+import { BeaconWallet } from "@taquito/beacon-wallet";
+import { QSAsset, getTokens, getNetwork, LOGO_URL } from "@/core";
+import { TezosToolkit } from "@taquito/taquito";
 
 Vue.use(Vuex);
 
@@ -45,16 +46,31 @@ export async function loadTokens() {
   }
 }
 
-export async function useThanosWallet(opts = { forcePermission: false }) {
-  const available = await ThanosWallet.isAvailable();
-  if (!available) {
-    throw new Error("Thanos Wallet not installed");
+export async function useWallet(opts = { forcePermission: false }) {
+  const net = getNetwork();
+  const wallet = new BeaconWallet({
+    name: "Quipuswap",
+    iconUrl: LOGO_URL,
+    // eventHandlers: {
+    //   PERMISSION_REQUEST_SUCCESS: {
+    //     handler: async data => {
+    //       console.log("permission data:", data);
+    //     },
+    //   },
+    // },
+  });
+
+  if (opts.forcePermission) {
+    await wallet.disconnect();
+    await wallet.clearActiveAccount();
   }
 
-  const wallet = new ThanosWallet("Quipuswap");
-  await wallet.connect(getNetwork().id, opts);
-  const tezos = wallet.toTezos();
-  const pkh = await tezos.wallet.pkh();
+  await wallet.requestPermissions({ network: { type: net.id as any } });
+
+  const tezos = new TezosToolkit(net.rpcBaseURL);
+  tezos.setWalletProvider(wallet);
+  const pkh = await wallet.getPKH();
+
   if (getAccount().pkh !== pkh) {
     setAccount(pkh);
   }

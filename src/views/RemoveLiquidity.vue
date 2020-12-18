@@ -110,7 +110,7 @@ import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
 import SubmitBtn from "@/components/SubmitBtn.vue";
 
 import BigNumber from "bignumber.js";
-import { getAccount, useThanosWallet } from "@/store";
+import { getAccount, useWallet } from "@/store";
 import {
   QSAsset,
   isAddressValid,
@@ -297,7 +297,7 @@ export default class RemoveLiquidity extends Vue {
     if (this.processing) return;
     this.processing = true;
     try {
-      const tezos = await useThanosWallet();
+      const tezos = await useWallet();
       const me = await tezos.wallet.pkh();
 
       const shares = new BigNumber(this.sharesToRemove!);

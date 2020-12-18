@@ -10,17 +10,19 @@ export const FA1_2_FACTORY_CONTRACT_MAINNET =
 export const FA2_FACTORY_CONTRACT_MAINNET =
   process.env.VUE_APP_FA2_FACTORY_CONTRACT_MAINNET || null;
 
-export const FEE_RATE = parseInt(process.env.VUE_APP_FEE_RATE);
-export const VETO_PERIOD = parseInt(process.env.VUE_APP_VETO_PERIOD);
+export const FEE_RATE = parseInt(process.env.VUE_APP_FEE_RATE!);
+export const VETO_PERIOD = parseInt(process.env.VUE_APP_VETO_PERIOD!);
 export const ACCURANCY_MULTIPLIER = parseInt(
-  process.env.VUE_APP_ACCURANCY_MULTIPLIER
+  process.env.VUE_APP_ACCURANCY_MULTIPLIER!
 );
+
+export const LOGO_URL = process.env.VUE_APP_LOGO_URL;
 
 export const DEPLHINET_NETWORK: QSNetwork = {
   id: "delphinet",
   name: "Delphi Testnet",
   type: "test",
-  rpcBaseURL: "https://delphinet-tezos.giganode.io",
+  rpcBaseURL: "https://testnet-tezos.giganode.io",
   fa1_2FactoryContract: FA1_2_FACTORY_CONTRACT_DELPHINET,
   fa2FactoryContract: FA2_FACTORY_CONTRACT_DELPHINET,
   description: "Delphi testnet",

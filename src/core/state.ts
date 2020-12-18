@@ -8,6 +8,8 @@ import BigNumber from "bignumber.js";
 import mem from "mem";
 import { QSAsset, QSNetwork, QSTokenType } from "./types";
 import { snakeToCamelKeys } from "./helpers";
+import { FastRpcClient } from "./taquito-fast-rpc";
+import { LambdaViewSigner } from "./lambda-view";
 import {
   ALL_NETWORKS,
   DEFAULT_NETWORK,
@@ -15,16 +17,10 @@ import {
   MAINNET_TOKENS,
 } from "./defaults";
 
-export const Tezos = new TezosToolkit(getNetwork().rpcBaseURL);
-
-export async function getNewTokenBalance(
-  accountPkh: string,
-  tokenAddress: string
-) {
-  const storage = await getStoragePure(tokenAddress);
-  const val = await storage.ledger.get(accountPkh);
-  return new BigNumber(val && val.balance ? val.balance : val ? val : 0);
-}
+export const Tezos = new TezosToolkit(
+  new FastRpcClient(getNetwork().rpcBaseURL)
+);
+Tezos.setSignerProvider(new LambdaViewSigner());
 
 export async function getTokens() {
   const { type, fa1_2FactoryContract, fa2FactoryContract } = getNetwork();

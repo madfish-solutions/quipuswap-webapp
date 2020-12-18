@@ -111,7 +111,7 @@ import SubmitBtn from "@/components/SubmitBtn.vue";
 import Loader from "@/components/Loader.vue";
 
 import BigNumber from "bignumber.js";
-import store, { getAccount, useThanosWallet } from "@/store";
+import store, { getAccount, useWallet } from "@/store";
 import {
   FEE_RATE,
   XTZ_TOKEN,
@@ -404,7 +404,7 @@ export default class SwapOrSend extends Vue {
     this.swapping = true;
 
     try {
-      const tezos = await useThanosWallet();
+      const tezos = await useWallet();
       const me = await tezos.wallet.pkh();
 
       const recipient = this.send ? this.recipientAddress : me;

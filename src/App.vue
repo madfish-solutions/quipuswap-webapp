@@ -162,7 +162,7 @@
 
 <script lang="ts">
 import { Component, Vue, Watch } from "vue-property-decorator";
-import { ThanosWallet } from "@thanos-wallet/dapp";
+import { BeaconWallet } from "@taquito/beacon-wallet";
 import Loader from "@/components/Loader.vue";
 import {
   ALL_NETWORKS,
@@ -172,7 +172,7 @@ import {
   getNetwork,
   setNetwork,
 } from "@/core";
-import { getAccount, setAccount, useThanosWallet } from "@/store";
+import { getAccount, setAccount, useWallet } from "@/store";
 
 @Component({
   components: { Loader },
@@ -245,12 +245,7 @@ export default class App extends Vue {
 
   connectWallet = async (forcePermission = false) => {
     try {
-      const available = await ThanosWallet.isAvailable();
-      if (!available) {
-        throw new Error("Thanos Wallet not installed");
-      }
-
-      await useThanosWallet({ forcePermission });
+      await useWallet({ forcePermission });
     } catch (err) {
       console.error(err);
     }
