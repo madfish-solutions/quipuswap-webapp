@@ -15,6 +15,7 @@ import {
   DEFAULT_NETWORK,
   DEFAULT_TOKEN_LOGO_URL,
   MAINNET_TOKENS,
+  TESTNET_TOKENS,
 } from "./defaults";
 
 export const Tezos = new TezosToolkit(
@@ -42,6 +43,12 @@ export async function getTokens() {
       if (type === "main") {
         const knownToken = MAINNET_TOKENS.find(({ id }) => tAddress === id);
         if (knownToken) {
+          return knownToken;
+        }
+      } else if (type === "test") {
+        const knownToken = TESTNET_TOKENS.find(({ id }) => tAddress === id);
+        if (knownToken) {
+          console.log("Type ", type, TESTNET_TOKENS, knownToken, exchange)
           return knownToken;
         }
       }

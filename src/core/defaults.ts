@@ -91,3 +91,16 @@ export const MAINNET_TOKENS: QSAsset[] = [
     exchange: "",
   },
 ];
+
+export const TESTNET_TOKENS: QSAsset[] = [
+  {
+    type: "token",
+    tokenType: QSTokenType.FA1_2,
+    id: "KT1RXpLtz22YgX24QQhxKVyKvtKZFaAVtTB9",
+    decimals: 18,
+    symbol: "kUSD",
+    name: "Kolibri",
+    imgUrl: "https://kolibri-data.s3.amazonaws.com/logo.png",
+    exchange: "", // KT1RUEvFbUf9qriTkvMJBGE3q1hsyJgskUUi ??
+  }
+];
