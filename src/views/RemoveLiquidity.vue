@@ -124,6 +124,8 @@ import {
   tzToMutez,
   mutezToTz,
   clearMem,
+  toNat,
+  fromNat
 } from "@/core";
 import { XTZ_TOKEN } from "@/core/defaults";
 
@@ -246,15 +248,15 @@ export default class RemoveLiquidity extends Vue {
         myShares && new BigNumber(myShares.unfrozen).div(dexStorage.totalSupply);
       const myTokens =
         myShare &&
-        new BigNumber(dexStorage.tokenPool)
+        fromNat(new BigNumber(dexStorage.tokenPool)
           .times(myShare)
-          .integerValue(BigNumber.ROUND_DOWN);
+          .integerValue(BigNumber.ROUND_DOWN), this.selectedToken);
 
       this.poolMeta = {
         tezFull: `${mutezToTz(dexStorage.tezPool)} XTZ`,
-        tokenFull: `${dexStorage.tokenPool} Token`,
+        tokenFull: `${fromNat(dexStorage.tokenPool, this.selectedToken)} ${this.selectedToken.name}`,
         myShare: myShare ? `${myShare.times(100).toFormat(2)}%` : "-",
-        myTokens: myTokens ? `${myTokens} Token` : "-",
+        myTokens: myTokens ? `${myTokens} ${this.selectedToken.name}` : "-",
       };
     }
   }
@@ -286,7 +288,7 @@ export default class RemoveLiquidity extends Vue {
     const dexStorage = await getDexStorage(this.selectedToken.exchange);
 
     const tezAmount = estimateInTezos(this.sharesToRemove, dexStorage);
-    const tokenAmount = estimateInTokens(this.sharesToRemove, dexStorage);
+    const tokenAmount = estimateInTokens(this.sharesToRemove, dexStorage, this.selectedToken);
 
     const tezos = toValidAmount(tezAmount);
     const token = toValidAmount(tokenAmount);
@@ -319,7 +321,7 @@ export default class RemoveLiquidity extends Vue {
       }
 
       const minTezos = tzToMutez(this.inTokens!.tezos);
-      const minToken = new BigNumber(this.inTokens!.token);
+      const minToken = toNat(this.inTokens!.token, selTk);
 
       const dexContract = await tezos.wallet.at(selTk.exchange);
       const operation = await dexContract.methods

@@ -92,10 +92,14 @@ export function estimateShares(tezAmount: any, dexStorage: any) {
     .integerValue(BigNumber.ROUND_DOWN);
 }
 
-export function estimateSharesInverse(tokenAmount: any, dexStorage: any) {
+export function estimateSharesInverse(
+  tokenAmount: any,
+  dexStorage: any,
+  token: QSAsset
+) {
   if (!tokenAmount) return new BigNumber(0);
 
-  return new BigNumber(tokenAmount)
+  return toNat(tokenAmount, token)
     .integerValue(BigNumber.ROUND_DOWN)
     .times(dexStorage.totalSupply)
     .div(dexStorage.tokenPool)
@@ -113,22 +117,29 @@ export function estimateInTezos(shares: any, dexStorage: any) {
   );
 }
 
-export function estimateInTokens(shares: any, dexStorage: any) {
+export function estimateInTokens(shares: any, dexStorage: any, token: QSAsset) {
   if (!shares) return new BigNumber(0);
 
-  return new BigNumber(shares)
-    .times(dexStorage.tokenPool)
-    .div(dexStorage.totalSupply)
-    .integerValue(BigNumber.ROUND_DOWN);
+  return fromNat(
+    new BigNumber(shares)
+      .times(dexStorage.tokenPool)
+      .div(dexStorage.totalSupply)
+      .integerValue(BigNumber.ROUND_DOWN),
+    token
+  );
 }
 
-export function estimateToTezos(tokenAmount: any, dexStorage: any) {
+export function estimateToTezos(
+  tokenAmount: any,
+  dexStorage: any,
+  token: QSAsset
+) {
   if (!tokenAmount) return new BigNumber(0);
 
-  const shares = estimateSharesInverse(tokenAmount, dexStorage);
+  const shares = estimateSharesInverse(tokenAmount, dexStorage, token);
   let tezAmount = estimateInTezos(shares, dexStorage);
 
-  while (!toTokens(tezAmount, dexStorage).isEqualTo(tokenAmount)) {
+  while (!toTokens(tezAmount, dexStorage, token).isEqualTo(tokenAmount)) {
     tezAmount = tezAmount.plus(PENNY);
   }
   return tezAmount;
@@ -144,7 +155,7 @@ export function toNat(amount: any, token: QSAsset) {
     .integerValue(BigNumber.ROUND_DOWN);
 }
 
-function toTokens(tezAmount: any, dexStorage: any) {
+function toTokens(tezAmount: any, dexStorage: any, token: QSAsset) {
   const shares = estimateShares(tezAmount, dexStorage);
-  return estimateInTokens(shares, dexStorage);
+  return estimateInTokens(shares, dexStorage, token);
 }
