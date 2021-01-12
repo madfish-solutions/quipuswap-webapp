@@ -129,6 +129,7 @@ import {
   mutezToTz,
   clearMem,
   approveToken,
+  toNat,
 } from "@/core";
 
 @Component({
@@ -185,7 +186,7 @@ export default class SwapOrSend extends Vue {
 
     const price = new BigNumber(this.inputAmount)
       .div(this.outputAmount)
-      .toFormat(this.inputToken.type === "token" ? 0 : 6);
+      .toFormat(this.inputToken.decimals, BigNumber.ROUND_DOWN);
     return `1 ${this.outputToken.name} = ${price} ${this.inputToken.name}`;
   }
 
@@ -196,9 +197,7 @@ export default class SwapOrSend extends Vue {
       .div(100)
       .times(this.outputAmount);
 
-    return this.outputToken.type === "xtz"
-      ? base.toFixed(6, BigNumber.ROUND_DOWN)
-      : base.integerValue(BigNumber.ROUND_DOWN).toString();
+    return base.toFixed(this.outputToken.decimals, BigNumber.ROUND_DOWN)
   }
 
   get canSwap() {
@@ -338,14 +337,16 @@ export default class SwapOrSend extends Vue {
       case inType === "xtz" && outType === "token":
         amount = estimateTezToToken(
           this.inputAmount,
-          await getDexStorage(this.outputToken.exchange)
+          await getDexStorage(this.outputToken.exchange),
+          this.outputToken
         );
         break;
 
       case inType === "token" && outType === "xtz":
         amount = estimateTokenToTez(
           this.inputAmount,
-          await getDexStorage(this.inputToken.exchange)
+          await getDexStorage(this.inputToken.exchange),
+          this.inputToken
         );
         break;
 
@@ -353,9 +354,11 @@ export default class SwapOrSend extends Vue {
         amount = estimateTezToToken(
           await estimateTokenToTez(
             this.inputAmount,
-            await getDexStorage(this.inputToken.exchange)
+            await getDexStorage(this.inputToken.exchange),
+            this.inputToken
           ),
-          await getDexStorage(this.outputToken.exchange)
+          await getDexStorage(this.outputToken.exchange),
+          this.outputToken
         );
         break;
     }
@@ -374,14 +377,16 @@ export default class SwapOrSend extends Vue {
       case inType === "xtz" && outType === "token":
         amount = estimateTezToTokenInverse(
           this.outputAmount,
-          await getDexStorage(this.outputToken.exchange)
+          await getDexStorage(this.outputToken.exchange),
+          this.outputToken
         );
         break;
 
       case inType === "token" && outType === "xtz":
         amount = estimateTokenToTezInverse(
           this.outputAmount,
-          await getDexStorage(this.inputToken.exchange)
+          await getDexStorage(this.inputToken.exchange),
+          this.inputToken
         );
         break;
 
@@ -389,9 +394,11 @@ export default class SwapOrSend extends Vue {
         amount = estimateTokenToTezInverse(
           await estimateTezToTokenInverse(
             this.outputAmount,
-            await getDexStorage(this.outputToken.exchange)
+            await getDexStorage(this.outputToken.exchange),
+            this.outputToken
           ),
-          await getDexStorage(this.inputToken.exchange)
+          await getDexStorage(this.inputToken.exchange),
+          this.inputToken
         );
         break;
     }
@@ -426,7 +433,7 @@ export default class SwapOrSend extends Vue {
         const contract = await tezos.wallet.at(outTk.exchange);
 
         const operation = await contract.methods
-          .use(1, "tezToTokenPayment", minOut, recipient)
+          .use(1, "tezToTokenPayment", toNat(minOut, outTk), recipient)
           .send({ amount: inpAmn });
 
         await operation.confirmation();
@@ -435,6 +442,7 @@ export default class SwapOrSend extends Vue {
           tezos.wallet.at(inTk.id),
           tezos.wallet.at(inTk.exchange),
         ]);
+        const tokenAmountNat = toNat(inpAmn, inTk).toNumber();
 
         const batch = tezos.wallet
           .batch([])
@@ -444,12 +452,12 @@ export default class SwapOrSend extends Vue {
               tokenContract,
               me,
               inTk.exchange,
-              inpAmn
+              tokenAmountNat
             ).toTransferParams()
           )
           .withTransfer(
             dexContract.methods
-              .use(2, "tokenToTezPayment", inpAmn, tzToMutez(minOut), recipient)
+              .use(2, "tokenToTezPayment", tokenAmountNat, tzToMutez(minOut), recipient)
               .toTransferParams()
           );
 
@@ -468,8 +476,11 @@ export default class SwapOrSend extends Vue {
 
         const tezAmount = estimateTokenToTez(
           this.inputAmount,
-          await getDexStorage(inTk.exchange)
+          await getDexStorage(inTk.exchange),
+          inTk
         );
+
+        const inpAmnNat = toNat(inpAmn, inTk).toNumber();
 
         const batch = tezos.wallet
           .batch([])
@@ -479,7 +490,7 @@ export default class SwapOrSend extends Vue {
               inTokenContract,
               me,
               inTk.exchange,
-              inpAmn
+              inpAmnNat
             ).toTransferParams()
           )
           .withTransfer(
@@ -487,7 +498,7 @@ export default class SwapOrSend extends Vue {
               .use(
                 2,
                 "tokenToTezPayment",
-                inpAmn,
+                inpAmnNat,
                 tzToMutez(tezAmount)
                   .integerValue(BigNumber.ROUND_DOWN)
                   .toNumber(),
@@ -497,7 +508,7 @@ export default class SwapOrSend extends Vue {
           )
           .withTransfer(
             outDexContract.methods
-              .use(1, "tezToTokenPayment", minOut, recipient)
+              .use(1, "tezToTokenPayment", toNat(minOut, outTk), recipient)
               .toTransferParams({ amount: tezAmount.toNumber() })
           );
 

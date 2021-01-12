@@ -8,6 +8,7 @@ export interface QSAsset {
   imgUrl: string;
   exchange: string;
   fa2TokenId?: number;
+  default?: boolean;
 }
 
 export enum QSTokenType {

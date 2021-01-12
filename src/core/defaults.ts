@@ -68,6 +68,7 @@ export const MAINNET_TOKENS: QSAsset[] = [
     name: "USD Tez",
     imgUrl: "https://usdtz.com/lightlogo10USDtz.png",
     exchange: "",
+    default: true,
   },
   {
     type: "token",
@@ -79,6 +80,7 @@ export const MAINNET_TOKENS: QSAsset[] = [
     imgUrl:
       "https://miro.medium.com/fit/c/160/160/1*LzmHCYryGmuN9ZR7JX951w.png",
     exchange: "",
+    default: true,
   },
   {
     type: "token",
@@ -89,5 +91,20 @@ export const MAINNET_TOKENS: QSAsset[] = [
     name: "tzBTC",
     imgUrl: "https://tzbtc.io/wp-content/uploads/2020/03/tzbtc_logo_single.svg",
     exchange: "",
+    default: true,
+  },
+];
+
+export const TESTNET_TOKENS: QSAsset[] = [
+  {
+    type: "token",
+    tokenType: QSTokenType.FA1_2,
+    id: "KT1RXpLtz22YgX24QQhxKVyKvtKZFaAVtTB9",
+    decimals: 18,
+    symbol: "kUSD",
+    name: "Kolibri",
+    imgUrl: "https://kolibri-data.s3.amazonaws.com/logo.png",
+    exchange: "",
+    default: true,
   },
 ];

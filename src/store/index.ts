@@ -65,7 +65,11 @@ export async function useWallet(opts = { forcePermission: false }) {
     await wallet.clearActiveAccount();
   }
 
-  await wallet.requestPermissions({ network: { type: net.id as any } });
+  const activeAccount = await wallet.client.getActiveAccount();
+
+  if (!activeAccount || activeAccount.network.type !== net.id) {
+    await wallet.requestPermissions({ network: { type: net.id as any } });
+  }
 
   const tezos = new TezosToolkit(net.rpcBaseURL);
   tezos.setWalletProvider(wallet);

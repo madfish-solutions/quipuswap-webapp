@@ -15,6 +15,7 @@ import {
   DEFAULT_NETWORK,
   DEFAULT_TOKEN_LOGO_URL,
   MAINNET_TOKENS,
+  TESTNET_TOKENS,
 } from "./defaults";
 
 export const Tezos = new TezosToolkit(
@@ -28,6 +29,8 @@ export async function getTokens() {
     throw new Error("Contracts for this network not found");
   }
 
+  const knownTokens = type === "main" ? MAINNET_TOKENS : TESTNET_TOKENS;
+
   const [fa1_2FacStorage, fa2FacStorage] = await Promise.all([
     fa1_2FactoryContract &&
       getStorage(fa1_2FactoryContract).then(s => snakeToCamelKeys(s)),
@@ -35,15 +38,13 @@ export async function getTokens() {
       getStorage(fa2FactoryContract).then(s => snakeToCamelKeys(s)),
   ]);
 
-  return Promise.all([
+  const allTokens: QSAsset[] = await Promise.all([
     ...(fa1_2FacStorage?.tokenList ?? []).map(async (tAddress: string) => {
       const exchange = await fa1_2FacStorage.tokenToExchange.get(tAddress);
 
-      if (type === "main") {
-        const knownToken = MAINNET_TOKENS.find(({ id }) => tAddress === id);
-        if (knownToken) {
-          return knownToken;
-        }
+      const knownToken = knownTokens.find(({ id }) => tAddress === id);
+      if (knownToken) {
+        return { ...knownToken, exchange };
       }
 
       return toUnknownToken(tAddress, exchange, QSTokenType.FA1_2);
@@ -59,6 +60,11 @@ export async function getTokens() {
       }
     ),
   ]);
+
+  return [
+    ...allTokens.filter(t => t.default),
+    ...allTokens.filter(t => !t.default),
+  ];
 }
 
 export function approveToken(
