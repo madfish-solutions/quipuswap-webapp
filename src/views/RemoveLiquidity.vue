@@ -44,10 +44,10 @@
                 <span class="mr-1 opacity-75">+</span>
                 <span class="tracking-wide">
                   {{
-                  formatNum(inTokens.token, 0)
+                  formatNum(inTokens.token, selectedToken.decimals)
                   }}
                 </span>
-                <span class="ml-1 text-sm opacity-90">Token</span>
+                <span class="ml-1 text-sm opacity-90">{{selectedToken.name}}</span>
               </div>
             </div>
 

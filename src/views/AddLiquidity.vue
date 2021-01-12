@@ -280,7 +280,7 @@ export default class AddLiquidity extends Vue {
 
   handleTokenAmountChange(amount: string) {
     this.tokenAmount = amount;
-    const isNum = /^[0-9]*$/g.test(amount);
+    const isNum = /^[0-9.]*$/g.test(amount);
     if (isNum) {
       setTimeout(() => this.calcTezAmount(), 0);
     } else {
