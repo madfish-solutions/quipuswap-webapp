@@ -47,7 +47,9 @@
             <span>
               {{
                 yourTotalShares !== null
-                  ? `${yourTotalShares} (${toPercentage(yourTotalShares / totalShares)}%)`
+                  ? `${yourTotalShares} (${toPercentage(
+                      yourTotalShares / totalShares
+                    )}%)`
                   : "-"
               }}
             </span>
@@ -100,16 +102,22 @@
           label="Shares to vote"
           :withSelect="false"
           :withTezos="false"
-          :subLabel="availableSharesToVote ? `Your shares: ${availableSharesToVote}` : ''"
+          :subLabel="
+            availableSharesToVote ? `Your shares: ${availableSharesToVote}` : ''
+          "
           :isLoading="isLoading"
           v-model="sharesToVote"
-          @input="e => handleSharesToVoteChange(e.target.value)"
+          @input="(e) => handleSharesToVoteChange(e.target.value)"
         />
       </Form>
 
       <div class="flex justify-center mt-8 text-center align-center">
         <SubmitBtn :disabled="!valid" @click="handleVote">
-          <template v-if="!processing">{{ voteStatus === "Vote" && availableSharesToExit ? "Revote" : voteStatus }}</template>
+          <template v-if="!processing">{{
+            voteStatus === "Vote" && availableSharesToExit
+              ? "Revote"
+              : voteStatus
+          }}</template>
           <template v-if="processing">
             <Loader size="large" />
           </template>
@@ -118,8 +126,16 @@
         <template v-if="availableSharesToExit">
           <div class="w-8" />
 
-          <SubmitBtn class="truncate whitespace-no-wrap bg-accent border-2 border-gray-800 text-gray-800" @click="handleExit">
-            <template v-if="!exiting">{{ exitStatus }}<span v-if="exitStatus === 'Exit'" class="ml-1">({{ availableSharesToExit }} shares)</span></template>
+          <SubmitBtn
+            class="truncate whitespace-no-wrap bg-accent border-2 border-gray-800 text-gray-800"
+            @click="handleExit"
+          >
+            <template v-if="!exiting"
+              >{{ exitStatus
+              }}<span v-if="exitStatus === 'Exit'" class="ml-1"
+                >({{ availableSharesToExit }} shares)</span
+              ></template
+            >
             <template v-if="exiting">
               <Loader size="large" />
             </template>
@@ -135,7 +151,15 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 import * as NP from "number-precision";
 import store, { getAccount, useWallet } from "@/store";
 import { BBKnownBaker } from "@/baking-bad";
-import { QSAsset, getDexStorage, getDexShares, isAddressValid, clearMem, getNetwork, approveToken } from "@/core";
+import {
+  QSAsset,
+  getDexStorage,
+  getDexShares,
+  isAddressValid,
+  clearMem,
+  getNetwork,
+  approveToken,
+} from "@/core";
 import NavTabs from "@/components/NavTabs.vue";
 import NavGovernance from "@/components/NavGovernance.vue";
 import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
@@ -194,7 +218,11 @@ export default class VoteBaker extends Vue {
   }
 
   get valid() {
-    return isAddressValid(this.bakerAddress) && isAddressValid(this.voter) && +(this.sharesToVote) > 0;
+    return (
+      isAddressValid(this.bakerAddress) &&
+      isAddressValid(this.voter) &&
+      +this.sharesToVote > 0
+    );
   }
 
   created() {
@@ -239,7 +267,9 @@ export default class VoteBaker extends Vue {
         ]);
 
         this.yourTotalShares = myShares ? myShares.total.toNumber() : null;
-        this.availableSharesToVote = myShares ? myShares.unfrozen.toNumber() : null;
+        this.availableSharesToVote = myShares
+          ? myShares.unfrozen.toNumber()
+          : null;
         if (this.availableSharesToVote !== null && voter) {
           this.availableSharesToVote += voter.vote.toNumber();
         }
@@ -284,12 +314,13 @@ export default class VoteBaker extends Vue {
       const me = await tezos.wallet.pkh();
       const contract = await tezos.wallet.at(this.selectedToken!.exchange);
 
-      const batch = tezos.wallet.batch([])
+      const batch = tezos.wallet
+        .batch([])
         .withTransfer(
           approveToken(
             {
               tokenType: this.selectedToken!.tokenType,
-              fa2TokenId: 0
+              fa2TokenId: 0,
             },
             contract,
             me,
@@ -320,7 +351,7 @@ export default class VoteBaker extends Vue {
       this.voteStatus = tmp === "veto-candidate" ? "Baker under Veto" : tmp;
     } finally {
       this.processing = false;
-      await new Promise(r => setTimeout(r, 5000));
+      await new Promise((r) => setTimeout(r, 5000));
       this.voteStatus = "Vote";
     }
   }
@@ -333,13 +364,13 @@ export default class VoteBaker extends Vue {
       const tezos = await useWallet();
       const contract = await tezos.wallet.at(this.selectedToken!.exchange);
 
-      const bakerStub = [
-        this.nextCandidate,
-        this.bakerAddress,
-        this.voter
-      ].find(isAddressValid) ?? "";
+      const bakerStub =
+        [this.nextCandidate, this.bakerAddress, this.voter].find(
+          isAddressValid
+        ) ?? "";
 
-      const batch = tezos.wallet.batch([])
+      const batch = tezos.wallet
+        .batch([])
         .withTransfer(
           contract.methods
             .use(6, "vote", bakerStub, 0, this.voter)
@@ -362,7 +393,7 @@ export default class VoteBaker extends Vue {
           : "Something went wrong";
     } finally {
       this.exiting = false;
-      await new Promise(r => setTimeout(r, 5000));
+      await new Promise((r) => setTimeout(r, 5000));
       this.exitStatus = "Exit";
     }
   }

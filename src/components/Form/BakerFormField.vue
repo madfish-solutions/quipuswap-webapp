@@ -1,8 +1,14 @@
 <template>
   <div class="-mx-3 xs:-mx-4 shadow-lg">
-    <div :class="isSearchOpened ? 'field rounded-t-3px' : ' field rounded-3px relative'">
+    <div
+      :class="
+        isSearchOpened ? 'field rounded-t-3px' : ' field rounded-3px relative'
+      "
+    >
       <div class="flex-1 flex flex-col justify-center">
-        <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">{{ label }}</div>
+        <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">
+          {{ label }}
+        </div>
         <input
           class="w-full"
           :class="!withSelect && isLoading && 'hidden'"
@@ -10,7 +16,11 @@
           v-bind="$attrs"
           v-on="$listeners"
         />
-        <div v-if="!withSelect && isLoading" class="flex items-center" style="height: 30px">
+        <div
+          v-if="!withSelect && isLoading"
+          class="flex items-center"
+          style="height: 30px"
+        >
           <Loader />
         </div>
         <div class="label sm:text-sm font-light w-full">{{ subLabel }}</div>
@@ -23,7 +33,10 @@
         >
           <template v-if="!isLoading">
             <template v-if="selectedBaker">
-              <img class="w-5 h-5 mr-2 bg-white rounded-3px" :src="selectedBaker.logo" />
+              <img
+                class="w-5 h-5 mr-2 bg-white rounded-3px"
+                :src="selectedBaker.logo"
+              />
               <span class="truncate">{{ selectedBaker.name }}</span>
             </template>
             <span v-else>Select a baker</span>
@@ -31,7 +44,11 @@
           <template v-if="isLoading">
             <Loader />
           </template>
-          <img class="w-3 ml-2" style="margin-top: -2px" src="@/assets/chevron-white.svg" />
+          <img
+            class="w-3 ml-2"
+            style="margin-top: -2px"
+            src="@/assets/chevron-white.svg"
+          />
         </button>
       </div>
     </div>
@@ -54,9 +71,14 @@
           >
             <div class="flex-1">
               <div class="flex items-stretch">
-                <img class="w-8 h-8 xs:w-10 xs:h-10 mr-3 bg-white rounded-3px" :src="baker.logo" />
+                <img
+                  class="w-8 h-8 xs:w-10 xs:h-10 mr-3 bg-white rounded-3px"
+                  :src="baker.logo"
+                />
                 <div class="flex-1 flex flex-col">
-                  <div class="text-sm xs:text-base text-gray-300">{{ baker.name }}</div>
+                  <div class="text-sm xs:text-base text-gray-300">
+                    {{ baker.name }}
+                  </div>
                   <div class="flex-1 flex items-center text-gray-400 text-xs">
                     <span class="mr-1">
                       <span class="font-light">Fee:</span>

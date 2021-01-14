@@ -9,7 +9,7 @@
         v-model="inputAmount"
         :subLabel="inputBalance ? `Balance: ${inputBalance}` : ''"
         :isLoading="inputLoading"
-        @input="e => handleInputAmountChange(e.target.value)"
+        @input="(e) => handleInputAmountChange(e.target.value)"
         @selectToken="handleInputSelect"
         :selectedToken="inputToken"
       />
@@ -23,7 +23,7 @@
         label="Output"
         v-model="outputAmount"
         :isLoading="outputLoading"
-        @input="e => handleOutputAmountChange(e.target.value)"
+        @input="(e) => handleOutputAmountChange(e.target.value)"
         @selectToken="handleOutputSelect"
         :selectedToken="outputToken"
       />
@@ -38,7 +38,7 @@
           placeholder="tz1v7h3s..."
           :withSelect="false"
           v-model="recipientAddress"
-          @input="e => (recipientAddress = e.target.value)"
+          @input="(e) => (recipientAddress = e.target.value)"
           :spellcheck="false"
         />
       </template>
@@ -46,12 +46,16 @@
       <FormInfo class="overflow-x-auto whitespace-no-wrap">
         <div class="flex justify-between mb-1">
           <span class="mr-2">Input Dex contract</span>
-          <span class="font-mono text-gray-400">{{ inputDexAddress || "-" }}</span>
+          <span class="font-mono text-gray-400">{{
+            inputDexAddress || "-"
+          }}</span>
         </div>
 
         <div class="flex justify-between mb-1">
           <span class="mr-2">Output Dex contract</span>
-          <span class="font-mono text-gray-400">{{ outputDexAddress || "-" }}</span>
+          <span class="font-mono text-gray-400">{{
+            outputDexAddress || "-"
+          }}</span>
         </div>
 
         <div class="flex justify-between mb-1">
@@ -85,7 +89,7 @@
           <span class="mr-2">Minimum received</span>
           <span>
             {{
-            minimumReceived ? `${minimumReceived} ${outputToken.name}` : "-"
+              minimumReceived ? `${minimumReceived} ${outputToken.name}` : "-"
             }}
           </span>
         </div>
@@ -111,6 +115,7 @@ import SubmitBtn from "@/components/SubmitBtn.vue";
 import Loader from "@/components/Loader.vue";
 
 import BigNumber from "bignumber.js";
+import { OpKind } from "@taquito/taquito";
 import store, { getAccount, useWallet } from "@/store";
 import {
   FEE_RATE,
@@ -197,7 +202,7 @@ export default class SwapOrSend extends Vue {
       .div(100)
       .times(this.outputAmount);
 
-    return base.toFixed(this.outputToken.decimals, BigNumber.ROUND_DOWN)
+    return base.toFixed(this.outputToken.decimals, BigNumber.ROUND_DOWN);
   }
 
   get canSwap() {
@@ -442,10 +447,58 @@ export default class SwapOrSend extends Vue {
           tezos.wallet.at(inTk.id),
           tezos.wallet.at(inTk.exchange),
         ]);
+
         const tokenAmountNat = toNat(inpAmn, inTk).toNumber();
 
-        const batch = tezos.wallet
-          .batch([])
+        let withAllowanceReset = false;
+        try {
+          await tezos.estimate.batch([
+            {
+              kind: OpKind.TRANSACTION,
+              ...approveToken(
+                inTk,
+                tokenContract,
+                me,
+                inTk.exchange,
+                tokenAmountNat
+              ).toTransferParams(),
+            },
+            {
+              kind: OpKind.TRANSACTION,
+              ...dexContract.methods
+                .use(
+                  2,
+                  "tokenToTezPayment",
+                  tokenAmountNat,
+                  tzToMutez(minOut),
+                  recipient
+                )
+                .toTransferParams(),
+            },
+          ]);
+        } catch (err) {
+          if (err?.message === "UnsafeAllowanceChange") {
+            withAllowanceReset = true;
+          } else {
+            console.error(err);
+          }
+        }
+
+        let batch = tezos.wallet.batch([]);
+
+        if (withAllowanceReset) {
+          batch = batch.withTransfer(
+            approveToken(
+              inTk,
+              tokenContract,
+              me,
+              inTk.exchange,
+              0
+            ).toTransferParams()
+          );
+        }
+
+        batch = batch
           .withTransfer(
             approveToken(
               inTk,
@@ -457,7 +510,13 @@ export default class SwapOrSend extends Vue {
           )
           .withTransfer(
             dexContract.methods
-              .use(2, "tokenToTezPayment", tokenAmountNat, tzToMutez(minOut), recipient)
+              .use(
+                2,
+                "tokenToTezPayment",
+                tokenAmountNat,
+                tzToMutez(minOut),
+                recipient
+              )
               .toTransferParams()
           );
 
@@ -482,8 +541,63 @@ export default class SwapOrSend extends Vue {
 
         const inpAmnNat = toNat(inpAmn, inTk).toNumber();
 
-        const batch = tezos.wallet
-          .batch([])
+        let withAllowanceReset = false;
+        try {
+          await tezos.estimate.batch([
+            {
+              kind: OpKind.TRANSACTION,
+              ...approveToken(
+                inTk,
+                inTokenContract,
+                me,
+                inTk.exchange,
+                inpAmnNat
+              ).toTransferParams(),
+            },
+            {
+              kind: OpKind.TRANSACTION,
+              ...inDexContract.methods
+                .use(
+                  2,
+                  "tokenToTezPayment",
+                  inpAmnNat,
+                  tzToMutez(tezAmount)
+                    .integerValue(BigNumber.ROUND_DOWN)
+                    .toNumber(),
+                  recipient
+                )
+                .toTransferParams(),
+            },
+            {
+              kind: OpKind.TRANSACTION,
+              ...outDexContract.methods
+                .use(1, "tezToTokenPayment", toNat(minOut, outTk), recipient)
+                .toTransferParams({ amount: tezAmount.toNumber() }),
+            },
+          ]);
+        } catch (err) {
+          if (err?.message === "UnsafeAllowanceChange") {
+            withAllowanceReset = true;
+          } else {
+            console.error(err);
+          }
+        }
+
+        let batch = tezos.wallet.batch([]);
+
+        if (withAllowanceReset) {
+          batch = batch.withTransfer(
+            approveToken(
+              inTk,
+              inTokenContract,
+              me,
+              inTk.exchange,
+              0
+            ).toTransferParams()
+          );
+        }
+
+        batch = batch
           .withTransfer(
             approveToken(
               inTk,

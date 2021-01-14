@@ -22,14 +22,22 @@
           >
             <button
               class="text-left font-medium tracking-wider px-3 py-1 focus:outline-none"
-              :class="tokenType === 'FA1.2' ? 'bg-accent text-black' : 'hover:text-accent'"
+              :class="
+                tokenType === 'FA1.2'
+                  ? 'bg-accent text-black'
+                  : 'hover:text-accent'
+              "
               @click="() => setTokenType('FA1.2')"
             >
               FA 1.2
             </button>
             <button
               class="text-left font-medium tracking-wider px-3 py-1 focus:outline-none"
-              :class="tokenType === 'FA2' ? 'bg-accent text-black' : 'hover:text-accent'"
+              :class="
+                tokenType === 'FA2'
+                  ? 'bg-accent text-black'
+                  : 'hover:text-accent'
+              "
               @click="() => setTokenType('FA2')"
             >
               FA 2
@@ -48,7 +56,11 @@
           label="Token ID"
           :withSelect="false"
           v-model="tokenId"
-          v-on:input="tokenId = !isNaN(parseInt($event.target.value)) ? parseInt($event.target.value) : ''"
+          v-on:input="
+            tokenId = !isNaN(parseInt($event.target.value))
+              ? parseInt($event.target.value)
+              : ''
+          "
           :spellcheck="false"
         />
       </template>
@@ -65,7 +77,7 @@
         :subLabel="tezBalance ? `Balance: ${tezBalance}` : ''"
         :isLoading="tezLoading"
         v-model="tezAmount"
-        @input="e => handleTezAmountChange(e.target.value)"
+        @input="(e) => handleTezAmountChange(e.target.value)"
         :selectedToken="tezToken"
       />
 
@@ -81,7 +93,7 @@
         :subLabel="tokenBalance ? `Balance: ${tokenBalance}` : ''"
         :isLoading="tokenLoading"
         v-model="tokenAmount"
-        @input="e => handleTokenAmountChange(e.target.value)"
+        @input="(e) => handleTokenAmountChange(e.target.value)"
       />
 
       <FormInfo>
@@ -92,7 +104,9 @@
       </FormInfo>
     </Form>
 
-    <div class="mx-auto mt-8 mb-8 text-sm font-normal text-center text-lightgray"></div>
+    <div
+      class="mx-auto mt-8 mb-8 text-sm font-normal text-center text-lightgray"
+    ></div>
     <div class="flex justify-center text-center">
       <SubmitBtn @click="addToken" :disabled="!valid">
         <template v-if="!processing">{{ addTokenStatus }}</template>
@@ -322,9 +336,10 @@ export default class AddToken extends Vue {
         throw new Error("Factory contract for network not found");
       }
 
-      const factoryContractAddres = this.tokenType === "FA1.2"
-        ? fa1_2FactoryContract!
-        : fa2FactoryContract!;
+      const factoryContractAddres =
+        this.tokenType === "FA1.2"
+          ? fa1_2FactoryContract!
+          : fa2FactoryContract!;
 
       const [facContract, tokenContract] = await Promise.all([
         tezos.wallet.at(factoryContractAddres),
@@ -347,11 +362,9 @@ export default class AddToken extends Vue {
         .withTransfer(
           facContract.methods
             .launchExchange(
-              ...(
-                this.tokenType === 'FA1.2'
-                  ? [this.tokenAddress]
-                  : [this.tokenAddress, tokenId]
-              ),
+              ...(this.tokenType === "FA1.2"
+                ? [this.tokenAddress]
+                : [this.tokenAddress, tokenId]),
               tokenAmount.toNumber()
             )
             .toTransferParams({ amount: tezAmount.toNumber() })

@@ -195,7 +195,7 @@ export default class DelegateVote extends Vue {
           : "Something went wrong";
     } finally {
       this.processing = false;
-      await new Promise(r => setTimeout(r, 5000));
+      await new Promise((r) => setTimeout(r, 5000));
       this.addStatus = "Add Deputy";
     }
   }

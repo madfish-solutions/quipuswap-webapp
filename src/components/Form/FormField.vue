@@ -6,13 +6,23 @@
       "
     >
       <div class="py-6 flex-1 flex flex-col justify-start">
-        <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">{{ label }}</div>
+        <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">
+          {{ label }}
+        </div>
         <input
-          :class="!withSelect && isLoading ? 'hidden' : `w-full ${extrabutton ? 'pr-32' : ''}`"
+          :class="
+            !withSelect && isLoading
+              ? 'hidden'
+              : `w-full ${extrabutton ? 'pr-32' : ''}`
+          "
           v-bind="$attrs"
           v-on="$listeners"
         />
-        <div v-if="!withSelect && isLoading" class="flex items-center" style="height: 30px">
+        <div
+          v-if="!withSelect && isLoading"
+          class="flex items-center"
+          style="height: 30px"
+        >
           <Loader />
         </div>
         <div class="flex-1" />
@@ -44,14 +54,21 @@
           </button>
 
           <div
-            v-if="!onlyTezos && selectedToken && selectedToken.type === 'token' && !isLoading"
+            v-if="
+              !onlyTezos &&
+              selectedToken &&
+              selectedToken.type === 'token' &&
+              !isLoading
+            "
             class="absolute w-full flex justify-center"
-            style="top: 100%;"
+            style="top: 100%"
           >
             <button
               class="p-1 text-xs text-accent font-light opacity-75 hover:underline hover:opacity-100 focus:outline-none whitespace-no-wrap"
               @click="() => copyToCB(this.selectedToken.id)"
-            >Copy contract address</button>
+            >
+              Copy contract address
+            </button>
           </div>
         </div>
       </div>

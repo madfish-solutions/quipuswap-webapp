@@ -10,14 +10,13 @@
             >
               <span
                 class="connect-button button-network text-white w-48 h-12 border border-accent rounded-lg flex items-center justify-center"
-              >{{ selectedNetwork.name }}</span>
+                >{{ selectedNetwork.name }}</span
+              >
 
               <img
                 :class="
-            networkSelectOpened
-              ? 'z-10 transform rotate-180'
-              : 'z-10'
-          "
+                  networkSelectOpened ? 'z-10 transform rotate-180' : 'z-10'
+                "
                 src="@/assets/arrow-down.svg"
               />
             </div>
@@ -33,14 +32,18 @@
                 :key="net.id"
                 @click="() => selectNetwork(net)"
                 :disabled="net.disabled"
-              >{{ net.name }}</button>
+              >
+                {{ net.name }}
+              </button>
             </div>
           </div>
         </div>
 
         <div class="flex flex-col items-center justify-center">
           <router-link to="/">
-            <h1 class="text-xl text-gray-300 font-medium tracking-tight">Quipuswap</h1>
+            <h1 class="text-xl text-gray-300 font-medium tracking-tight">
+              Quipuswap
+            </h1>
           </router-link>
 
           <img class="h-32 w-auto" src="./assets/logo.png" />
@@ -52,7 +55,9 @@
               <button
                 class="text-white w-64 h-12 border border-accent rounded-md"
                 @click="handleConnect"
-              >Connect to a Wallet</button>
+              >
+                Connect to a Wallet
+              </button>
             </template>
 
             <template v-else>
@@ -153,8 +158,9 @@
           target="_blank"
           rel="noopener noreferrer"
           class="font-normal hover:underline"
-          style="color: #98c630;"
-        >Madfish.Solutions</a>
+          style="color: #98c630"
+          >Madfish.Solutions</a
+        >
       </span>
     </div>
   </div>

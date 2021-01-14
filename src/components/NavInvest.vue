@@ -21,7 +21,11 @@
       </router-link>
     </div>
     <div class="w-1/3 text-center">
-      <router-link to="/invest/add-token" active-class="active" class="flex flex-col leading-tight">
+      <router-link
+        to="/invest/add-token"
+        active-class="active"
+        class="flex flex-col leading-tight"
+      >
         <span class="text-base xs:text-xl">Add</span>
         <span class="text-xs">new Token</span>
       </router-link>
