@@ -2,7 +2,10 @@
   <div class="max-w-xl mx-auto">
     <NavTabs class="mb-6" />
 
-    <GovernancePairSelect :selectedToken="selectedToken" v-on:token-selected="selectToken" />
+    <GovernancePairSelect
+      :selectedToken="selectedToken"
+      v-on:token-selected="selectToken"
+    />
 
     <template v-if="selectedToken">
       <Form>
@@ -37,11 +40,15 @@
 
       <Form class="mt-8" :style="processing && 'pointer-events:none'">
         <FormInfo class="my-2">
-          <p class="text-base font-semibold text-center">Do you want to veto on current candidate?</p>
+          <p class="text-base font-semibold text-center">
+            Do you want to veto on current candidate?
+          </p>
 
           <p class="mt-2 text-center">
-            Ensure that your choice is correct as long as veto cannot be canceled.
-            <br />If veto is successful, the candidate will be banned for 3 months.
+            Ensure that your choice is correct as long as veto cannot be
+            canceled.
+            <br />If veto is successful, the candidate will be banned for 3
+            months.
           </p>
         </FormInfo>
 
@@ -63,10 +70,12 @@
           label="Shares to veto"
           :withSelect="false"
           :withTezos="false"
-          :subLabel="availableSharesToVeto ? `Your shares: ${availableSharesToVeto}` : ''"
+          :subLabel="
+            availableSharesToVeto ? `Your shares: ${availableSharesToVeto}` : ''
+          "
           :isLoading="dataLoading"
           v-model="sharesToVeto"
-          @input="e => handleSharesToVetoChange(e.target.value)"
+          @input="(e) => handleSharesToVetoChange(e.target.value)"
         />
       </Form>
 
@@ -80,17 +89,23 @@
             <Loader size="large" />
           </template>
           <template v-else>
-            {{
-            alreadyBanned ? "Already banned" : banStatus
-            }}
+            {{ alreadyBanned ? "Already banned" : banStatus }}
           </template>
         </SubmitBtn>
 
         <template v-if="availableSharesToExit">
           <div class="w-8" />
 
-          <SubmitBtn class="truncate whitespace-no-wrap bg-accent border-2 border-gray-800 text-gray-800" @click="handleExit">
-            <template v-if="!exiting">{{ exitStatus }}<span v-if="exitStatus === 'Exit'" class="ml-1">({{ availableSharesToExit }} shares)</span></template>
+          <SubmitBtn
+            class="truncate whitespace-no-wrap bg-accent border-2 border-gray-800 text-gray-800"
+            @click="handleExit"
+          >
+            <template v-if="!exiting"
+              >{{ exitStatus
+              }}<span v-if="exitStatus === 'Exit'" class="ml-1"
+                >({{ availableSharesToExit }} shares)</span
+              ></template
+            >
             <template v-if="exiting">
               <Loader size="large" />
             </template>
@@ -106,7 +121,14 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 import * as NP from "number-precision";
 import store, { getAccount, useWallet } from "@/store";
 import { BBKnownBaker } from "@/baking-bad";
-import { QSAsset, getDexStorage, getDexShares, isAddressValid, clearMem, approveToken } from "@/core";
+import {
+  QSAsset,
+  getDexStorage,
+  getDexShares,
+  isAddressValid,
+  clearMem,
+  approveToken,
+} from "@/core";
 import NavTabs from "@/components/NavTabs.vue";
 import NavGovernance from "@/components/NavGovernance.vue";
 import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
@@ -161,7 +183,11 @@ export default class Veto extends Vue {
   }
 
   get valid() {
-    return this.currentCandidateExist && isAddressValid(this.voter) && +(this.sharesToVeto) > 0;;
+    return (
+      this.currentCandidateExist &&
+      isAddressValid(this.voter) &&
+      +this.sharesToVeto > 0
+    );
   }
 
   created() {
@@ -187,10 +213,7 @@ export default class Veto extends Vue {
       const me = this.account.pkh;
 
       const storage = await getDexStorage(this.selectedToken.exchange);
-      const [
-        myShares,
-        voter
-      ] = await Promise.all([
+      const [myShares, voter] = await Promise.all([
         getDexShares(me, this.selectedToken.exchange),
         storage.voters.get(me),
       ]);
@@ -203,7 +226,9 @@ export default class Veto extends Vue {
         .div(2)
         .minus(storage.veto)
         .toNumber();
-      this.availableSharesToVeto = myShares ? myShares.unfrozen.toNumber() : null;
+      this.availableSharesToVeto = myShares
+        ? myShares.unfrozen.toNumber()
+        : null;
       if (this.availableSharesToVeto !== null && voter) {
         this.availableSharesToVeto += voter.veto.toNumber();
       }
@@ -258,12 +283,13 @@ export default class Veto extends Vue {
       const me = await tezos.wallet.pkh();
       const contract = await tezos.wallet.at(this.selectedToken!.exchange);
 
-      const batch = tezos.wallet.batch([])
+      const batch = tezos.wallet
+        .batch([])
         .withTransfer(
           approveToken(
             {
               tokenType: this.selectedToken!.tokenType,
-              fa2TokenId: 0
+              fa2TokenId: 0,
             },
             contract,
             me,
@@ -306,11 +332,10 @@ export default class Veto extends Vue {
       const tezos = await useWallet();
       const contract = await tezos.wallet.at(this.selectedToken!.exchange);
 
-      const batch = tezos.wallet.batch([])
+      const batch = tezos.wallet
+        .batch([])
         .withTransfer(
-          contract.methods
-            .use(7, "veto", 0, this.voter)
-            .toTransferParams()
+          contract.methods.use(7, "veto", 0, this.voter).toTransferParams()
         );
 
       const operation = await batch.send();
@@ -329,7 +354,7 @@ export default class Veto extends Vue {
           : "Something went wrong";
     } finally {
       this.exiting = false;
-      await new Promise(r => setTimeout(r, 5000));
+      await new Promise((r) => setTimeout(r, 5000));
       this.exitStatus = "Exit";
     }
   }

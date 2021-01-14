@@ -3,7 +3,9 @@
     <router-link class="nav-item" active-class="active" exact to="/">
       <span>Swap</span></router-link
     >
-    <router-link class="nav-item" active-class="active" to="/send"><span>Send</span></router-link>
+    <router-link class="nav-item" active-class="active" to="/send"
+      ><span>Send</span></router-link
+    >
     <router-link class="nav-item" active-class="active" to="/invest"
       ><span>Invest</span></router-link
     >

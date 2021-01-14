@@ -12,7 +12,7 @@
         :subLabel="myShares ? `Your shares: ${myShares}` : ''"
         :isLoading="tokenLoading"
         v-model="sharesToRemove"
-        @input="e => handleSharesToRemoveChange(e.target.value)"
+        @input="(e) => handleSharesToRemoveChange(e.target.value)"
         @selectToken="handleTokenSelect"
         :selectedToken="selectedToken"
       />
@@ -33,9 +33,7 @@
               <div class="mb-1">
                 <span class="mr-1 opacity-75">+</span>
                 <span class="tracking-wide">
-                  {{
-                  formatNum(inTokens.tezos, 6)
-                  }}
+                  {{ formatNum(inTokens.tezos, 6) }}
                 </span>
                 <span class="ml-1 text-sm opacity-90">XTZ</span>
               </div>
@@ -43,11 +41,11 @@
               <div class="mb-1">
                 <span class="mr-1 opacity-75">+</span>
                 <span class="tracking-wide">
-                  {{
-                  formatNum(inTokens.token, selectedToken.decimals)
-                  }}
+                  {{ formatNum(inTokens.token, selectedToken.decimals) }}
                 </span>
-                <span class="ml-1 text-sm opacity-90">{{selectedToken.name}}</span>
+                <span class="ml-1 text-sm opacity-90">{{
+                  selectedToken.name
+                }}</span>
               </div>
             </div>
 
@@ -89,7 +87,9 @@
       </FormInfo>
     </Form>
 
-    <div class="mx-auto mt-8 mb-8 text-sm font-normal text-center text-lightgray"></div>
+    <div
+      class="mx-auto mt-8 mb-8 text-sm font-normal text-center text-lightgray"
+    ></div>
     <div class="flex justify-center text-center">
       <SubmitBtn @click="removeLiquidity" :disabled="!valid">
         <template v-if="!processing">{{ remLiqStatus }}</template>
@@ -125,7 +125,7 @@ import {
   mutezToTz,
   clearMem,
   toNat,
-  fromNat
+  fromNat,
 } from "@/core";
 import { XTZ_TOKEN } from "@/core/defaults";
 
@@ -217,12 +217,14 @@ export default class RemoveLiquidity extends Vue {
       this.tokenLoading = true;
       if (this.selectedToken && this.account.pkh) {
         const dexStorage = await getDexStorage(this.selectedToken.exchange);
-        const shares = await getDexShares(this.account.pkh, this.selectedToken.exchange);
+        const shares = await getDexShares(
+          this.account.pkh,
+          this.selectedToken.exchange
+        );
         if (!shares) {
           this.myShares = "0";
         } else {
-          this.myShares = (
-            shares.unfrozen.isEqualTo(dexStorage.totalSupply)
+          this.myShares = (shares.unfrozen.isEqualTo(dexStorage.totalSupply)
             ? shares.unfrozen.minus(1)
             : shares.unfrozen
           ).toString();
@@ -241,20 +243,29 @@ export default class RemoveLiquidity extends Vue {
     this.poolMeta = null;
 
     if (this.selectedToken && this.account.pkh) {
-      const myShares = await getDexShares(this.account.pkh, this.selectedToken.exchange);
+      const myShares = await getDexShares(
+        this.account.pkh,
+        this.selectedToken.exchange
+      );
       const dexStorage = await getDexStorage(this.selectedToken.exchange);
 
       const myShare =
-        myShares && new BigNumber(myShares.unfrozen).div(dexStorage.totalSupply);
+        myShares &&
+        new BigNumber(myShares.unfrozen).div(dexStorage.totalSupply);
       const myTokens =
         myShare &&
-        fromNat(new BigNumber(dexStorage.tokenPool)
-          .times(myShare)
-          .integerValue(BigNumber.ROUND_DOWN), this.selectedToken);
+        fromNat(
+          new BigNumber(dexStorage.tokenPool)
+            .times(myShare)
+            .integerValue(BigNumber.ROUND_DOWN),
+          this.selectedToken
+        );
 
       this.poolMeta = {
         tezFull: `${mutezToTz(dexStorage.tezPool)} XTZ`,
-        tokenFull: `${fromNat(dexStorage.tokenPool, this.selectedToken)} ${this.selectedToken.name}`,
+        tokenFull: `${fromNat(dexStorage.tokenPool, this.selectedToken)} ${
+          this.selectedToken.name
+        }`,
         myShare: myShare ? `${myShare.times(100).toFormat(2)}%` : "-",
         myTokens: myTokens ? `${myTokens} ${this.selectedToken.name}` : "-",
       };
@@ -288,7 +299,11 @@ export default class RemoveLiquidity extends Vue {
     const dexStorage = await getDexStorage(this.selectedToken.exchange);
 
     const tezAmount = estimateInTezos(this.sharesToRemove, dexStorage);
-    const tokenAmount = estimateInTokens(this.sharesToRemove, dexStorage, this.selectedToken);
+    const tokenAmount = estimateInTokens(
+      this.sharesToRemove,
+      dexStorage,
+      this.selectedToken
+    );
 
     const tezos = toValidAmount(tezAmount);
     const token = toValidAmount(tokenAmount);
@@ -309,8 +324,7 @@ export default class RemoveLiquidity extends Vue {
       const mySharesPure = await getDexShares(this.account.pkh, selTk.exchange);
       let myShares: string | undefined;
       if (mySharesPure) {
-        myShares = (
-          mySharesPure.unfrozen.isEqualTo(dexStorage.totalSupply)
+        myShares = (mySharesPure.unfrozen.isEqualTo(dexStorage.totalSupply)
           ? mySharesPure.unfrozen.minus(1)
           : mySharesPure.unfrozen
         ).toString();

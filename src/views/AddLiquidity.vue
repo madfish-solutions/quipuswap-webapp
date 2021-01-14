@@ -13,7 +13,7 @@
         :subLabel="tezBalance ? `Balance: ${tezBalance}` : ''"
         :isLoading="tezLoading"
         v-model="tezAmount"
-        @input="e => handleTezAmountChange(e.target.value)"
+        @input="(e) => handleTezAmountChange(e.target.value)"
         :selectedToken="tezToken"
       />
 
@@ -28,7 +28,7 @@
         :subLabel="tokenBalance ? `Balance: ${tokenBalance}` : ''"
         :isLoading="tokenLoading"
         v-model="tokenAmount"
-        @input="e => handleTokenAmountChange(e.target.value)"
+        @input="(e) => handleTokenAmountChange(e.target.value)"
         @selectToken="handleTokenSelect"
         :selectedToken="selectedToken"
       />
@@ -66,7 +66,9 @@
       </FormInfo>
     </Form>
 
-    <div class="mx-auto mt-8 mb-8 text-sm font-normal text-center text-lightgray"></div>
+    <div
+      class="mx-auto mt-8 mb-8 text-sm font-normal text-center text-lightgray"
+    ></div>
     <div class="flex justify-center text-center">
       <SubmitBtn @click="addLiquidity" :disabled="!valid">
         <template v-if="!processing">{{ addLiqStatus }}</template>
@@ -106,9 +108,10 @@ import {
   clearMem,
   approveToken,
   toNat,
-  fromNat
+  fromNat,
 } from "@/core";
 import { XTZ_TOKEN } from "@/core/defaults";
+import { OpKind } from "@taquito/taquito";
 
 type PoolMeta = {
   tezFull: string;
@@ -116,6 +119,8 @@ type PoolMeta = {
   myShare: string;
   myTokens: string;
 };
+
+const TZ_PENNY = 0.000001;
 
 @Component({
   components: {
@@ -233,20 +238,28 @@ export default class AddLiquidity extends Vue {
     this.poolMeta = null;
 
     if (this.selectedToken && this.account.pkh) {
-      const myShares = await getDexShares(this.account.pkh, this.selectedToken.exchange);
+      const myShares = await getDexShares(
+        this.account.pkh,
+        this.selectedToken.exchange
+      );
       const dexStorage = await getDexStorage(this.selectedToken.exchange);
 
       const myShare =
         myShares && new BigNumber(myShares.total).div(dexStorage.totalSupply);
       const myTokens =
         myShare &&
-        fromNat(new BigNumber(dexStorage.tokenPool)
-          .times(myShare)
-          .integerValue(BigNumber.ROUND_DOWN), this.selectedToken);
+        fromNat(
+          new BigNumber(dexStorage.tokenPool)
+            .times(myShare)
+            .integerValue(BigNumber.ROUND_DOWN),
+          this.selectedToken
+        );
 
       this.poolMeta = {
         tezFull: `${mutezToTz(dexStorage.tezPool)} XTZ`,
-        tokenFull: `${fromNat(dexStorage.tokenPool, this.selectedToken)} ${this.selectedToken.name}`,
+        tokenFull: `${fromNat(dexStorage.tokenPool, this.selectedToken)} ${
+          this.selectedToken.name
+        }`,
         myShare: myShare ? `${myShare.times(100).toFormat(2)}%` : "-",
         myTokens: myTokens ? `${myTokens} ${this.selectedToken.name}` : "-",
       };
@@ -302,7 +315,11 @@ export default class AddLiquidity extends Vue {
     if (!this.selectedToken) return;
 
     const dexStorage = await getDexStorage(this.selectedToken.exchange);
-    const shares = estimateSharesInverse(this.tokenAmount, dexStorage, this.selectedToken);
+    const shares = estimateSharesInverse(
+      this.tokenAmount,
+      dexStorage,
+      this.selectedToken
+    );
     const amount = estimateInTezos(shares, dexStorage);
 
     this.tezAmount = toValidAmount(amount);
@@ -321,11 +338,29 @@ export default class AddLiquidity extends Vue {
       const initialTokenAmount = new BigNumber(this.tokenAmount);
 
       const dexStorage = await getDexStorage(selTk.exchange);
+
       const tezShares = estimateShares(initialTezAmount, dexStorage);
-      const tokensShares = estimateSharesInverse(initialTokenAmount, dexStorage, selTk);
-      const tezAmount = estimateInTezos(BigNumber.max(tezShares, tokensShares), dexStorage);
-      const shares = estimateShares(tezAmount, dexStorage);
-      const tokenAmount = estimateInTokens(shares, dexStorage, selTk);
+      const tokensShares = estimateSharesInverse(
+        initialTokenAmount,
+        dexStorage,
+        selTk
+      );
+
+      let maxShares = BigNumber.max(tezShares, tokensShares);
+      const tezBalance = await getBalance(me, tezTk);
+      if (tezBalance.isLessThan(estimateInTezos(maxShares, dexStorage).plus(TZ_PENNY))) {
+        maxShares = BigNumber.min(tezShares, tokensShares);
+      }
+
+      const tokenAmount = BigNumber.min(
+        estimateInTokens(maxShares, dexStorage, selTk),
+        await getBalance(me, selTk)
+      );
+      const tezAmount = estimateInTezos(maxShares, dexStorage).plus(TZ_PENNY);
+
+      const minShares = maxShares.isGreaterThan(1)
+        ? maxShares.minus(1)
+        : maxShares;
 
       const toCheck = [
         {
@@ -352,8 +387,49 @@ export default class AddLiquidity extends Vue {
         tezos.wallet.at(selTk.exchange),
       ]);
 
-      const batch = tezos.wallet
-        .batch([])
+      let withAllowanceReset = false;
+      try {
+        await tezos.estimate.batch([
+          {
+            kind: OpKind.TRANSACTION,
+            ...approveToken(
+              selTk,
+              tokenContract,
+              me,
+              selTk.exchange,
+              toNat(tokenAmount, selTk).toNumber()
+            ).toTransferParams(),
+          },
+          {
+            kind: OpKind.TRANSACTION,
+            ...dexContract.methods
+              .use(4, "investLiquidity", minShares.toNumber())
+              .toTransferParams({ amount: tezAmount.toNumber() }),
+          },
+        ]);
+      } catch (err) {
+        if (err?.message === "UnsafeAllowanceChange") {
+          withAllowanceReset = true;
+        } else {
+          console.error(err);
+        }
+      }
+
+      let batch = tezos.wallet.batch([]);
+
+      if (withAllowanceReset) {
+        batch = batch.withTransfer(
+          approveToken(
+            selTk,
+            tokenContract,
+            me,
+            selTk.exchange,
+            0
+          ).toTransferParams()
+        );
+      }
+
+      batch = batch
         .withTransfer(
           approveToken(
             selTk,
@@ -365,7 +441,7 @@ export default class AddLiquidity extends Vue {
         )
         .withTransfer(
           dexContract.methods
-            .use(4, "investLiquidity", shares.toNumber())
+            .use(4, "investLiquidity", minShares.toNumber())
             .toTransferParams({ amount: tezAmount.toNumber() })
         );
 

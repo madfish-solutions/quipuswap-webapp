@@ -2,7 +2,10 @@
   <div class="max-w-xl mx-auto">
     <NavTabs class="mb-6" />
 
-    <GovernancePairSelect :selectedToken="selectedToken" v-on:token-selected="selectToken" />
+    <GovernancePairSelect
+      :selectedToken="selectedToken"
+      v-on:token-selected="selectToken"
+    />
 
     <template v-if="selectedToken">
       <Form :style="processing && 'pointer-events:none'">
@@ -50,7 +53,7 @@ import {
   getDexStorage,
   clearMem,
   mutezToTz,
-  ACCURANCY_MULTIPLIER
+  ACCURANCY_MULTIPLIER,
 } from "@/core";
 import NavTabs from "@/components/NavTabs.vue";
 import NavGovernance from "@/components/NavGovernance.vue";
@@ -121,7 +124,9 @@ export default class Rewards extends Vue {
       const storage = await getDexStorage(this.selectedToken.exchange);
       const myCl = await storage.userRewards.get(this.account.pkh);
       if (myCl) {
-        this.rewards = mutezToTz(myCl.reward.div(ACCURANCY_MULTIPLIER)).toFormat(6);
+        this.rewards = mutezToTz(
+          myCl.reward.div(ACCURANCY_MULTIPLIER)
+        ).toFormat(6);
       }
     } catch (err) {
       console.error(err);

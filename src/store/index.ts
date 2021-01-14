@@ -73,6 +73,24 @@ export async function useWallet(opts = { forcePermission: false }) {
 
   const tezos = new TezosToolkit(net.rpcBaseURL);
   tezos.setWalletProvider(wallet);
+  tezos.setSignerProvider({
+    async publicKeyHash() {
+      const acc = await wallet.client.getActiveAccount();
+      if (!acc) throw new Error("Not connected");
+      return acc.address;
+    },
+    async publicKey() {
+      const acc = await wallet.client.getActiveAccount();
+      if (!acc) throw new Error("Not connected");
+      return acc.publicKey;
+    },
+    async secretKey(): Promise<string> {
+      throw new Error("Secret key cannot be exposed");
+    },
+    async sign() {
+      throw new Error("Cannot sign");
+    },
+  });
   const pkh = await wallet.getPKH();
 
   if (getAccount().pkh !== pkh) {

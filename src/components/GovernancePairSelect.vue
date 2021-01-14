@@ -15,9 +15,13 @@
               <span class="truncate">{{ formattedSelectedTokenSymbol }}</span>
             </div>
 
-            <div class="mt-1 text-sm font-light text-gray-500 whitespace-no-wrap">
+            <div
+              class="mt-1 text-sm font-light text-gray-500 whitespace-no-wrap"
+            >
               <span class="mr-1">Dex contract:</span>
-              <span class="font-mono text-gray-400">{{ selectedToken.exchange }}</span>
+              <span class="font-mono text-gray-400">{{
+                selectedToken.exchange
+              }}</span>
             </div>
           </template>
           <span v-if="!selectedToken">-</span>
@@ -26,7 +30,11 @@
 
       <div class="flex-1" />
 
-      <img class="w-3 ml-2" style="margin-top: -2px" src="@/assets/chevron-white.svg" />
+      <img
+        class="w-3 ml-2"
+        style="margin-top: -2px"
+        src="@/assets/chevron-white.svg"
+      />
     </button>
 
     <div class="field-search rounded-b-3px" v-if="isSearchOpened">
