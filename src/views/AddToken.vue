@@ -352,6 +352,7 @@ export default class AddToken extends Vue {
           approveToken(
             {
               tokenType: this.tokenType,
+              fa2TokenId: tokenId
             },
             tokenContract,
             me,
