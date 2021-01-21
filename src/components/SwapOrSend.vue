@@ -438,7 +438,7 @@ export default class SwapOrSend extends Vue {
         const contract = await tezos.wallet.at(outTk.exchange);
 
         const operation = await contract.methods
-          .use(1, "tezToTokenPayment", toNat(minOut, outTk), recipient)
+          .use("tezToTokenPayment", toNat(minOut, outTk).toNumber(), recipient)
           .send({ amount: inpAmn });
 
         await operation.confirmation();
@@ -467,7 +467,6 @@ export default class SwapOrSend extends Vue {
               kind: OpKind.TRANSACTION,
               ...dexContract.methods
                 .use(
-                  2,
                   "tokenToTezPayment",
                   tokenAmountNat,
                   tzToMutez(minOut),
@@ -511,7 +510,6 @@ export default class SwapOrSend extends Vue {
           .withTransfer(
             dexContract.methods
               .use(
-                2,
                 "tokenToTezPayment",
                 tokenAmountNat,
                 tzToMutez(minOut),
@@ -558,7 +556,6 @@ export default class SwapOrSend extends Vue {
               kind: OpKind.TRANSACTION,
               ...inDexContract.methods
                 .use(
-                  2,
                   "tokenToTezPayment",
                   inpAmnNat,
                   tzToMutez(tezAmount)
@@ -571,7 +568,7 @@ export default class SwapOrSend extends Vue {
             {
               kind: OpKind.TRANSACTION,
               ...outDexContract.methods
-                .use(1, "tezToTokenPayment", toNat(minOut, outTk), recipient)
+                .use("tezToTokenPayment", toNat(minOut, outTk), recipient)
                 .toTransferParams({ amount: tezAmount.toNumber() }),
             },
           ]);
@@ -610,7 +607,6 @@ export default class SwapOrSend extends Vue {
           .withTransfer(
             inDexContract.methods
               .use(
-                2,
                 "tokenToTezPayment",
                 inpAmnNat,
                 tzToMutez(tezAmount)
@@ -622,7 +618,7 @@ export default class SwapOrSend extends Vue {
           )
           .withTransfer(
             outDexContract.methods
-              .use(1, "tezToTokenPayment", toNat(minOut, outTk), recipient)
+              .use("tezToTokenPayment", toNat(minOut, outTk), recipient)
               .toTransferParams({ amount: tezAmount.toNumber() })
           );
 

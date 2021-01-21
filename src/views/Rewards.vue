@@ -146,7 +146,7 @@ export default class Rewards extends Vue {
       const tezos = await useWallet();
       const contract = await tezos.wallet.at(this.selectedToken!.exchange);
       const operation = await contract.methods
-        .use(3, "withdrawProfit", this.recipientAddress)
+        .use("withdrawProfit", this.recipientAddress)
         .send();
       await operation.confirmation();
 

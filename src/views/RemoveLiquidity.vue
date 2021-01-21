@@ -340,7 +340,6 @@ export default class RemoveLiquidity extends Vue {
       const dexContract = await tezos.wallet.at(selTk.exchange);
       const operation = await dexContract.methods
         .use(
-          5,
           "divestLiquidity",
           minTezos.toNumber(),
           minToken.toNumber(),

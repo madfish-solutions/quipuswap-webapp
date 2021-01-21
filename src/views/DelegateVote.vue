@@ -178,7 +178,7 @@ export default class DelegateVote extends Vue {
       const tezos = await useWallet();
       const contract = await tezos.wallet.at(this.selectedToken!.exchange);
       const operation = await contract.methods
-        .use(6, "setVotesDelegation", address, allow)
+        .use("setVotesDelegation", address, allow)
         .send();
       await operation.confirmation();
 
