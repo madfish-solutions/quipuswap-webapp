@@ -8,3 +8,7 @@
   @apply rounded-3px mx-4 text-lightgray text-sm font-light;
   background: #37415f;
 }
+
+.rotate-when-hover:hover {
+  transform: rotate(-180deg);
+}
