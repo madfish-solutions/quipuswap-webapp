@@ -330,7 +330,7 @@ export default class VoteBaker extends Vue {
         )
         .withTransfer(
           contract.methods
-            .use(6, "vote", this.bakerAddress, sharesToVote, this.voter)
+            .use("vote", this.bakerAddress, sharesToVote, this.voter)
             .toTransferParams()
         );
 
@@ -373,7 +373,7 @@ export default class VoteBaker extends Vue {
         .batch([])
         .withTransfer(
           contract.methods
-            .use(6, "vote", bakerStub, 0, this.voter)
+            .use("vote", bakerStub, 0, this.voter)
             .toTransferParams()
         );
 

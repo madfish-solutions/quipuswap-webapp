@@ -14,8 +14,10 @@
         :selectedToken="inputToken"
       />
 
-      <FormIcon>
-        <img src="@/assets/arrow-down.svg" />
+      <FormIcon :style="'padding-top: 0.25rem; padding-bottom: 0.25rem;'">
+        <button class="p-2 rounded-full transition ease-in-out duration-300 hover:bg-alphawhite focus:outline-none rotate-when-hover" @click="changeDirections">
+          <img src="@/assets/arrow-down.svg" style="width: 17px; height: 17px;" />
+        </button>
       </FormIcon>
 
       <FormField
@@ -411,6 +413,33 @@ export default class SwapOrSend extends Vue {
     this.inputAmount = toValidAmount(amount);
   }
 
+  changeDirections() {
+    let newInputToken;
+    let newOutputToken;
+    let newInputAmount;
+
+    if (this.inputToken) {
+      newOutputToken = this.inputToken;
+    }
+    if (this.outputToken) {
+      newInputToken = this.outputToken;
+      if (this.outputAmount) {
+        newInputAmount = this.outputAmount;
+      }
+    }
+
+    this.inputAmount = "";
+    this.outputAmount = "";
+
+    this.inputToken = newInputToken ?? null;
+    this.outputToken = newOutputToken ?? null;
+
+    if (newInputToken && newOutputToken && newInputAmount) {
+      this.inputAmount = newInputAmount;
+      this.calcOutputAmount();
+    }
+  }
+
   async swap() {
     if (this.swapping) return;
     this.swapping = true;
@@ -438,7 +467,7 @@ export default class SwapOrSend extends Vue {
         const contract = await tezos.wallet.at(outTk.exchange);
 
         const operation = await contract.methods
-          .use(1, "tezToTokenPayment", toNat(minOut, outTk), recipient)
+          .use("tezToTokenPayment", toNat(minOut, outTk).toNumber(), recipient)
           .send({ amount: inpAmn });
 
         await operation.confirmation();
@@ -467,7 +496,6 @@ export default class SwapOrSend extends Vue {
               kind: OpKind.TRANSACTION,
               ...dexContract.methods
                 .use(
-                  2,
                   "tokenToTezPayment",
                   tokenAmountNat,
                   tzToMutez(minOut),
@@ -511,7 +539,6 @@ export default class SwapOrSend extends Vue {
           .withTransfer(
             dexContract.methods
               .use(
-                2,
                 "tokenToTezPayment",
                 tokenAmountNat,
                 tzToMutez(minOut),
@@ -558,7 +585,6 @@ export default class SwapOrSend extends Vue {
               kind: OpKind.TRANSACTION,
               ...inDexContract.methods
                 .use(
-                  2,
                   "tokenToTezPayment",
                   inpAmnNat,
                   tzToMutez(tezAmount)
@@ -571,7 +597,7 @@ export default class SwapOrSend extends Vue {
             {
               kind: OpKind.TRANSACTION,
               ...outDexContract.methods
-                .use(1, "tezToTokenPayment", toNat(minOut, outTk), recipient)
+                .use("tezToTokenPayment", toNat(minOut, outTk), recipient)
                 .toTransferParams({ amount: tezAmount.toNumber() }),
             },
           ]);
@@ -610,7 +636,6 @@ export default class SwapOrSend extends Vue {
           .withTransfer(
             inDexContract.methods
               .use(
-                2,
                 "tokenToTezPayment",
                 inpAmnNat,
                 tzToMutez(tezAmount)
@@ -622,7 +647,7 @@ export default class SwapOrSend extends Vue {
           )
           .withTransfer(
             outDexContract.methods
-              .use(1, "tezToTokenPayment", toNat(minOut, outTk), recipient)
+              .use("tezToTokenPayment", toNat(minOut, outTk), recipient)
               .toTransferParams({ amount: tezAmount.toNumber() })
           );
 

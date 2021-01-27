@@ -299,7 +299,7 @@ export default class Veto extends Vue {
         )
         .withTransfer(
           contract.methods
-            .use(7, "veto", sharesToVeto, this.voter)
+            .use("veto", sharesToVeto, this.voter)
             .toTransferParams()
         );
 

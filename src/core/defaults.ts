@@ -107,4 +107,16 @@ export const TESTNET_TOKENS: QSAsset[] = [
     exchange: "",
     default: true,
   },
+  {
+    type: "token",
+    tokenType: QSTokenType.FA2,
+    id: "KT1WnjpKriR4yweiFdkTiMofoV9hvz7vMSXJ",
+    fa2TokenId: 0,
+    decimals: 6,
+    symbol: "USDS",
+    name: "Stably USD",
+    imgUrl: DEFAULT_TOKEN_LOGO_URL,
+    exchange: "",
+    default: true,
+  },
 ];
