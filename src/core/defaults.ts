@@ -115,7 +115,7 @@ export const TESTNET_TOKENS: QSAsset[] = [
     decimals: 6,
     symbol: "USDS",
     name: "Stably USD",
-    imgUrl: DEFAULT_TOKEN_LOGO_URL,
+    imgUrl: require("../assets/dollar-mark.svg"),
     exchange: "",
     default: true,
   },
