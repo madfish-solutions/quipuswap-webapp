@@ -257,7 +257,8 @@ export default class SwapOrSend extends Vue {
         this.outputAmount,
         this.minimumReceived,
         this.percentage,
-      ].every(a => a && +a > 0);
+      ].every(a => a && +a > 0) &&
+      this.percentage! < 100;
     return this.send
       ? inAndOutValid && isAddressValid(this.recipientAddress)
       : inAndOutValid;
