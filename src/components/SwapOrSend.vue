@@ -84,10 +84,7 @@
             :key="percentage"
             class="px-2 py-px ml-2 text-xs rounded-md shadow-xs focus:outline-none"
             :class="
-              !shouldUseCustomPercentage &&
-              activeSlippagePercentage === percentage
-                ? 'bg-alphawhite'
-                : ''
+              activeSlippagePercentage === percentage ? 'bg-alphawhite' : ''
             "
             v-on:click="setActiveSlippagePercentage(percentage)"
           >
@@ -97,7 +94,6 @@
 
           <div
             class="px-2 py-2 ml-2 text-xs font-light rounded-md shadow-xs focus:outline-none leading-tight"
-            :class="shouldUseCustomPercentage ? 'bg-alphawhite' : ''"
           >
             <input
               class="bg-transparent outline-none text-right w-12"
