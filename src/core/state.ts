@@ -4,6 +4,8 @@ import {
   ContractMethod,
   Wallet,
 } from "@taquito/taquito";
+import { tzip16 } from "@taquito/tzip16";
+import { tzip12 } from "@taquito/tzip12";
 import BigNumber from "bignumber.js";
 import mem from "mem";
 import { QSAsset, QSNetwork, QSTokenType } from "./types";
@@ -148,6 +150,14 @@ export async function getStoragePure(contractAddress: string) {
 }
 
 export const getContract = mem(getContractPure);
+
+export const getTzip16Contract = mem((address: string) =>
+  Tezos.contract.at(address, tzip16)
+);
+
+export const getTzip12Contract = mem((address: string) =>
+  Tezos.contract.at(address, tzip12)
+);
 
 export function getContractPure(address: string) {
   return Tezos.contract.at(address);
