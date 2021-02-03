@@ -4,6 +4,8 @@ import {
   ContractMethod,
   Wallet,
 } from "@taquito/taquito";
+import { tzip16 } from "@taquito/tzip16";
+import { tzip12 } from "@taquito/tzip12";
 import BigNumber from "bignumber.js";
 import mem from "mem";
 import { QSAsset, QSNetwork, QSTokenType } from "./types";
@@ -17,6 +19,7 @@ import {
   MAINNET_TOKENS,
   TESTNET_TOKENS,
 } from "./defaults";
+import { getTokenDecimals } from "./assets";
 
 export const Tezos = new TezosToolkit(
   new FastRpcClient(getNetwork().rpcBaseURL)
@@ -77,7 +80,7 @@ export function approveToken(
   if (token.tokenType === QSTokenType.FA2) {
     return tokenContract.methods.update_operators([
       {
-        ["add_operator"]: {
+        add_operator: {
           owner: from,
           operator: to,
           token_id: token.fa2TokenId,
@@ -89,17 +92,17 @@ export function approveToken(
   }
 }
 
-function toUnknownToken(
+async function toUnknownToken(
   address: string,
   exchange: string,
   tokenType: QSTokenType,
   fa2TokenId?: number
-): QSAsset {
+): Promise<QSAsset> {
   return {
     type: "token",
     tokenType,
     id: address,
-    decimals: 0,
+    decimals: await getTokenDecimals(tokenType, address, fa2TokenId),
     symbol: address,
     name: "Token",
     imgUrl: DEFAULT_TOKEN_LOGO_URL,
@@ -148,6 +151,14 @@ export async function getStoragePure(contractAddress: string) {
 }
 
 export const getContract = mem(getContractPure);
+
+export const getTzip16Contract = mem((address: string) =>
+  Tezos.contract.at(address, tzip16)
+);
+
+export const getTzip12Contract = mem((address: string) =>
+  Tezos.contract.at(address, tzip12)
+);
 
 export function getContractPure(address: string) {
   return Tezos.contract.at(address);

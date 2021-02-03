@@ -1,7 +1,13 @@
 import BigNumber from "bignumber.js";
 import { TezosToolkit } from "@taquito/taquito";
+import { View } from "@taquito/tzip16";
 import { QSAsset, QSTokenType } from "./types";
-import { Tezos, getContract } from "./state";
+import {
+  Tezos,
+  getContract,
+  getTzip16Contract,
+  getTzip12Contract,
+} from "./state";
 import { mutezToTz } from "./helpers";
 
 export async function getBalance(accountPkh: string, asset: QSAsset) {
@@ -46,6 +52,69 @@ export async function getBalance(accountPkh: string, asset: QSAsset) {
     default:
       throw new Error("Not Supported");
   }
+}
+
+export async function getTokenDecimals(
+  tokenType: QSTokenType,
+  tokenAddress: string,
+  tokenId?: number
+): Promise<number> {
+  try {
+    if (tokenType === QSTokenType.FA1_2) {
+      const tzipFetchableContract = await getTzip16Contract(tokenAddress);
+      const { metadata } = await tzipFetchableContract.tzip16().getMetadata();
+      const views = await tzipFetchableContract.tzip16().metadataViews();
+      const decimalsFromView = await views
+        .decimals?.()
+        .executeView()
+        .catch(() => undefined);
+      const onetokenFromView = await views
+        .onetoken?.()
+        .executeView()
+        .catch(() => undefined);
+      const decimalsFromViews =
+        decimalsFromView || (onetokenFromView && Math.log10(onetokenFromView));
+      // @ts-ignore
+      return metadata.decimals || decimalsFromViews || 0;
+    }
+
+    if (tokenType === QSTokenType.FA2) {
+      let views: Record<string, () => View> = {};
+      try {
+        const tzip16FetchableContract = await getTzip16Contract(tokenAddress);
+        views = await tzip16FetchableContract.tzip16().metadataViews();
+      } catch (e) {}
+
+      const tzipFetchableContract = await getTzip12Contract(tokenAddress);
+      const tokenMetadata = await tzipFetchableContract
+        // @ts-ignore
+        .tzip12()
+        .getTokenMetadata(tokenId!);
+      const { decimals: decimalsFromMetadata } = tokenMetadata;
+      if (typeof decimalsFromMetadata === "number") {
+        return decimalsFromMetadata;
+      }
+      return (
+        views
+          .token_metadata?.()
+          .executeView(tokenId!)
+          .then(data => data.decimals)
+          .catch(() => undefined) || 0
+      );
+    }
+  } catch {
+    return 0;
+  }
+
+  if (tokenType === QSTokenType.XTZ) {
+    return 6;
+  }
+
+  if (tokenType === QSTokenType.TzBTC) {
+    return 8;
+  }
+
+  return 0;
 }
 
 export async function getNewTokenBalance(
