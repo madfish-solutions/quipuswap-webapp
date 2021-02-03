@@ -15,8 +15,14 @@
       />
 
       <FormIcon :style="'padding-top: 0.25rem; padding-bottom: 0.25rem;'">
-        <button class="p-2 rounded-full transition ease-in-out duration-300 hover:bg-alphawhite focus:outline-none rotate-when-hover" @click="changeDirections">
-          <img src="@/assets/arrow-down.svg" style="width: 17px; height: 17px;" />
+        <button
+          class="p-2 rounded-full transition ease-in-out duration-300 hover:bg-alphawhite focus:outline-none rotate-when-hover"
+          @click="changeDirections"
+        >
+          <img
+            src="@/assets/arrow-down.svg"
+            style="width: 17px; height: 17px;"
+          />
         </button>
       </FormIcon>
 
@@ -78,13 +84,38 @@
             :key="percentage"
             class="px-2 py-px ml-2 text-xs rounded-md shadow-xs focus:outline-none"
             :class="
-              activeSlippagePercentage === percentage ? 'bg-alphawhite' : ''
+              !shouldUseCustomPercentage &&
+              activeSlippagePercentage === percentage
+                ? 'bg-alphawhite'
+                : ''
             "
-            v-on:click="activeSlippagePercentage = percentage"
+            v-on:click="setActiveSlippagePercentage(percentage)"
           >
             {{ percentage }}
             <span class="opacity-75">%</span>
           </button>
+          <VPopover>
+            <button
+              class="px-2 py-2 ml-2 text-xs rounded-md shadow-xs focus:outline-none"
+              :class="shouldUseCustomPercentage ? 'bg-alphawhite' : ''"
+              v-on:click="shouldUseCustomPercentage = true"
+            >
+              Custom
+            </button>
+
+            <div
+              class="text-base focus:outline-none text-white font-light"
+              slot="popover"
+            >
+              <input
+                class="bg-transparent outline-none font-light text-right w-16"
+                placeholder="1.5"
+                v-model="customSlippagePercentage"
+                @input="e => handleCustomSlippageChange(e.target.value)"
+              />
+              %
+            </div>
+          </VPopover>
         </div>
 
         <div class="flex justify-between mb-1">
@@ -111,6 +142,7 @@
 
 <script lang="ts">
 import { Component, Vue, Prop, Watch } from "vue-property-decorator";
+import { VPopover } from "v-tooltip";
 import NavTabs from "@/components/NavTabs.vue";
 import Form, { FormIcon, FormField, FormInfo } from "@/components/Form";
 import SubmitBtn from "@/components/SubmitBtn.vue";
@@ -148,6 +180,7 @@ import {
     FormInfo,
     SubmitBtn,
     Loader,
+    VPopover,
   },
 })
 export default class SwapOrSend extends Vue {
@@ -166,6 +199,8 @@ export default class SwapOrSend extends Vue {
 
   slippagePercentages = [0.5, 1, 3];
   activeSlippagePercentage = 1;
+  customSlippagePercentage: number | undefined = 1.5;
+  shouldUseCustomPercentage = false;
   fee: string | null = null;
   inputDexAddress: string | null = null;
   outputDexAddress: string | null = null;
@@ -197,10 +232,16 @@ export default class SwapOrSend extends Vue {
     return `1 ${this.outputToken.name} = ${price} ${this.inputToken.name}`;
   }
 
+  get percentage() {
+    return this.shouldUseCustomPercentage
+      ? this.customSlippagePercentage
+      : this.activeSlippagePercentage;
+  }
+
   get minimumReceived() {
     if (!this.outputToken || !this.outputAmount) return null;
     const base = new BigNumber(100)
-      .minus(this.activeSlippagePercentage)
+      .minus(this.percentage || 0)
       .div(100)
       .times(this.outputAmount);
 
@@ -211,9 +252,12 @@ export default class SwapOrSend extends Vue {
     const inAndOutValid =
       this.inputToken &&
       this.outputToken &&
-      [this.inputAmount, this.outputAmount, this.minimumReceived].every(
-        (a) => a && +a > 0
-      );
+      [
+        this.inputAmount,
+        this.outputAmount,
+        this.minimumReceived,
+        this.percentage,
+      ].every(a => a && +a > 0);
     return this.send
       ? inAndOutValid && isAddressValid(this.recipientAddress)
       : inAndOutValid;
@@ -313,6 +357,15 @@ export default class SwapOrSend extends Vue {
     this.calcOutputAmount();
   }
 
+  setActiveSlippagePercentage(percentage: number) {
+    this.shouldUseCustomPercentage = false;
+    this.activeSlippagePercentage = percentage;
+  }
+
+  setCustomSlippagePercentage(percentage?: number) {
+    this.customSlippagePercentage = percentage;
+  }
+
   handleInputAmountChange(amount: string) {
     this.inputAmount = amount;
     const isNum = /^[0-9.]*$/g.test(amount);
@@ -330,6 +383,13 @@ export default class SwapOrSend extends Vue {
       this.calcInputAmount();
     } else {
       this.inputAmount = "";
+    }
+  }
+
+  handleCustomSlippageChange(amount: string) {
+    const numAmount = amount ? Number(amount) : undefined;
+    if (numAmount === undefined || numAmount > 0) {
+      this.setCustomSlippagePercentage(numAmount);
     }
   }
 
@@ -367,6 +427,8 @@ export default class SwapOrSend extends Vue {
           await getDexStorage(this.outputToken.exchange),
           this.outputToken
         );
+        break;
+      default:
         break;
     }
 
@@ -407,6 +469,8 @@ export default class SwapOrSend extends Vue {
           await getDexStorage(this.inputToken.exchange),
           this.inputToken
         );
+        break;
+      default:
         break;
     }
 
