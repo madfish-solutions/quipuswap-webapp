@@ -7,8 +7,10 @@ import {
   getContract,
   getTzip16Contract,
   getTzip12Contract,
+  getNetwork,
 } from "./state";
 import { mutezToTz } from "./helpers";
+import { DEFAULT_TOKEN_LOGO_URL, MAINNET_TOKENS, XTZ_TOKEN } from "./defaults";
 
 export async function getBalance(accountPkh: string, asset: QSAsset) {
   let nat: BigNumber | undefined;
@@ -54,15 +56,28 @@ export async function getBalance(accountPkh: string, asset: QSAsset) {
   }
 }
 
-export async function getTokenDecimals(
+export async function getTokenMetadata(
   tokenType: QSTokenType,
   tokenAddress: string,
   tokenId?: number
-): Promise<number> {
+): Promise<Pick<QSAsset, "decimals" | "symbol" | "name" | "imgUrl">> {
+  const { id: networkId } = getNetwork();
+  const storageKey = `token_metadata_${networkId}_${tokenAddress}${
+    tokenType === QSTokenType.FA2 ? `_${tokenId}` : ""
+  }`;
+  const tokenMetadataFromStorage = localStorage.getItem(storageKey);
+
+  if (tokenMetadataFromStorage) {
+    try {
+      return JSON.parse(tokenMetadataFromStorage);
+    } catch (e) {
+      localStorage.removeItem(storageKey);
+    }
+  }
+
   try {
     if (tokenType === QSTokenType.FA1_2) {
       const tzipFetchableContract = await getTzip16Contract(tokenAddress);
-      const { metadata } = await tzipFetchableContract.tzip16().getMetadata();
       const views = await tzipFetchableContract.tzip16().metadataViews();
       const decimalsFromView = await views
         .decimals?.()
@@ -74,8 +89,25 @@ export async function getTokenDecimals(
         .catch(() => undefined);
       const decimalsFromViews =
         decimalsFromView || (onetokenFromView && Math.log10(onetokenFromView));
-      // @ts-ignore
-      return metadata.decimals || decimalsFromViews || 0;
+      const {
+        metadata: {
+          // @ts-ignore
+          decimals = decimalsFromViews || 0,
+          // @ts-ignore
+          symbol = tokenAddress,
+          name = "Token",
+          // @ts-ignore
+          icon = DEFAULT_TOKEN_LOGO_URL,
+        },
+      } = await tzipFetchableContract.tzip16().getMetadata();
+      const metadata = {
+        decimals,
+        symbol,
+        name,
+        imgUrl: icon,
+      };
+      localStorage.setItem(storageKey, JSON.stringify(metadata));
+      return metadata;
     }
 
     if (tokenType === QSTokenType.FA2) {
@@ -86,35 +118,44 @@ export async function getTokenDecimals(
       } catch (e) {}
 
       const tzipFetchableContract = await getTzip12Contract(tokenAddress);
-      const tokenMetadata = await tzipFetchableContract
-        // @ts-ignore
-        .tzip12()
-        .getTokenMetadata(tokenId!);
-      const { decimals: decimalsFromMetadata } = tokenMetadata;
-      if (typeof decimalsFromMetadata === "number") {
-        return decimalsFromMetadata;
-      }
-      return (
-        views
+      const decimalsFromView =
+        (await views
           .token_metadata?.()
           .executeView(tokenId!)
           .then(data => data.decimals)
-          .catch(() => undefined) || 0
-      );
+          .catch(() => undefined)) || 0;
+      const {
+        decimals = decimalsFromView,
+        name = "Token",
+        symbol = tokenAddress,
+        // @ts-ignore
+        icon = DEFAULT_TOKEN_LOGO_URL,
+      } = await tzipFetchableContract.tzip12().getTokenMetadata(tokenId!);
+      const metadata = {
+        decimals,
+        symbol,
+        name,
+        imgUrl: icon,
+      };
+      localStorage.setItem(storageKey, JSON.stringify(metadata));
+      return metadata;
     }
-  } catch {
-    return 0;
+  } catch (e) {
+    return {
+      decimals: 0,
+      symbol: tokenAddress,
+      name: "Token",
+      imgUrl: DEFAULT_TOKEN_LOGO_URL,
+    };
   }
 
   if (tokenType === QSTokenType.XTZ) {
-    return 6;
+    return XTZ_TOKEN;
   }
 
-  if (tokenType === QSTokenType.TzBTC) {
-    return 8;
-  }
-
-  return 0;
+  return MAINNET_TOKENS.find(
+    ({ tokenType: candidateTokenType }) => candidateTokenType === tokenType
+  )!;
 }
 
 export async function getNewTokenData(
@@ -142,7 +183,7 @@ export async function getNewTokenData(
       }
 
       if (shouldTryGetMetadata) {
-        decimals = await getTokenDecimals(tokenType, tokenAddress, tokenId);
+        decimals = (await getTokenMetadata(tokenType, tokenAddress)).decimals;
       }
 
       return { bal: nat, decimals };
@@ -168,7 +209,8 @@ export async function getNewTokenData(
       }
 
       if (shouldTryGetMetadata) {
-        decimals = await getTokenDecimals(tokenType, tokenAddress, tokenId);
+        decimals = (await getTokenMetadata(tokenType, tokenAddress, tokenId))
+          .decimals;
       }
 
       return { bal: nat, decimals };
