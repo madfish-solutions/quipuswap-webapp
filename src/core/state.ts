@@ -5,7 +5,7 @@ import {
   Wallet,
 } from "@taquito/taquito";
 import { tzip16 } from "@taquito/tzip16";
-import { tzip12 } from "@taquito/tzip12";
+import { tzip12, Tzip12Module } from "@taquito/tzip12";
 import BigNumber from "bignumber.js";
 import mem from "mem";
 import { QSAsset, QSNetwork, QSTokenType } from "./types";
@@ -19,11 +19,12 @@ import {
   MAINNET_TOKENS,
   TESTNET_TOKENS,
 } from "./defaults";
-import { getTokenDecimals } from "./assets";
+import { getTokenMetadata } from "./assets";
 
 export const Tezos = new TezosToolkit(
   new FastRpcClient(getNetwork().rpcBaseURL)
 );
+Tezos.addExtension(new Tzip12Module());
 Tezos.setSignerProvider(new LambdaViewSigner());
 
 export async function getTokens() {
@@ -99,13 +100,10 @@ async function toUnknownToken(
   fa2TokenId?: number
 ): Promise<QSAsset> {
   return {
+    ...(await getTokenMetadata(tokenType, address, fa2TokenId)),
     type: "token",
     tokenType,
     id: address,
-    decimals: await getTokenDecimals(tokenType, address, fa2TokenId),
-    symbol: address,
-    name: "Token",
-    imgUrl: DEFAULT_TOKEN_LOGO_URL,
     exchange,
     fa2TokenId,
   };
