@@ -117,13 +117,15 @@ export async function getTokenDecimals(
   return 0;
 }
 
-export async function getNewTokenBalance(
+export async function getNewTokenData(
   accountPkh: string,
   tokenType: QSTokenType,
   tokenAddress: string,
   tokenId?: number
 ) {
   let nat: BigNumber | undefined;
+  let shouldTryGetMetadata = true;
+  let decimals = 0;
 
   switch (tokenType) {
     case QSTokenType.FA1_2:
@@ -131,13 +133,19 @@ export async function getNewTokenBalance(
 
       try {
         nat = await contract.views.getBalance(accountPkh).read();
-      } catch {}
+      } catch {
+        shouldTryGetMetadata = false;
+      }
 
       if (!nat || nat.isNaN()) {
         nat = new BigNumber(0);
       }
 
-      return nat;
+      if (shouldTryGetMetadata) {
+        decimals = await getTokenDecimals(tokenType, tokenAddress, tokenId);
+      }
+
+      return { bal: nat, decimals };
 
     case QSTokenType.FA2:
       const fa2Contract = await getContract(tokenAddress);
@@ -151,13 +159,19 @@ export async function getNewTokenBalance(
           .balance_of([{ owner: accountPkh, token_id: tokenId }])
           .read();
         nat = response[0].balance;
-      } catch {}
+      } catch {
+        shouldTryGetMetadata = false;
+      }
 
       if (!nat || nat.isNaN()) {
         nat = new BigNumber(0);
       }
 
-      return nat;
+      if (shouldTryGetMetadata) {
+        decimals = await getTokenDecimals(tokenType, tokenAddress, tokenId);
+      }
+
+      return { bal: nat, decimals };
 
     default:
       throw new Error("Token type not supported");

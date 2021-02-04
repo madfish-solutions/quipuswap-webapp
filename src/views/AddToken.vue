@@ -134,7 +134,7 @@ import {
   isKTAddress,
   toValidAmount,
   getBalance,
-  getNewTokenBalance,
+  getNewTokenData,
   getDexStorage,
   getStoragePure,
   getContract,
@@ -178,6 +178,7 @@ export default class AddToken extends Vue {
 
   tokenAmount = "";
   tokenBalance: string | null = null;
+  tokenDecimals = 0;
   tokenLoading = false;
 
   processing = false;
@@ -199,7 +200,11 @@ export default class AddToken extends Vue {
       this.tezToken &&
       isKTAddress(this.tokenAddress) &&
       [this.tezAmount, this.tokenAmount].every((a) => a && +a > 0) &&
-      Number.isInteger(+this.tokenAmount)
+      Number(
+        new BigNumber(this.tokenAmount).toFormat(this.tokenDecimals, {
+          decimalSeparator: ".",
+        })
+      ) === +this.tokenAmount
     );
   }
 
@@ -230,23 +235,23 @@ export default class AddToken extends Vue {
 
   @Watch("tokenType")
   onTokenTypeChange() {
-    this.loadTokenBalance();
+    this.loadTokenData();
   }
 
   @Watch("tokenAddress")
   onTokenAddressChange() {
-    this.loadTokenBalance();
+    this.loadTokenData();
   }
 
   @Watch("tokenId")
   onTokenIdChange() {
-    this.loadTokenBalance();
+    this.loadTokenData();
   }
 
   @Watch("account")
   onAccountChange() {
     this.loadTezBalance();
-    this.loadTokenBalance();
+    this.loadTokenData();
   }
 
   async loadTezBalance() {
@@ -263,22 +268,24 @@ export default class AddToken extends Vue {
     }
   }
 
-  async loadTokenBalance() {
+  async loadTokenData() {
     this.tokenBalance = null;
     if (isKTAddress(this.tokenAddress) && this.account.pkh) {
       try {
-        const bal = await getNewTokenBalance(
+        const { bal, decimals } = await getNewTokenData(
           this.account.pkh,
           this.tokenType,
           this.tokenAddress,
           this.tokenId ? +this.tokenId : 0
         );
-        this.tokenBalance = bal.toString();
+        this.tokenBalance = bal.div(new BigNumber(10).pow(decimals)).toString();
+        this.tokenDecimals = decimals;
       } catch (err) {
         if (process.env.NODE_ENV === "development") {
           console.error(err);
         }
         this.tokenBalance = "?";
+        this.tokenDecimals = 0;
       }
     }
   }
@@ -300,7 +307,9 @@ export default class AddToken extends Vue {
 
       const tezTk = this.tezToken!;
       const tezAmount = new BigNumber(this.tezAmount);
-      const tokenAmount = new BigNumber(this.tokenAmount);
+      const tokenAmount = new BigNumber(this.tokenAmount)
+        .multipliedBy(new BigNumber(10).pow(this.tokenDecimals))
+        .integerValue();
       const tokenId = this.tokenId ? +this.tokenId : 0;
 
       const toCheck = [
@@ -309,12 +318,12 @@ export default class AddToken extends Vue {
           amount: tezAmount,
         },
         {
-          promise: getNewTokenBalance(
+          promise: getNewTokenData(
             me,
             this.tokenType,
             this.tokenAddress,
             tokenId
-          ),
+          ).then(({ bal }) => bal),
           amount: tokenAmount,
         },
       ];
@@ -395,7 +404,7 @@ export default class AddToken extends Vue {
   refresh() {
     clearMem();
     this.loadTezBalance();
-    this.loadTokenBalance();
+    this.loadTokenData();
     loadTokens();
   }
 }
