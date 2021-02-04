@@ -94,6 +94,11 @@
 
           <div
             class="px-2 py-2 ml-2 text-xs font-light rounded-md shadow-xs focus:outline-none leading-tight"
+            :class="
+              slippagePercentages.includes(activeSlippagePercentage)
+                ? ''
+                : 'bg-alphawhite'
+            "
           >
             <input
               class="bg-transparent outline-none text-right w-12"
@@ -184,6 +189,7 @@ export default class SwapOrSend extends Vue {
 
   slippagePercentages = [0.5, 1, 3];
   activeSlippagePercentage: number | undefined = 1;
+  lastValidCustomSlippagePercentage: string = "";
   customSlippagePercentage: string = "";
   fee: string | null = null;
   inputDexAddress: string | null = null;
@@ -339,6 +345,7 @@ export default class SwapOrSend extends Vue {
   setActiveSlippagePercentage(percentage: number) {
     this.activeSlippagePercentage = percentage;
     this.customSlippagePercentage = "";
+    this.lastValidCustomSlippagePercentage = "";
   }
 
   handleInputAmountChange(amount: string) {
@@ -363,8 +370,21 @@ export default class SwapOrSend extends Vue {
 
   handleCustomSlippageChange(amount: string) {
     const numAmount = amount ? Number(amount) : undefined;
-    if (numAmount !== undefined && !Number.isNaN(numAmount)) {
+    const shouldRevertChange =
+      numAmount !== undefined && (numAmount < 0 || numAmount > 30);
+
+    if (
+      numAmount !== undefined &&
+      !Number.isNaN(numAmount) &&
+      !shouldRevertChange
+    ) {
       this.activeSlippagePercentage = numAmount;
+    }
+
+    if (shouldRevertChange) {
+      this.customSlippagePercentage = this.lastValidCustomSlippagePercentage;
+    } else {
+      this.lastValidCustomSlippagePercentage = amount;
     }
   }
 
