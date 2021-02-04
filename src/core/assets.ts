@@ -1,8 +1,16 @@
 import BigNumber from "bignumber.js";
 import { TezosToolkit } from "@taquito/taquito";
+import { View } from "@taquito/tzip16";
 import { QSAsset, QSTokenType } from "./types";
-import { Tezos, getContract } from "./state";
+import {
+  Tezos,
+  getContract,
+  getTzip16Contract,
+  getTzip12Contract,
+  getNetwork,
+} from "./state";
 import { mutezToTz } from "./helpers";
+import { DEFAULT_TOKEN_LOGO_URL, MAINNET_TOKENS, XTZ_TOKEN } from "./defaults";
 
 export async function getBalance(accountPkh: string, asset: QSAsset) {
   let nat: BigNumber | undefined;
@@ -48,13 +56,117 @@ export async function getBalance(accountPkh: string, asset: QSAsset) {
   }
 }
 
-export async function getNewTokenBalance(
+export async function getTokenMetadata(
+  tokenType: QSTokenType,
+  tokenAddress: string,
+  tokenId?: number
+): Promise<Pick<QSAsset, "decimals" | "symbol" | "name" | "imgUrl">> {
+  const { id: networkId } = getNetwork();
+  const storageKey = `token_metadata_${networkId}_${tokenAddress}${
+    tokenType === QSTokenType.FA2 ? `_${tokenId}` : ""
+  }`;
+  const tokenMetadataFromStorage = localStorage.getItem(storageKey);
+
+  if (tokenMetadataFromStorage) {
+    try {
+      return JSON.parse(tokenMetadataFromStorage);
+    } catch (e) {
+      localStorage.removeItem(storageKey);
+    }
+  }
+
+  try {
+    if (tokenType === QSTokenType.FA1_2) {
+      const tzipFetchableContract = await getTzip16Contract(tokenAddress);
+      const views = await tzipFetchableContract.tzip16().metadataViews();
+      const decimalsFromView = await views
+        .decimals?.()
+        .executeView()
+        .catch(() => undefined);
+      const onetokenFromView = await views
+        .onetoken?.()
+        .executeView()
+        .catch(() => undefined);
+      const decimalsFromViews =
+        decimalsFromView || (onetokenFromView && Math.log10(onetokenFromView));
+      const {
+        metadata: {
+          // @ts-ignore
+          decimals = decimalsFromViews || 0,
+          // @ts-ignore
+          symbol = tokenAddress,
+          name = "Token",
+          // @ts-ignore
+          icon = DEFAULT_TOKEN_LOGO_URL,
+        },
+      } = await tzipFetchableContract.tzip16().getMetadata();
+      const metadata = {
+        decimals,
+        symbol,
+        name,
+        imgUrl: icon,
+      };
+      localStorage.setItem(storageKey, JSON.stringify(metadata));
+      return metadata;
+    }
+
+    if (tokenType === QSTokenType.FA2) {
+      let views: Record<string, () => View> = {};
+      try {
+        const tzip16FetchableContract = await getTzip16Contract(tokenAddress);
+        views = await tzip16FetchableContract.tzip16().metadataViews();
+      } catch (e) {}
+
+      const tzipFetchableContract = await getTzip12Contract(tokenAddress);
+      const decimalsFromView =
+        (await views
+          .token_metadata?.()
+          .executeView(tokenId!)
+          .then(data => data.decimals)
+          .catch(() => undefined)) || 0;
+      const {
+        decimals = decimalsFromView,
+        name = "Token",
+        symbol = tokenAddress,
+        // @ts-ignore
+        icon = DEFAULT_TOKEN_LOGO_URL,
+      } = await tzipFetchableContract.tzip12().getTokenMetadata(tokenId!);
+      const metadata = {
+        decimals,
+        symbol,
+        name,
+        imgUrl: icon,
+      };
+      localStorage.setItem(storageKey, JSON.stringify(metadata));
+      return metadata;
+    }
+  } catch (e) {
+    return {
+      decimals: 0,
+      symbol: tokenAddress,
+      name: "Token",
+      imgUrl: DEFAULT_TOKEN_LOGO_URL,
+    };
+  }
+
+  if (tokenType === QSTokenType.XTZ) {
+    return XTZ_TOKEN;
+  }
+
+  return MAINNET_TOKENS.find(
+    ({ tokenType: candidateTokenType }) => candidateTokenType === tokenType
+  )!;
+}
+
+export async function getNewTokenData(
   accountPkh: string,
   tokenType: QSTokenType,
   tokenAddress: string,
   tokenId?: number
 ) {
   let nat: BigNumber | undefined;
+  let shouldTryGetMetadata = true;
+  let decimals = 0;
 
   switch (tokenType) {
     case QSTokenType.FA1_2:
@@ -62,13 +174,19 @@ export async function getNewTokenBalance(
 
       try {
         nat = await contract.views.getBalance(accountPkh).read();
-      } catch {}
+      } catch {
+        shouldTryGetMetadata = false;
+      }
 
       if (!nat || nat.isNaN()) {
         nat = new BigNumber(0);
       }
 
-      return nat;
+      if (shouldTryGetMetadata) {
+        decimals = (await getTokenMetadata(tokenType, tokenAddress)).decimals;
+      }
+
+      return { bal: nat, decimals };
 
     case QSTokenType.FA2:
       const fa2Contract = await getContract(tokenAddress);
@@ -82,13 +200,20 @@ export async function getNewTokenBalance(
           .balance_of([{ owner: accountPkh, token_id: tokenId }])
           .read();
         nat = response[0].balance;
-      } catch {}
+      } catch {
+        shouldTryGetMetadata = false;
+      }
 
       if (!nat || nat.isNaN()) {
         nat = new BigNumber(0);
       }
 
-      return nat;
+      if (shouldTryGetMetadata) {
+        decimals = (await getTokenMetadata(tokenType, tokenAddress, tokenId))
+          .decimals;
+      }
+
+      return { bal: nat, decimals };
 
     default:
       throw new Error("Token type not supported");
