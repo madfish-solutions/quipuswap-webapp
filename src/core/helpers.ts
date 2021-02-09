@@ -4,7 +4,7 @@ import { Tezos } from "./state";
 
 export function toValidAmount(amount?: BigNumber) {
   return amount && amount.isFinite() && amount.isGreaterThan(0)
-    ? amount.toString()
+    ? amount.toFixed()
     : "";
 }
 

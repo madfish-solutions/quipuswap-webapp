@@ -76,7 +76,7 @@ export function approveToken(
   tokenContract: WalletContract,
   from: string,
   to: string,
-  amount: number
+  amount: number | string
 ): ContractMethod<Wallet> {
   if (token.tokenType === QSTokenType.FA2) {
     return tokenContract.methods.update_operators([
