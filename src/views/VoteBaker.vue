@@ -189,8 +189,8 @@ export default class VoteBaker extends Vue {
   nextCandidate: string = "-";
   totalShares: number | null = null;
   totalVotes: number | null = null;
-  yourTotalShares: number | null = null;
-  availableSharesToVote: number | null = null;
+  yourTotalShares: number | string | null = null;
+  availableSharesToVote: number | string | null = null;
   availableSharesToExit: number | null = null;
   yourCandidate: string = "-";
 
@@ -266,14 +266,14 @@ export default class VoteBaker extends Vue {
           storage.voters.get(me),
         ]);
 
-        this.yourTotalShares = myShares ? myShares.total.toNumber() : null;
+        this.yourTotalShares = myShares ? myShares.total.toFixed() : null;
         this.availableSharesToVote = myShares
-          ? myShares.unfrozen.toNumber()
+          ? myShares.unfrozen.toFixed()
           : null;
         if (this.availableSharesToVote !== null && voter) {
-          this.availableSharesToVote += voter.vote.toNumber();
+          this.availableSharesToVote += voter.vote.toFixed();
         }
-        this.availableSharesToExit = voter ? voter.vote.toNumber() : null;
+        this.availableSharesToExit = voter ? voter.vote.toFixed() : null;
         this.yourCandidate = voter ? voter.candidate : "-";
       }
 

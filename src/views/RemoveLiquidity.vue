@@ -227,7 +227,7 @@ export default class RemoveLiquidity extends Vue {
           this.myShares = (shares.unfrozen.isEqualTo(dexStorage.totalSupply)
             ? shares.unfrozen.minus(1)
             : shares.unfrozen
-          ).toString();
+          ).toFixed();
         }
       }
     } catch (err) {
@@ -327,7 +327,7 @@ export default class RemoveLiquidity extends Vue {
         myShares = (mySharesPure.unfrozen.isEqualTo(dexStorage.totalSupply)
           ? mySharesPure.unfrozen.minus(1)
           : mySharesPure.unfrozen
-        ).toString();
+        ).toFixed();
       }
 
       if (!myShares || shares.isGreaterThan(myShares)) {
@@ -341,9 +341,9 @@ export default class RemoveLiquidity extends Vue {
       const operation = await dexContract.methods
         .use(
           "divestLiquidity",
-          minTezos.toNumber(),
-          minToken.toNumber(),
-          shares.toNumber()
+          minTezos.toFixed(),
+          minToken.toFixed(),
+          shares.toFixed()
         )
         .send();
       await operation.confirmation();

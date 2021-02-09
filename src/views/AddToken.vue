@@ -259,7 +259,7 @@ export default class AddToken extends Vue {
     try {
       if (this.tezToken && this.account.pkh) {
         const balance = await getBalance(this.account.pkh, this.tezToken);
-        this.tezBalance = balance.toString();
+        this.tezBalance = balance.toFixed();
       }
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
@@ -278,7 +278,7 @@ export default class AddToken extends Vue {
           this.tokenAddress,
           this.tokenId ? +this.tokenId : 0
         );
-        this.tokenBalance = bal.div(new BigNumber(10).pow(decimals)).toString();
+        this.tokenBalance = bal.div(new BigNumber(10).pow(decimals)).toFixed();
         this.tokenDecimals = decimals;
       } catch (err) {
         if (process.env.NODE_ENV === "development") {
@@ -366,7 +366,7 @@ export default class AddToken extends Vue {
             tokenContract,
             me,
             factoryContractAddres,
-            tokenAmount.toNumber()
+            tokenAmount.toFixed()
           ).toTransferParams()
         )
         .withTransfer(
@@ -375,9 +375,9 @@ export default class AddToken extends Vue {
               ...(this.tokenType === "FA1.2"
                 ? [this.tokenAddress]
                 : [this.tokenAddress, tokenId]),
-              tokenAmount.toNumber()
+              tokenAmount.toFixed()
             )
-            .toTransferParams({ amount: tezAmount.toNumber() })
+            .toTransferParams({ amount: tezAmount.toFixed() as any })
         );
 
       const operation = await batch.send();

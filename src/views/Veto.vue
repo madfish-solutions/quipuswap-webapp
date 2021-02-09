@@ -159,8 +159,8 @@ export default class Veto extends Vue {
   currentCandidateExist = false;
   totalVotes: number | null = null;
   totalVetos: number | null = null;
-  votesToVeto: number | null = null;
-  availableSharesToVeto: number | null = null;
+  votesToVeto: number | string | null = null;
+  availableSharesToVeto: number | string | null = null;
   availableSharesToExit: number | null = null;
   alreadyBanned = false;
 
@@ -225,14 +225,14 @@ export default class Veto extends Vue {
       this.votesToVeto = new BigNumber(storage.totalVotes)
         .div(2)
         .minus(storage.veto)
-        .toNumber();
+        .toFixed();
       this.availableSharesToVeto = myShares
-        ? myShares.unfrozen.toNumber()
+        ? myShares.unfrozen.toFixed()
         : null;
       if (this.availableSharesToVeto !== null && voter) {
-        this.availableSharesToVeto += voter.veto.toNumber();
+        this.availableSharesToVeto += voter.veto.toFixed();
       }
-      this.availableSharesToExit = voter ? voter.veto.toNumber() : null;
+      this.availableSharesToExit = voter ? voter.veto.toFixed() : null;
 
       if (me) {
         // const myVV = await storage.vetoVoters.get(me);

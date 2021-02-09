@@ -211,7 +211,7 @@ export default class AddLiquidity extends Vue {
     try {
       if (this.tezToken && this.account.pkh) {
         const balance = await getBalance(this.account.pkh, this.tezToken);
-        this.tezBalance = balance.toString();
+        this.tezBalance = balance.toFixed();
       }
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
@@ -225,7 +225,7 @@ export default class AddLiquidity extends Vue {
     try {
       if (this.selectedToken && this.account.pkh) {
         const balance = await getBalance(this.account.pkh, this.selectedToken);
-        this.tokenBalance = balance.toString();
+        this.tokenBalance = balance.toFixed();
       }
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
@@ -393,7 +393,7 @@ export default class AddLiquidity extends Vue {
         tezos.wallet.at(selTk.exchange),
       ]);
 
-      const tokenAmountNat = toNat(tokenAmount, selTk).toNumber();
+      const tokenAmountNat = toNat(tokenAmount, selTk).toFixed();
 
       let withAllowanceReset = false;
       try {
@@ -412,7 +412,7 @@ export default class AddLiquidity extends Vue {
             kind: OpKind.TRANSACTION,
             ...dexContract.methods
               .use("investLiquidity", tokenAmountNat)
-              .toTransferParams({ amount: tezAmount.toNumber() }),
+              .toTransferParams({ amount: tezAmount.toFixed() as any }),
           },
         ]);
       } catch (err) {
@@ -450,7 +450,7 @@ export default class AddLiquidity extends Vue {
         .withTransfer(
           dexContract.methods
             .use("investLiquidity", tokenAmountNat)
-            .toTransferParams({ amount: tezAmount.toNumber() })
+            .toTransferParams({ amount: tezAmount.toFixed() as any })
         );
 
       const operation = await batch.send();

@@ -277,7 +277,7 @@ export default class SwapOrSend extends Vue {
     try {
       if (this.inputToken && this.account.pkh) {
         const balance = await getBalance(this.account.pkh, this.inputToken);
-        this.inputBalance = balance.toString();
+        this.inputBalance = balance.toFixed();
       }
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
@@ -526,7 +526,7 @@ export default class SwapOrSend extends Vue {
         const contract = await tezos.wallet.at(outTk.exchange);
 
         const operation = await contract.methods
-          .use("tezToTokenPayment", toNat(minOut, outTk).toNumber(), recipient)
+          .use("tezToTokenPayment", toNat(minOut, outTk).toFixed(), recipient)
           .send({ amount: inpAmn });
 
         await operation.confirmation();
@@ -536,7 +536,7 @@ export default class SwapOrSend extends Vue {
           tezos.wallet.at(inTk.exchange),
         ]);
 
-        const tokenAmountNat = toNat(inpAmn, inTk).toNumber();
+        const tokenAmountNat = toNat(inpAmn, inTk).toFixed();
 
         let withAllowanceReset = false;
         try {
@@ -625,7 +625,7 @@ export default class SwapOrSend extends Vue {
           inTk
         );
 
-        const inpAmnNat = toNat(inpAmn, inTk).toNumber();
+        const inpAmnNat = toNat(inpAmn, inTk).toFixed();
 
         let withAllowanceReset = false;
         try {
@@ -648,7 +648,7 @@ export default class SwapOrSend extends Vue {
                   inpAmnNat,
                   tzToMutez(tezAmount)
                     .integerValue(BigNumber.ROUND_DOWN)
-                    .toNumber(),
+                    .toFixed(),
                   recipient
                 )
                 .toTransferParams(),
@@ -657,7 +657,7 @@ export default class SwapOrSend extends Vue {
               kind: OpKind.TRANSACTION,
               ...outDexContract.methods
                 .use("tezToTokenPayment", toNat(minOut, outTk), recipient)
-                .toTransferParams({ amount: tezAmount.toNumber() }),
+                .toTransferParams({ amount: tezAmount.toFixed() as any }),
             },
           ]);
         } catch (err) {
@@ -699,7 +699,7 @@ export default class SwapOrSend extends Vue {
                 inpAmnNat,
                 tzToMutez(tezAmount)
                   .integerValue(BigNumber.ROUND_DOWN)
-                  .toNumber(),
+                  .toFixed(),
                 recipient
               )
               .toTransferParams()
@@ -707,7 +707,7 @@ export default class SwapOrSend extends Vue {
           .withTransfer(
             outDexContract.methods
               .use("tezToTokenPayment", toNat(minOut, outTk), recipient)
-              .toTransferParams({ amount: tezAmount.toNumber() })
+              .toTransferParams({ amount: tezAmount.toFixed() as any })
           );
 
         const operation = await batch.send();

@@ -241,7 +241,7 @@ export async function toTransferParams(
         .transfer(
           await tezos.signer.publicKeyHash(),
           toPkh,
-          new BigNumber(amount).times(10 ** asset.decimals).toString()
+          new BigNumber(amount).times(10 ** asset.decimals).toFixed()
         )
         .toTransferParams();
 
@@ -259,7 +259,7 @@ export function tryParseParameters(asset: QSAsset, parameters: any) {
         const [{ args }, { int }] = parameters.value.args;
         const sender: string = args[0].string;
         const receiver: string = args[1].string;
-        const volume = new BigNumber(int).div(10 ** asset.decimals).toNumber();
+        const volume = new BigNumber(int).div(10 ** asset.decimals).toFixed();
         return {
           sender,
           receiver,
@@ -275,5 +275,5 @@ export function tryParseParameters(asset: QSAsset, parameters: any) {
 }
 
 export function toPenny(asset: QSAsset) {
-  return new BigNumber(1).div(10 ** asset.decimals).toNumber();
+  return new BigNumber(1).div(10 ** asset.decimals).toFixed();
 }
