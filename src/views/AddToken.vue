@@ -312,18 +312,20 @@ export default class AddToken extends Vue {
         .integerValue();
       const tokenId = this.tokenId ? +this.tokenId : 0;
 
+      const tokenData = await getNewTokenData(
+        me,
+        this.tokenType,
+        this.tokenAddress,
+        tokenId
+      );
+
       const toCheck = [
         {
           promise: getBalance(me, tezTk),
           amount: tezAmount,
         },
         {
-          promise: getNewTokenData(
-            me,
-            this.tokenType,
-            this.tokenAddress,
-            tokenId
-          ).then(({ bal }) => bal),
+          promise: Promise.resolve(tokenData).then(({ bal }) => bal),
           amount: tokenAmount,
         },
       ];
@@ -355,6 +357,11 @@ export default class AddToken extends Vue {
         tezos.wallet.at(this.tokenAddress),
       ]);
 
+      const tokenAmountNat = tokenAmount
+        .times(10 ** tokenData.decimals)
+        .integerValue(BigNumber.ROUND_DOWN)
+        .toFixed();
+
       const batch = tezos.wallet
         .batch([])
         .withTransfer(
@@ -366,7 +373,7 @@ export default class AddToken extends Vue {
             tokenContract,
             me,
             factoryContractAddres,
-            tokenAmount.toFixed()
+            tokenAmountNat
           ).toTransferParams()
         )
         .withTransfer(
@@ -375,7 +382,7 @@ export default class AddToken extends Vue {
               ...(this.tokenType === "FA1.2"
                 ? [this.tokenAddress]
                 : [this.tokenAddress, tokenId]),
-              tokenAmount.toFixed()
+              tokenAmountNat
             )
             .toTransferParams({ amount: tezAmount.toFixed() as any })
         );
