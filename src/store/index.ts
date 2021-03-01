@@ -67,8 +67,13 @@ export async function useWallet(opts = { forcePermission: false }) {
 
   const activeAccount = await wallet.client.getActiveAccount();
 
-  if (!activeAccount || activeAccount.network.type !== net.id) {
-    await wallet.requestPermissions({ network: { type: net.id as any } });
+  if (
+    !activeAccount ||
+    activeAccount.network.type !== toBeaconNetworkType(net.id)
+  ) {
+    await wallet.requestPermissions({
+      network: { type: toBeaconNetworkType(net.id) },
+    });
   }
 
   const tezos = new TezosToolkit(net.rpcBaseURL);
@@ -108,7 +113,16 @@ export function setAccount(pkh: string) {
   store.commit("account", { pkh });
 }
 
+export function signout() {
+  localStorage.removeItem("accpkh");
+  store.commit("account", { pkh: "" });
+}
+
 function getAccountInitial() {
   const pkh = localStorage.getItem("accpkh");
   return { pkh: pkh || "" };
+}
+
+function toBeaconNetworkType(netId: string): any {
+  return netId === "edo2net" ? "edonet" : netId;
 }
