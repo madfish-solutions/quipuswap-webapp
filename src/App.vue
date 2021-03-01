@@ -54,7 +54,7 @@
             <template v-if="!account.pkh">
               <button
                 class="text-white w-64 h-12 border border-accent rounded-md"
-                @click="handleConnect"
+                @click="handleConnectForce"
               >
                 Connect to a Wallet
               </button>
@@ -81,6 +81,11 @@
                 </div>
               </div>
             </template>
+
+            <div v-if="account.pkh" class="mt-3 flex items-center">
+              <div class="flex-1"></div>
+              <button class="connect-button cursor-pointer px-4 h-8 border border-accent rounded-md flex items-center justify-center text-white hover:text-accent" @click="logout">Sign Out</button>
+            </div>
           </div>
         </div>
       </header>
@@ -168,7 +173,6 @@
 
 <script lang="ts">
 import { Component, Vue, Watch } from "vue-property-decorator";
-import { BeaconWallet } from "@taquito/beacon-wallet";
 import Loader from "@/components/Loader.vue";
 import {
   ALL_NETWORKS,
@@ -178,7 +182,7 @@ import {
   getNetwork,
   setNetwork,
 } from "@/core";
-import { getAccount, setAccount, useWallet } from "@/store";
+import { getAccount, signout, useWallet } from "@/store";
 
 @Component({
   components: { Loader },
@@ -245,8 +249,13 @@ export default class App extends Vue {
   handleConnect() {
     this.connectWallet();
   }
+
   handleConnectForce() {
     this.connectWallet(true);
+  }
+
+  logout() {
+    signout();
   }
 
   connectWallet = async (forcePermission = false) => {

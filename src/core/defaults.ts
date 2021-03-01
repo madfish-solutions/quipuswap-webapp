@@ -1,9 +1,9 @@
 import { QSAsset, QSTokenType, QSNetwork } from "@/core/types";
 
-export const FA1_2_FACTORY_CONTRACT_DELPHINET =
-  process.env.VUE_APP_FA1_2_FACTORY_CONTRACT_DELPHINET || null;
-export const FA2_FACTORY_CONTRACT_DELPHINET =
-  process.env.VUE_APP_FA2_FACTORY_CONTRACT_DELPHINET || null;
+export const FA1_2_FACTORY_CONTRACT_EDONET =
+  process.env.VUE_APP_FA1_2_FACTORY_CONTRACT_EDONET || null;
+export const FA2_FACTORY_CONTRACT_EDONET =
+  process.env.VUE_APP_FA2_FACTORY_CONTRACT_EDONET || null;
 
 export const FA1_2_FACTORY_CONTRACT_MAINNET =
   process.env.VUE_APP_FA1_2_FACTORY_CONTRACT_MAINNET || null;
@@ -18,14 +18,14 @@ export const ACCURANCY_MULTIPLIER = parseInt(
 
 export const LOGO_URL = process.env.VUE_APP_LOGO_URL;
 
-export const DEPLHINET_NETWORK: QSNetwork = {
-  id: "delphinet",
-  name: "Delphi Testnet",
+export const EDONET_NETWORK: QSNetwork = {
+  id: "edo2net",
+  name: "Edo Testnet",
   type: "test",
-  rpcBaseURL: "https://testnet-tezos.giganode.io",
-  fa1_2FactoryContract: FA1_2_FACTORY_CONTRACT_DELPHINET,
-  fa2FactoryContract: FA2_FACTORY_CONTRACT_DELPHINET,
-  description: "Delphi testnet",
+  rpcBaseURL: "https://edonet.smartpy.io/",
+  fa1_2FactoryContract: FA1_2_FACTORY_CONTRACT_EDONET,
+  fa2FactoryContract: FA2_FACTORY_CONTRACT_EDONET,
+  description: "Edo testnet",
   color: "#0f4c81",
   disabled: false,
 };
@@ -37,13 +37,13 @@ export const MAINNET_NETWORK: QSNetwork = {
   rpcBaseURL: "https://mainnet-tezos.giganode.io",
   fa1_2FactoryContract: FA1_2_FACTORY_CONTRACT_MAINNET,
   fa2FactoryContract: FA2_FACTORY_CONTRACT_MAINNET,
-  description: "Carthage mainnet",
+  description: "Tezos mainnet",
   color: "#83b300",
   disabled: true,
 };
 
-export const ALL_NETWORKS = [MAINNET_NETWORK, DEPLHINET_NETWORK];
-export const DEFAULT_NETWORK = DEPLHINET_NETWORK;
+export const ALL_NETWORKS = [MAINNET_NETWORK, EDONET_NETWORK];
+export const DEFAULT_NETWORK = EDONET_NETWORK;
 
 export const XTZ_TOKEN: QSAsset = {
   type: "xtz",
@@ -96,27 +96,27 @@ export const MAINNET_TOKENS: QSAsset[] = [
 ];
 
 export const TESTNET_TOKENS: QSAsset[] = [
-  {
-    type: "token",
-    tokenType: QSTokenType.FA1_2,
-    id: "KT1RXpLtz22YgX24QQhxKVyKvtKZFaAVtTB9",
-    decimals: 18,
-    symbol: "kUSD",
-    name: "Kolibri",
-    imgUrl: "https://kolibri-data.s3.amazonaws.com/logo.png",
-    exchange: "",
-    default: true,
-  },
-  {
-    type: "token",
-    tokenType: QSTokenType.FA2,
-    id: "KT1WnjpKriR4yweiFdkTiMofoV9hvz7vMSXJ",
-    fa2TokenId: 0,
-    decimals: 6,
-    symbol: "USDS",
-    name: "Stably USD",
-    imgUrl: require("../assets/dollar-mark.svg"),
-    exchange: "",
-    default: true,
-  },
+  // {
+  //   type: "token",
+  //   tokenType: QSTokenType.FA1_2,
+  //   id: "KT1RXpLtz22YgX24QQhxKVyKvtKZFaAVtTB9",
+  //   decimals: 18,
+  //   symbol: "kUSD",
+  //   name: "Kolibri",
+  //   imgUrl: "https://kolibri-data.s3.amazonaws.com/logo.png",
+  //   exchange: "",
+  //   default: true,
+  // },
+  // {
+  //   type: "token",
+  //   tokenType: QSTokenType.FA2,
+  //   id: "KT1WnjpKriR4yweiFdkTiMofoV9hvz7vMSXJ",
+  //   fa2TokenId: 0,
+  //   decimals: 6,
+  //   symbol: "USDS",
+  //   name: "Stably USD",
+  //   imgUrl: require("../assets/dollar-mark.svg"),
+  //   exchange: "",
+  //   default: true,
+  // },
 ];
