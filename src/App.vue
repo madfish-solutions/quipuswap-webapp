@@ -1,15 +1,15 @@
 <template>
   <div id="app" class="flex flex-col">
-    <div class="container mx-auto py-4 px-4 xs:px-6 relative">
-      <header class="mb-12 flex items-stretch">
-        <div class="flex-1 flex justify-start pt-4">
-          <div class="select-none hidden lg:block">
+    <div class="container relative px-4 py-4 mx-auto xs:px-6">
+      <header class="flex items-stretch mb-12">
+        <div class="flex justify-start flex-1 pt-4">
+          <div class="hidden select-none lg:block">
             <div
-              class="flex flex-row w-auto network-selector cursor-pointer justify-between align-center"
+              class="flex flex-row justify-between w-auto cursor-pointer network-selector align-center"
               @click="toggleNetworkSelect"
             >
               <span
-                class="connect-button button-network text-white w-48 h-12 border border-accent rounded-lg flex items-center justify-center"
+                class="flex items-center justify-center w-48 h-12 text-white border rounded-lg connect-button button-network border-accent"
                 >{{ selectedNetwork.name }}</span
               >
 
@@ -22,11 +22,11 @@
             </div>
 
             <div
-              class="flex flex-col w-48 justify-end absolute top-100px"
+              class="absolute flex flex-col justify-end w-48 top-100px"
               v-if="networkSelectOpened"
             >
               <button
-                class="connect-button network-item cursor-pointer text-white w-48 h-12 my-1 border border-accent rounded-lg flex items-center justify-center"
+                class="flex items-center justify-center w-48 h-12 my-1 text-white border rounded-lg cursor-pointer connect-button network-item border-accent"
                 :class="net.disabled ? 'opacity-50' : ''"
                 v-for="net in allNetworks"
                 :key="net.id"
@@ -41,19 +41,19 @@
 
         <div class="flex flex-col items-center justify-center">
           <router-link to="/">
-            <h1 class="text-xl text-gray-300 font-medium tracking-tight">
+            <h1 class="text-xl font-medium tracking-tight text-gray-300">
               Quipuswap
             </h1>
           </router-link>
 
-          <img class="h-32 w-auto" src="./assets/logo.png" />
+          <img class="w-auto h-32" src="./assets/logo.png" />
         </div>
 
-        <div class="flex-1 flex justify-end pt-4">
+        <div class="flex justify-end flex-1 pt-4">
           <div class="hidden lg:block">
             <template v-if="!account.pkh">
               <button
-                class="text-white w-64 h-12 border border-accent rounded-md"
+                class="w-64 h-12 text-white border rounded-md border-accent"
                 @click="handleConnectForce"
               >
                 Connect to a Wallet
@@ -61,9 +61,9 @@
             </template>
 
             <template v-else>
-              <div class="flex flex-row w-auto justify-center">
+              <div class="flex flex-row justify-center w-auto">
                 <span
-                  class="connect-button button-balance text-white h-12 px-4 border border-accent rounded-lg flex items-center justify-center"
+                  class="flex items-center justify-center h-12 px-4 text-white border rounded-lg connect-button button-balance border-accent"
                 >
                   <span v-if="accountBalance">{{ accountBalance }} XTZ</span>
                   <div v-else class="flex items-center justify-center">
@@ -72,7 +72,7 @@
                 </span>
 
                 <div
-                  class="connect-button text-white button-pkh cursor-pointer w-64 px-4 h-12 border border-l-0 border-accent rounded-md flex items-center justify-center"
+                  class="flex items-center justify-center w-64 h-12 px-4 text-white border border-l-0 rounded-md cursor-pointer connect-button button-pkh border-accent"
                   @mouseover="accountLabelHovered = true"
                   @mouseleave="accountLabelHovered = false"
                   @click="handleConnectForce"
@@ -82,9 +82,9 @@
               </div>
             </template>
 
-            <div v-if="account.pkh" class="mt-3 flex items-center">
+            <div v-if="account.pkh" class="flex items-center mt-3">
               <div class="flex-1"></div>
-              <button class="connect-button cursor-pointer px-4 h-8 border border-accent rounded-md flex items-center justify-center text-white hover:text-accent" @click="logout">Sign Out</button>
+              <button class="flex items-center justify-center h-8 px-4 text-white border rounded-md cursor-pointer connect-button border-accent hover:text-accent" @click="logout">Sign Out</button>
             </div>
           </div>
         </div>
@@ -92,11 +92,11 @@
 
       <!--
       <div
-        class="flex flex-row w-auto network-selector cursor-pointer justify-between align-center absolute top-40px left-0px"
+        class="absolute flex flex-row justify-between w-auto cursor-pointer network-selector align-center top-40px left-0px"
         @click="toggleNetworkSelect"
       >
         <span
-          class="connect-button button-network text-white w-48 h-12 border border-accent rounded-lg flex items-center justify-center"
+          class="flex items-center justify-center w-48 h-12 text-white border rounded-lg connect-button button-network border-accent"
         >{{ selectedNetwork.name }}</span>
         <img
           :class="
@@ -107,9 +107,9 @@
           src="@/assets/arrow-down.svg"
         />
       </div>
-      <div class="flex flex-col w-48 justify-end absolute top-100px" v-if="networkSelectOpened">
+      <div class="absolute flex flex-col justify-end w-48 top-100px" v-if="networkSelectOpened">
         <button
-          class="connect-button network-item cursor-pointer text-white w-48 h-12 my-1 border border-accent rounded-lg flex items-center justify-center"
+          class="flex items-center justify-center w-48 h-12 my-1 text-white border rounded-lg cursor-pointer connect-button network-item border-accent"
           :class="net.disabled ? 'opacity-50' : ''"
           v-for="net in allNetworks"
           :key="net.id"
@@ -120,15 +120,15 @@
 
       <template v-if="!account.pkh">
         <button
-          class="text-white w-56 h-12 border border-accent rounded-3px absolute top-40px right-40px hidden md:block"
+          class="absolute hidden w-56 h-12 text-white border border-accent rounded-3px top-40px right-40px md:block"
           @click="handleConnect"
         >Connect to a Wallet</button>
       </template>
 
       <template v-else>
-        <div class="flex flex-row w-auto justify-center absolute right-0 top-40px right-0px">
+        <div class="absolute right-0 flex flex-row justify-center w-auto top-40px right-0px">
           <span
-            class="connect-button button-balance text-white w-32 h-12 px-2 border border-accent rounded-lg flex items-center justify-center"
+            class="flex items-center justify-center w-32 h-12 px-2 text-white border rounded-lg connect-button button-balance border-accent"
           >
             <span v-if="accountBalance">{{ accountBalance }} XTZ</span>
             <div v-else class="flex items-center justify-center">
@@ -137,7 +137,7 @@
           </span>
 
           <div
-            class="connect-button text-white button-pkh cursor-pointer w-64 h-12 border border-l-0 border-accent rounded-3px flex items-center justify-center"
+            class="flex items-center justify-center w-64 h-12 text-white border border-l-0 cursor-pointer connect-button button-pkh border-accent rounded-3px"
             @mouseover="accountLabelHovered = true"
             @mouseleave="accountLabelHovered = false"
             @click="handleConnectForce"
@@ -154,7 +154,24 @@
 
     <div class="flex-1"></div>
 
-    <div class="mt-10 p-4 flex items-center justify-center">
+    <div class="flex flex-col items-center justify-center p-4 mt-10">
+      <div class="p-4 text-sm font-light text-white">
+        <a href="https://twitter.com/madfishofficial" class="px-4">
+          Twitter
+        </a>
+        |
+        <a href="https://t.me/MadFishCommunity" class="px-4">
+          Telegram
+        </a>
+        |
+        <a href="https://www.madfish.solutions/discord" class="px-4">
+          Discord
+        </a>
+        |
+        <a href="https://www.reddit.com/r/MadFishCommunity" class="px-4">
+          Reddit
+        </a>
+      </div>
       <span class="text-sm font-light text-white">
         Made with
         <span role="img" aria-label="Madfish Solutions">❤️</span> by
