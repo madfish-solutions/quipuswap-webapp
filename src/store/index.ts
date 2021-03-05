@@ -1,6 +1,7 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import { BeaconWallet } from "@taquito/beacon-wallet";
+// import { getCurrentPermission, onAvailabilityChange } from "@temple-wallet/dapp";
 import { QSAsset, getTokens, getNetwork, LOGO_URL } from "@/core";
 import { TezosToolkit } from "@taquito/taquito";
 
@@ -46,34 +47,60 @@ export async function loadTokens() {
   }
 }
 
+const wallet = new BeaconWallet({
+  name: "Quipuswap",
+  iconUrl: LOGO_URL,
+  // eventHandlers: {
+  //   PERMISSION_REQUEST_SUCCESS: {
+  //     handler: async data => {
+  //       console.log("permission data:", data);
+  //     },
+  //   },
+  // },
+});
+
+// setTimeout(async () => {
+//   try {
+//     if (await isAvailable()) {
+//       const p = await getCurrentPermission();
+//       if (!p) {
+//         await wallet.disconnect();
+//       }
+//     }
+//   } catch {}
+
+//   console.info("DONE");
+// }, 1000);
+
+// let templeAvailable = false;
+// onAvailabilityChange((available) => {
+//   templeAvailable = available;
+// });
+
 export async function useWallet(opts = { forcePermission: false }) {
   const net = getNetwork();
-  const wallet = new BeaconWallet({
-    name: "Quipuswap",
-    iconUrl: LOGO_URL,
-    // eventHandlers: {
-    //   PERMISSION_REQUEST_SUCCESS: {
-    //     handler: async data => {
-    //       console.log("permission data:", data);
-    //     },
-    //   },
-    // },
-  });
 
-  if (opts.forcePermission) {
+  const beaconCheck = localStorage.getItem("beacon_seed_check");
+  if (
+    beaconCheck &&
+    beaconCheck !== localStorage.getItem("beacon:sdk-secret-seed")
+  ) {
     await wallet.disconnect();
     await wallet.clearActiveAccount();
   }
 
   const activeAccount = await wallet.client.getActiveAccount();
-
-  if (
-    !activeAccount ||
-    activeAccount.network.type !== toBeaconNetworkType(net.id)
-  ) {
+  if (opts.forcePermission || !activeAccount) {
+    if (activeAccount) {
+      await wallet.clearActiveAccount();
+    }
     await wallet.requestPermissions({
       network: { type: toBeaconNetworkType(net.id) },
     });
+    localStorage.setItem(
+      "beacon_seed_check",
+      localStorage.getItem("beacon:sdk-secret-seed")!
+    );
   }
 
   const tezos = new TezosToolkit(net.rpcBaseURL);
