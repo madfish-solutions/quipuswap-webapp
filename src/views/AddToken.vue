@@ -358,7 +358,6 @@ export default class AddToken extends Vue {
       ]);
 
       const tokenAmountNat = tokenAmount
-        .times(10 ** tokenData.decimals)
         .integerValue(BigNumber.ROUND_DOWN)
         .toFixed();
 
