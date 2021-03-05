@@ -16,6 +16,7 @@
     "@taquito/tzip12": "8.0.4-beta.0",
     "@taquito/tzip16": "8.0.4-beta.0",
     "@taquito/utils": "8.0.4-beta.0",
+    "@temple-wallet/dapp": "^2.2.3",
     "axios": "^0.19.2",
     "bignumber.js": "^9.0.0",
     "core-js": "^3.6.4",
