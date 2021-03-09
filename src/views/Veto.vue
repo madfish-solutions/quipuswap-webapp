@@ -230,7 +230,7 @@ export default class Veto extends Vue {
         ? myShares.unfrozen.toFixed()
         : null;
       if (this.availableSharesToVeto !== null && voter) {
-        this.availableSharesToVeto += voter.veto.toFixed();
+        this.availableSharesToVeto = new BigNumber(this.availableSharesToVeto).plus(voter.veto).toFixed();
       }
       this.availableSharesToExit = voter ? voter.veto.toFixed() : null;
 
