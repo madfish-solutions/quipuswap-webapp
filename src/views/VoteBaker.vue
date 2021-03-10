@@ -167,6 +167,7 @@ import SubmitBtn from "@/components/SubmitBtn.vue";
 import GovernancePairSelect from "@/components/GovernancePairSelect.vue";
 import BakerFormField from "@/components/Form/BakerFormField.vue";
 import Loader from "@/components/Loader.vue";
+import BigNumber from "bignumber.js";
 
 @Component({
   components: {
@@ -271,7 +272,7 @@ export default class VoteBaker extends Vue {
           ? myShares.unfrozen.toFixed()
           : null;
         if (this.availableSharesToVote !== null && voter) {
-          this.availableSharesToVote += voter.vote.toFixed();
+          this.availableSharesToVote = new BigNumber(this.availableSharesToVote).plus(voter.vote).toFixed();
         }
         this.availableSharesToExit = voter ? voter.vote.toFixed() : null;
         this.yourCandidate = voter ? voter.candidate : "-";

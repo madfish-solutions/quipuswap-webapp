@@ -42,8 +42,12 @@ export async function getTokens() {
       getStorage(fa2FactoryContract).then(s => snakeToCamelKeys(s)),
   ]);
 
+  const fa1_2TokenCount = fa1_2FacStorage?.counter ?? 0;
+  const fa2TokenCount = fa2FacStorage?.counter ?? 0;
+
   const allTokens: QSAsset[] = await Promise.all([
-    ...(fa1_2FacStorage?.tokenList ?? []).map(async (tAddress: string) => {
+    ...Array.from({ length: fa1_2TokenCount }).map(async (_, i) => {
+      const tAddress = await fa1_2FacStorage.tokenList.get(i.toString());
       const exchange = await fa1_2FacStorage.tokenToExchange.get(tAddress);
 
       const knownToken = knownTokens.find(({ id }) => tAddress === id);
@@ -53,16 +57,17 @@ export async function getTokens() {
 
       return toUnknownToken(tAddress, exchange, QSTokenType.FA1_2);
     }),
-    ...(fa2FacStorage?.tokenList ?? []).map(
-      async ({ 0: tAddress, 1: tId }: { 0: string; 1: BigNumber }) => {
-        const exchange = await fa2FacStorage.tokenToExchange.get([
-          tAddress,
-          +tId,
-        ]);
+    ...Array.from({ length: fa2TokenCount }).map(async (_, i) => {
+      const { 0: tAddress, 1: tId } = await fa2FacStorage.tokenList.get(
+        i.toString()
+      );
+      const exchange = await fa2FacStorage.tokenToExchange.get([
+        tAddress,
+        +tId,
+      ]);
 
-        return toUnknownToken(tAddress, exchange, QSTokenType.FA2, +tId);
-      }
-    ),
+      return toUnknownToken(tAddress, exchange, QSTokenType.FA2, +tId);
+    }),
   ]);
 
   return [
