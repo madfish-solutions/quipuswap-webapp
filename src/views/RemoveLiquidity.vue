@@ -110,7 +110,7 @@ import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
 import SubmitBtn from "@/components/SubmitBtn.vue";
 
 import BigNumber from "bignumber.js";
-import { getAccount, useWallet } from "@/store";
+import store, { getAccount, useWallet } from "@/store";
 import {
   QSAsset,
   isAddressValid,
@@ -154,7 +154,6 @@ type PoolMeta = {
   },
 })
 export default class RemoveLiquidity extends Vue {
-  selectedToken: QSAsset | null = null;
   sharesToRemove = "";
   myShares: string | null = null;
   tokenLoading = false;
@@ -165,6 +164,13 @@ export default class RemoveLiquidity extends Vue {
 
   processing = false;
   remLiqStatus = this.defaultRemLiqStatus;
+
+  get selectedToken(): QSAsset | null {
+    const tokenExchange = this.$route.params.token;
+    return (
+      store.state.tokens.find((t: any) => t.exchange === tokenExchange) || null
+    );
+  }
 
   get defaultRemLiqStatus() {
     return "Remove Liquidity";
@@ -273,7 +279,7 @@ export default class RemoveLiquidity extends Vue {
   }
 
   async handleTokenSelect(token: QSAsset) {
-    this.selectedToken = token;
+    this.$router.replace(`/invest/remove-liquidity/${token.exchange}`);
     this.dexAddress = token.exchange;
 
     if (!this.sharesToRemove) {

@@ -18,12 +18,12 @@ const routes: RouteConfig[] = [
   { path: "/send", name: "Send", component: Send },
   { path: "/invest", redirect: "/invest/add-liquidity" },
   {
-    path: "/invest/add-liquidity",
+    path: "/invest/add-liquidity/:token?",
     name: "AddLiquidity",
     component: AddLiquidity,
   },
   {
-    path: "/invest/remove-liquidity",
+    path: "/invest/remove-liquidity/:token?",
     name: "RemoveLiquidity",
     component: RemoveLiquidity,
   },
