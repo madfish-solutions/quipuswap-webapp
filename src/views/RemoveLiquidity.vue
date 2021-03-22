@@ -224,10 +224,7 @@ export default class RemoveLiquidity extends Vue {
         if (!shares) {
           this.myShares = "0";
         } else {
-          this.myShares = (shares.unfrozen.isEqualTo(dexStorage.totalSupply)
-            ? shares.unfrozen.minus(1)
-            : shares.unfrozen
-          ).toFixed();
+          this.myShares = shares.unfrozen.toFixed();
         }
       }
     } catch (err) {
@@ -324,10 +321,7 @@ export default class RemoveLiquidity extends Vue {
       const mySharesPure = await getDexShares(this.account.pkh, selTk.exchange);
       let myShares: string | undefined;
       if (mySharesPure) {
-        myShares = (mySharesPure.unfrozen.isEqualTo(dexStorage.totalSupply)
-          ? mySharesPure.unfrozen.minus(1)
-          : mySharesPure.unfrozen
-        ).toFixed();
+        myShares = mySharesPure.unfrozen.toFixed();
       }
 
       if (!myShares || shares.isGreaterThan(myShares)) {
