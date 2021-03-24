@@ -45,6 +45,10 @@ export async function getTokens() {
   const fa1_2TokenCount = fa1_2FacStorage?.counter ?? 0;
   const fa2TokenCount = fa2FacStorage?.counter ?? 0;
 
+  // TODO: Add token whitelist
+  // TODO: Known tokens for FA2
+  // Do not display pools where pool = 0
+
   const allTokens: QSAsset[] = await Promise.all([
     ...Array.from({ length: fa1_2TokenCount }).map(async (_, i) => {
       const tAddress = await fa1_2FacStorage.tokenList.get(i.toString());

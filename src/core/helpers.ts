@@ -1,7 +1,13 @@
 import { validateAddress, ValidationResult } from "@taquito/utils";
 import { Signer } from "@taquito/taquito";
 import BigNumber from "bignumber.js";
-import { Tezos } from "./state";
+import { Tezos, getContract } from "./state";
+
+export async function isDexContainsLiquidity(dexAddress: string) {
+  const dex = await getContract(dexAddress);
+  const dexStorage = await dex.storage<any>();
+  return !new BigNumber(dexStorage.storage.invariant).isZero();
+}
 
 export function toValidAmount(amount?: BigNumber) {
   return amount && amount.isFinite() && amount.isGreaterThan(0)
