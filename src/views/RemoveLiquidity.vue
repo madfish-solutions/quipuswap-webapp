@@ -263,8 +263,8 @@ export default class RemoveLiquidity extends Vue {
         tokenFull: `${fromNat(dexStorage.tokenPool, this.selectedToken)} ${
           this.selectedToken.name
         }`,
-        myShare: myShare ? `${myShare.times(100).toFormat(2)}%` : "-",
-        myTokens: myTokens ? `${myTokens} ${this.selectedToken.name}` : "-",
+        myShare: myShare && !myShare.isNaN() ? `${myShare.times(100).toFormat(2)}%` : "-",
+        myTokens: myTokens && !myTokens.isNaN() ? `${myTokens} ${this.selectedToken.name}` : "-",
       };
     }
   }
