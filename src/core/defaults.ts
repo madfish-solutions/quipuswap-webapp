@@ -1,5 +1,7 @@
 import { QSAsset, QSTokenType, QSNetwork } from "@/core/types";
 
+export { TOKEN_WHITELIST } from "../whitelist";
+
 export const FA1_2_FACTORY_CONTRACT_EDONET =
   process.env.VUE_APP_FA1_2_FACTORY_CONTRACT_EDONET || null;
 export const FA2_FACTORY_CONTRACT_EDONET =
@@ -34,7 +36,7 @@ export const MAINNET_NETWORK: QSNetwork = {
   id: "mainnet",
   name: "Tezos Mainnet",
   type: "main",
-  rpcBaseURL: "https://mainnet-tezos.giganode.io",
+  rpcBaseURL: "https://mainnet.smartpy.io/",
   fa1_2FactoryContract: FA1_2_FACTORY_CONTRACT_MAINNET,
   fa2FactoryContract: FA2_FACTORY_CONTRACT_MAINNET,
   description: "Tezos mainnet",

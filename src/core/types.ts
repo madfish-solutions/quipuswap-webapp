@@ -30,3 +30,10 @@ export interface QSNetwork {
   color: string;
   disabled: boolean;
 }
+
+export type QSTokenMetadata = {
+  decimals: number;
+  symbol: string;
+  name: string;
+  thumbnailUri: string;
+};
