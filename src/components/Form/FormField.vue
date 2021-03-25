@@ -74,14 +74,28 @@
       </div>
     </div>
     <div class="field-search rounded-b-3px" v-if="isSearchOpened && !onlyTezos">
-      <div class="px-3 xs:px-6 py-3 text-sm border-b border-gray-800">
-        <input
-          v-model="searchValue"
-          @keydown="searchValue = $event.target.value"
-          ref="searchInput"
-          placeholder="Search..."
-        />
+      <div class="flex items-stretch">
+        <div class="flex-1 px-3 xs:px-6 py-3 text-sm border-b border-gray-800">
+          <input
+            v-model="searchValue"
+            @keydown="searchValue = $event.target.value"
+            ref="searchInput"
+            placeholder="Search..."
+            class="w-full"
+          />
+        </div>
+
+        <div v-if="tokenIdDisplayed" class="w-40 px-3 xs:px-6 py-3 text-sm border-b border-l border-gray-800">
+          <input
+            type="number"
+            v-model="tokenId"
+            @keydown="tokenId = $event.target.value"
+            placeholder="Token ID"
+            class="w-full"
+          />
+        </div>
       </div>
+
       <div class="overflow-auto" style="max-height: 13.5rem">
         <template v-if="filteredTokens.length">
           <TokenItem
@@ -105,9 +119,10 @@ import { Vue, Component, Prop, Ref, Watch } from "vue-property-decorator";
 import TokenItem from "@/components/Form/TokenItem.vue";
 import Loader from "@/components/Loader.vue";
 
-import store from "@/store";
-import { QSAsset, isAddressValid } from "@/core";
+import store, { addCustomToken } from "@/store";
+import { QSAsset, isAddressValid, getContract, isFA2, getNetwork, getStorage, getTokenMetadata, QSTokenType, sanitizeImgUri } from "@/core";
 import { XTZ_TOKEN } from "@/core/defaults";
+import BigNumber from "bignumber.js";
 
 @Component({
   components: { TokenItem, Loader },
@@ -127,6 +142,8 @@ export default class FormField extends Vue {
   value: string = "0.0";
 
   searchValue: string = "";
+  tokenId: string = "";
+  tokenIdDisplayed: boolean = false;
   isSearchOpened: boolean = false;
   localToken: QSAsset | null = null;
 
@@ -139,13 +156,87 @@ export default class FormField extends Vue {
     } else return term;
   }
 
+  @Watch("searchValue")
+  onSearchValueChange() {
+    if (isAddressValid(this.searchValue)) {
+      this.checkFA2OrAddToken(this.searchValue);
+    } else {
+      this.tokenIdDisplayed = false;
+      this.tokenId = "";
+    }
+  }
+
+  @Watch("tokenId")
+  onTokenIdChanged() {
+    if (isAddressValid(this.searchValue) && `${this.tokenId}`.length > 0) {
+      const tokenId = new BigNumber(this.tokenId).integerValue();
+      if (!tokenId.isNaN() && tokenId.isGreaterThanOrEqualTo(0)) {
+        this.addTokenToList(this.searchValue, tokenId);
+      }
+    }
+  }
+
+  async checkFA2OrAddToken(contractAddress: string) {
+    try {
+      const contract = await getContract(contractAddress);
+      const fa2 = await isFA2(contract);
+      if (fa2) {
+        this.tokenIdDisplayed = true;
+      } else {
+        this.addTokenToList(contractAddress);
+      }
+    } catch {}
+  }
+
+  async addTokenToList(contractAddress: string, tokenId?: BigNumber) {
+    try {
+      const { fa1_2FactoryContract, fa2FactoryContract } = getNetwork();
+      if (!fa1_2FactoryContract && !fa2FactoryContract) {
+        throw new Error("Contracts for this network not found");
+      }
+
+      let exchange;
+      if (tokenId) {
+        if (fa2FactoryContract) {
+          const facStorage = await getStorage(fa2FactoryContract);
+          exchange = await facStorage.token_to_exchange.get([contractAddress, tokenId.toString()]);
+        }
+      } else {
+        if (fa1_2FactoryContract) {
+          const facStorage = await getStorage(fa1_2FactoryContract);
+          exchange = await facStorage.token_to_exchange.get(contractAddress);
+        }
+      }
+
+      if (exchange) {
+        const fa2TokenId = tokenId ? tokenId.toNumber() : undefined;
+        const metadata = await getTokenMetadata(
+          contractAddress,
+          tokenId ? tokenId.toNumber() : undefined
+        );
+        addCustomToken({
+          type: "token" as const,
+          tokenType: fa2TokenId ? QSTokenType.FA2 : QSTokenType.FA1_2,
+          id: contractAddress,
+          fa2TokenId,
+          exchange,
+          decimals: metadata.decimals,
+          symbol: metadata.symbol,
+          name: metadata.name,
+          imgUrl: sanitizeImgUri(metadata.thumbnailUri),
+        })
+      }
+    } catch {}
+  }
+
   get filteredTokens(): QSAsset[] {
     return [
       ...(this.withTezos ? [XTZ_TOKEN] : []),
       ...store.state.tokens.filter(
         (t: QSAsset) =>
           t.name.toLowerCase().includes(this.searchValue.toLowerCase()) ||
-          t.symbol.toLowerCase().includes(this.searchValue.toLowerCase())
+          t.symbol.toLowerCase().includes(this.searchValue.toLowerCase()) ||
+          t.id.includes(this.searchValue)
       ),
     ];
   }

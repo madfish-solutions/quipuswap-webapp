@@ -6,6 +6,7 @@ import {
   QSAsset,
   getTokens,
   getNetwork,
+  getCustomTokens,
   LOGO_URL,
   ReadOnlySigner,
 } from "@/core";
@@ -32,6 +33,9 @@ const store = new Vuex.Store<StoreState>({
     tokens(state, tokens) {
       state.tokens = tokens;
     },
+    addToken(state, token) {
+      state.tokens = [token, ...state.tokens];
+    },
     account(state, account) {
       state.account = account;
     },
@@ -51,6 +55,14 @@ export async function loadTokens() {
   } finally {
     store.commit("tokensLoading", false);
   }
+}
+
+export function addCustomToken(token: QSAsset) {
+  try {
+    const current = getCustomTokens();
+    localStorage.setItem("custom_tokens", JSON.stringify([token, ...current]));
+  } catch {}
+  store.commit("addToken", token);
 }
 
 const beaconWallet = new BeaconWallet({
