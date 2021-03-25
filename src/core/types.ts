@@ -20,7 +20,13 @@ export enum QSTokenType {
 }
 
 export interface QSNetwork {
-  id: "mainnet" | "edo2net" | "edonet" | "delphinet" | "carthagenet";
+  id:
+    | "mainnet"
+    | "florencenet"
+    | "edo2net"
+    | "edonet"
+    | "delphinet"
+    | "carthagenet";
   name: string;
   type: "main" | "test";
   rpcBaseURL: string;

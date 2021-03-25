@@ -15,6 +15,7 @@ import { FastRpcClient } from "./taquito-fast-rpc";
 import { LambdaViewSigner } from "./lambda-view";
 import { ALL_NETWORKS, DEFAULT_NETWORK, TOKEN_WHITELIST } from "./defaults";
 import { getTokenMetadata } from "./assets";
+import { Network } from "../whitelist";
 
 export const Tezos = new TezosToolkit(
   new FastRpcClient(getNetwork().rpcBaseURL)
@@ -36,7 +37,7 @@ export async function getTokens() {
       getStorage(fa2FactoryContract).then(s => snakeToCamelKeys(s)),
   ]);
 
-  const chainId = type === "main" ? "NetXdQprcVkpaWU" : "NetXSgo1ZT2DRUG";
+  const chainId = type === "main" ? Network.Main : Network.Florence;
   const whitelist = TOKEN_WHITELIST.filter(t => t.network === chainId);
 
   const allTokens: (QSAsset | null)[] = await Promise.all(

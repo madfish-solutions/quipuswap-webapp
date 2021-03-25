@@ -1,9 +1,9 @@
-enum Network {
+export enum Network {
   Main = "NetXdQprcVkpaWU",
-  Edo2 = "NetXSgo1ZT2DRUG",
+  Florence = "NetXxkAx4woPLyu",
 }
 
-interface WhitelistedToken {
+export interface WhitelistedToken {
   network: Network;
   type: "fa1.2" | "fa2";
   contractAddress: string;
@@ -11,7 +11,7 @@ interface WhitelistedToken {
   metadata?: WhitelistedTokenMetadata;
 }
 
-type WhitelistedTokenMetadata = {
+export type WhitelistedTokenMetadata = {
   decimals: number;
   symbol: string;
   name: string;
@@ -64,33 +64,25 @@ export const TOKEN_WHITELIST: WhitelistedToken[] = [
    */
 
   {
-    network: Network.Edo2,
+    network: Network.Florence,
     type: "fa2",
-    contractAddress: "KT1ArKKNd5RktsSxSivqgSio6Jo6yWQDg5Qb",
+    contractAddress: "KT1G8ELzdJ6iwLeWK6vHL4hZJL53fX7bGNij",
     fa2TokenId: 0,
   },
   {
-    network: Network.Edo2,
+    network: Network.Florence,
     type: "fa2",
-    contractAddress: "KT1KLRgFbS6MCwurtSc5SSNvfoRvNLEJovJi",
+    contractAddress: "KT1H6gD5FndeANj3B8fnb6gywdGjryGTUfGv",
     fa2TokenId: 0,
   },
   {
-    network: Network.Edo2,
-    type: "fa2",
-    contractAddress: "KT1SnUsFsP3zQJsuGzBowdzn2tqGk4xuUsWv",
-    fa2TokenId: 0,
+    network: Network.Florence,
+    type: "fa1.2",
+    contractAddress: "KT1KpZq1tN9hHTfntki5pJCXw2Q85gvxGnkU",
   },
   {
-    network: Network.Edo2,
-    type: "fa2",
-    contractAddress: "KT1GSfzqSMo8VDMStgHaUGqk9MBYMPM1GtLJ",
-    fa2TokenId: 0,
-  },
-  {
-    network: Network.Edo2,
-    type: "fa2",
-    contractAddress: "KT1Db5L3W4KPCaKqM3QxWAEhxTWzQ8zBB8QS",
-    fa2TokenId: 0,
+    network: Network.Florence,
+    type: "fa1.2",
+    contractAddress: "KT1WwqpZTzZ37NRhafkLL2vGJkB2JtS6v9TP",
   },
 ];

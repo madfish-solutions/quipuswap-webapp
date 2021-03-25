@@ -2,10 +2,10 @@ import { QSAsset, QSTokenType, QSNetwork } from "@/core/types";
 
 export { TOKEN_WHITELIST } from "../whitelist";
 
-export const FA1_2_FACTORY_CONTRACT_EDONET =
-  process.env.VUE_APP_FA1_2_FACTORY_CONTRACT_EDONET || null;
-export const FA2_FACTORY_CONTRACT_EDONET =
-  process.env.VUE_APP_FA2_FACTORY_CONTRACT_EDONET || null;
+export const FA1_2_FACTORY_CONTRACT_FLORENCENET =
+  process.env.VUE_APP_FA1_2_FACTORY_CONTRACT_FLORENCENET || null;
+export const FA2_FACTORY_CONTRACT_FLORENCENET =
+  process.env.VUE_APP_FA2_FACTORY_CONTRACT_FLORENCENET || null;
 
 export const FA1_2_FACTORY_CONTRACT_MAINNET =
   process.env.VUE_APP_FA1_2_FACTORY_CONTRACT_MAINNET || null;
@@ -20,13 +20,13 @@ export const ACCURANCY_MULTIPLIER = parseInt(
 
 export const LOGO_URL = process.env.VUE_APP_LOGO_URL;
 
-export const EDONET_NETWORK: QSNetwork = {
-  id: "edo2net",
-  name: "Edo Testnet",
+export const FLORENCENET_NETWORK: QSNetwork = {
+  id: "florencenet",
+  name: "Florence Testnet",
   type: "test",
-  rpcBaseURL: "https://edonet.smartpy.io/",
-  fa1_2FactoryContract: FA1_2_FACTORY_CONTRACT_EDONET,
-  fa2FactoryContract: FA2_FACTORY_CONTRACT_EDONET,
+  rpcBaseURL: "https://florencenet.smartpy.io",
+  fa1_2FactoryContract: FA1_2_FACTORY_CONTRACT_FLORENCENET,
+  fa2FactoryContract: FA2_FACTORY_CONTRACT_FLORENCENET,
   description: "Edo testnet",
   color: "#0f4c81",
   disabled: false,
@@ -44,8 +44,8 @@ export const MAINNET_NETWORK: QSNetwork = {
   disabled: true,
 };
 
-export const ALL_NETWORKS = [MAINNET_NETWORK, EDONET_NETWORK];
-export const DEFAULT_NETWORK = EDONET_NETWORK;
+export const ALL_NETWORKS = [MAINNET_NETWORK, FLORENCENET_NETWORK];
+export const DEFAULT_NETWORK = FLORENCENET_NETWORK;
 
 export const XTZ_TOKEN: QSAsset = {
   type: "xtz",

@@ -10,6 +10,12 @@ import {
 import { mutezToTz } from "./helpers";
 import { DEFAULT_TOKEN_LOGO_URL } from "./defaults";
 
+const network = getNetwork();
+const lambdaView =
+  network.id === "florencenet"
+    ? "KT1BbTmNHmJp2NnQyw5qsAExEYmYuUpR2HdX"
+    : undefined;
+
 export async function getBalance(accountPkh: string, asset: QSAsset) {
   let nat: BigNumber | undefined;
 
@@ -24,7 +30,7 @@ export async function getBalance(accountPkh: string, asset: QSAsset) {
       const contract = await getContract(asset.id);
 
       try {
-        nat = await contract.views.getBalance(accountPkh).read();
+        nat = await contract.views.getBalance(accountPkh).read(lambdaView);
       } catch {}
 
       if (!nat || nat.isNaN()) {
@@ -39,7 +45,7 @@ export async function getBalance(accountPkh: string, asset: QSAsset) {
       try {
         const response = await fa2Contract.views
           .balance_of([{ owner: accountPkh, token_id: asset.fa2TokenId }])
-          .read();
+          .read(lambdaView);
         nat = response[0].balance;
       } catch {}
 
@@ -99,12 +105,13 @@ export async function getTokenMetadata(
   }
 
   if (!tokenData) {
-    throw new MetadataParseError(latestErrMessage ?? "Unknown error");
+    // throw new MetadataParseError(latestErrMessage ?? "Unknown error");
+    tokenData = {};
   }
 
   const result = {
     decimals: tokenData.decimals ? +tokenData.decimals : 0,
-    symbol: tokenData.symbol || "???",
+    symbol: tokenData.symbol || contractAddress,
     name: tokenData.name || "Unknown Token",
     thumbnailUri:
       tokenData.thumbnailUri ??
@@ -135,7 +142,7 @@ export async function getNewTokenData(
       const contract = await getContract(tokenAddress);
 
       try {
-        nat = await contract.views.getBalance(accountPkh).read();
+        nat = await contract.views.getBalance(accountPkh).read(lambdaView);
       } catch {
         shouldTryGetMetadata = false;
       }
@@ -160,7 +167,7 @@ export async function getNewTokenData(
       try {
         const response = await fa2Contract.views
           .balance_of([{ owner: accountPkh, token_id: tokenId }])
-          .read();
+          .read(lambdaView);
         nat = response[0].balance;
       } catch {
         shouldTryGetMetadata = false;
