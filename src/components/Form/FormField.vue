@@ -108,7 +108,7 @@
             @click.native="selectToken(token)"
           />
         </template>
-        <div v-else class="text-center py-4 text-xl">Not Found...</div>
+        <div v-else class="text-center py-4 text-xl">{{ notFoundStatus }}</div>
       </div>
     </div>
   </div>
@@ -146,6 +146,20 @@ export default class FormField extends Vue {
   tokenIdDisplayed: boolean = false;
   isSearchOpened: boolean = false;
   localToken: QSAsset | null = null;
+  processing = false;
+
+  get notFoundStatus() {
+    switch (true) {
+      case this.processing:
+        return "Finding...";
+
+      case this.tokenIdDisplayed:
+        return "Specify token ID";
+
+      default:
+        return "Not Found";
+    }
+  }
 
   get formattedLocalTokenSymbol() {
     if (!this.localToken) return "";
@@ -177,6 +191,7 @@ export default class FormField extends Vue {
   }
 
   async checkFA2OrAddToken(contractAddress: string) {
+    this.processing = true;
     try {
       const contract = await getContract(contractAddress);
       const fa2 = await isFA2(contract);
@@ -186,9 +201,11 @@ export default class FormField extends Vue {
         this.addTokenToList(contractAddress);
       }
     } catch {}
+    this.processing = false;
   }
 
   async addTokenToList(contractAddress: string, tokenId?: BigNumber) {
+    this.processing = true;
     try {
       const { fa1_2FactoryContract, fa2FactoryContract } = getNetwork();
       if (!fa1_2FactoryContract && !fa2FactoryContract) {
@@ -227,18 +244,16 @@ export default class FormField extends Vue {
         })
       }
     } catch {}
+    this.processing = false;
   }
 
   get filteredTokens(): QSAsset[] {
-    return [
-      ...(this.withTezos ? [XTZ_TOKEN] : []),
-      ...store.state.tokens.filter(
-        (t: QSAsset) =>
-          t.name.toLowerCase().includes(this.searchValue.toLowerCase()) ||
-          t.symbol.toLowerCase().includes(this.searchValue.toLowerCase()) ||
-          t.id.includes(this.searchValue)
-      ),
-    ];
+    return [...(this.withTezos ? [XTZ_TOKEN] : []), ...store.state.tokens].filter(
+      (t: QSAsset) =>
+        t.name.toLowerCase().includes(this.searchValue.toLowerCase()) ||
+        t.symbol.toLowerCase().includes(this.searchValue.toLowerCase()) ||
+        t.id.includes(this.searchValue)
+    );
   }
 
   created() {
