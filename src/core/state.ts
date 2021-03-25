@@ -77,10 +77,20 @@ export async function getTokens() {
     })
   );
 
-  return allTokens.filter(Boolean);
+  return [...allTokens, ...getCustomTokens()].filter(Boolean);
 }
 
-function sanitizeImgUri(origin: string) {
+export function getCustomTokens() {
+  try {
+    const val = localStorage.getItem("custom_tokens");
+    if (!val) return [];
+    return JSON.parse(val);
+  } catch {
+    return [];
+  }
+}
+
+export function sanitizeImgUri(origin: string) {
   if (origin.startsWith("ipfs://")) {
     return `https://ipfs.io/ipfs/${origin.substring(7)}/`;
   }
