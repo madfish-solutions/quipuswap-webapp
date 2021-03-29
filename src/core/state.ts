@@ -191,5 +191,6 @@ export function getNetwork() {
 
 export function setNetwork(net: QSNetwork) {
   localStorage.setItem("netid", net.id);
+  localStorage.removeItem("accpkh");
   location.reload();
 }
