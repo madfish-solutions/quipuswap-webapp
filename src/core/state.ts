@@ -24,8 +24,14 @@ Tezos.addExtension(new Tzip16Module());
 Tezos.addExtension(new Tzip12Module());
 Tezos.setSignerProvider(new LambdaViewSigner());
 
+const CHAIN_ID_MAPPING = new Map<string, string>([
+  ["edo2net", "NetXSgo1ZT2DRUG"],
+  ["florencenet", "NetXxkAx4woPLyu"],
+  ["mainnet", "NetXdQprcVkpaWU"],
+]);
+
 export async function getTokens() {
-  const { type, fa1_2FactoryContract, fa2FactoryContract } = getNetwork();
+  const { id, fa1_2FactoryContract, fa2FactoryContract } = getNetwork();
   if (!fa1_2FactoryContract && !fa2FactoryContract) {
     throw new Error("Contracts for this network not found");
   }
@@ -37,7 +43,7 @@ export async function getTokens() {
       getStorage(fa2FactoryContract).then(s => snakeToCamelKeys(s)),
   ]);
 
-  const chainId = type === "main" ? Network.Main : Network.Florence;
+  const chainId = CHAIN_ID_MAPPING.get(id);
   const whitelist = TOKEN_WHITELIST.filter(t => t.network === chainId);
 
   const allTokens: (QSAsset | null)[] = await Promise.all(
