@@ -54,11 +54,11 @@
             <template v-if="!account.pkh">
               <div class="flex flex-col">
                 <button
-                class="mb-4 w-64 h-12 text-white border rounded-md border-accent hover:text-accent transition ease-in-out duration-300 flex items-center"
+                class="flex items-center w-64 h-12 mb-4 text-white transition duration-300 ease-in-out border rounded-md border-accent hover:text-accent"
                 @click="handleConnectTemple"
               >
-                <div class="flex-1 flex justify-center">
-                  <img src="@/assets/temple.png" alt="" class="h-8 w-auto" />
+                <div class="flex justify-center flex-1">
+                  <img src="@/assets/temple.png" alt="" class="w-auto h-8" />
                 </div>
                <div>
                   Connect Temple
@@ -67,11 +67,11 @@
               </button>
 
               <button
-                class="w-64 h-12 text-white border rounded-md border-primary hover:text-primary transition ease-in-out duration-300 flex items-center"
+                class="flex items-center w-64 h-12 text-white transition duration-300 ease-in-out border rounded-md border-primary hover:text-primary"
                 @click="handleConnectBeacon"
               >
-              <div class="flex-1 flex justify-center">
-                  <img src="@/assets/beacon.png" alt="" class="h-6 w-auto" />
+              <div class="flex justify-center flex-1">
+                  <img src="@/assets/beacon.png" alt="" class="w-auto h-6" />
                 </div>
                 <div class="text-sm">
                 Connect another wallet
@@ -117,7 +117,7 @@
     <div class="flex-1"></div>
 
     <div class="flex flex-col items-center justify-center p-4 mt-10">
-      <div class="p-4 text-sm font-light text-white">
+      <div class="p-4 text-sm font-light text-center text-white">
         <a href="https://twitter.com/madfishofficial" class="px-4">
           Twitter
         </a>
@@ -132,6 +132,14 @@
         |
         <a href="https://www.reddit.com/r/MadFishCommunity" class="px-4">
           Reddit
+        </a>
+        |
+        <a href="https://docs.quipuswap.com/faq" class="px-4">
+          FAQ
+        </a>
+        |
+        <a href="https://docs.quipuswap.com" class="px-4">
+          Docs
         </a>
       </div>
       <span class="text-sm font-light text-white">
