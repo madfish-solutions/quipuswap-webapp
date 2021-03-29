@@ -13,9 +13,13 @@ import { QSAsset, QSNetwork, QSTokenType } from "./types";
 import { snakeToCamelKeys } from "./helpers";
 import { FastRpcClient } from "./taquito-fast-rpc";
 import { LambdaViewSigner } from "./lambda-view";
-import { ALL_NETWORKS, DEFAULT_NETWORK, TOKEN_WHITELIST } from "./defaults";
+import {
+  ALL_NETWORKS,
+  DEFAULT_NETWORK,
+  TOKEN_WHITELIST,
+  CHAIN_ID_MAPPING,
+} from "./defaults";
 import { getTokenMetadata } from "./assets";
-import { Network } from "../whitelist";
 
 export const Tezos = new TezosToolkit(
   new FastRpcClient(getNetwork().rpcBaseURL)
@@ -25,7 +29,7 @@ Tezos.addExtension(new Tzip12Module());
 Tezos.setSignerProvider(new LambdaViewSigner());
 
 export async function getTokens() {
-  const { type, fa1_2FactoryContract, fa2FactoryContract } = getNetwork();
+  const { id, fa1_2FactoryContract, fa2FactoryContract } = getNetwork();
   if (!fa1_2FactoryContract && !fa2FactoryContract) {
     throw new Error("Contracts for this network not found");
   }
@@ -37,7 +41,7 @@ export async function getTokens() {
       getStorage(fa2FactoryContract).then(s => snakeToCamelKeys(s)),
   ]);
 
-  const chainId = type === "main" ? Network.Main : Network.Florence;
+  const chainId = CHAIN_ID_MAPPING.get(id);
   const whitelist = TOKEN_WHITELIST.filter(t => t.network === chainId);
 
   const allTokens: (QSAsset | null)[] = await Promise.all(
