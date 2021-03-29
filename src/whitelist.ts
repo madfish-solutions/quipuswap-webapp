@@ -1,6 +1,7 @@
 export enum Network {
   Main = "NetXdQprcVkpaWU",
   Florence = "NetXxkAx4woPLyu",
+  Edo2net = "NetXSgo1ZT2DRUG",
 }
 
 export interface WhitelistedToken {
@@ -84,5 +85,11 @@ export const TOKEN_WHITELIST: WhitelistedToken[] = [
     network: Network.Florence,
     type: "fa1.2",
     contractAddress: "KT1WwqpZTzZ37NRhafkLL2vGJkB2JtS6v9TP",
+  },
+  {
+    network: Network.Edo2net,
+    type: "fa2",
+    contractAddress: "KT1SnUsFsP3zQJsuGzBowdzn2tqGk4xuUsWv",
+    fa2TokenId: 0,
   },
 ];
