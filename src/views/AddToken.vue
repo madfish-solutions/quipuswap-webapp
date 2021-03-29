@@ -146,6 +146,7 @@ import {
   clearMem,
   approveToken,
   QSTokenType,
+  deapproveFA2,
 } from "@/core";
 import { XTZ_TOKEN } from "@/core/defaults";
 
@@ -401,6 +402,17 @@ export default class AddToken extends Vue {
             )
             .toTransferParams({ amount: tezAmount.toFixed() as any })
         );
+
+      deapproveFA2(
+        batch,
+        {
+          tokenType: this.tokenType,
+          fa2TokenId: tokenId
+        },
+        tokenContract,
+        me,
+        dexAddress || factoryContractAddres,
+      );
 
       const operation = await batch.send();
       await operation.confirmation();

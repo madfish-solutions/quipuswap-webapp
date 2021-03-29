@@ -128,6 +128,7 @@ import {
   isAddressValid,
   clearMem,
   approveToken,
+  deapproveFA2,
 } from "@/core";
 import NavTabs from "@/components/NavTabs.vue";
 import NavGovernance from "@/components/NavGovernance.vue";
@@ -302,6 +303,17 @@ export default class Veto extends Vue {
             .use("veto", sharesToVeto, this.voter)
             .toTransferParams()
         );
+
+      deapproveFA2(
+        batch,
+        {
+          tokenType: this.selectedToken!.tokenType,
+          fa2TokenId: 0,
+        },
+        contract,
+        me,
+        contract.address,
+      );
 
       const operation = await batch.send();
       await operation.confirmation();

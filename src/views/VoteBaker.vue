@@ -159,6 +159,7 @@ import {
   clearMem,
   getNetwork,
   approveToken,
+  deapproveFA2,
 } from "@/core";
 import NavTabs from "@/components/NavTabs.vue";
 import NavGovernance from "@/components/NavGovernance.vue";
@@ -334,6 +335,17 @@ export default class VoteBaker extends Vue {
             .use("vote", this.bakerAddress, sharesToVote, this.voter)
             .toTransferParams()
         );
+
+      deapproveFA2(
+        batch,
+        {
+          tokenType: this.selectedToken!.tokenType,
+          fa2TokenId: 0,
+        },
+        contract,
+        me,
+        contract.address,
+      );
 
       const operation = await batch.send();
       await operation.confirmation();

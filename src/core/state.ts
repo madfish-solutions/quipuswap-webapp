@@ -5,6 +5,7 @@ import {
   Wallet,
   compose,
   MichelCodecPacker,
+  WalletOperationBatch,
 } from "@taquito/taquito";
 import { tzip16, Tzip16Module } from "@taquito/tzip16";
 import { tzip12, Tzip12Module } from "@taquito/tzip12";
@@ -126,6 +127,32 @@ export function approveToken(
     ]);
   } else {
     return tokenContract.methods.approve(to, amount);
+  }
+}
+
+export function deapproveFA2(
+  batch: WalletOperationBatch,
+  token: Pick<QSAsset, "tokenType" | "fa2TokenId">,
+  tokenContract: WalletContract,
+  from: string,
+  to: string
+) {
+  if (token.tokenType === QSTokenType.FA2) {
+    return batch.withTransfer(
+      tokenContract.methods
+        .update_operators([
+          {
+            remove_operator: {
+              owner: from,
+              operator: to,
+              token_id: token.fa2TokenId,
+            },
+          },
+        ])
+        .toTransferParams()
+    );
+  } else {
+    return batch;
   }
 }
 
