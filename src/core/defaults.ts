@@ -38,7 +38,7 @@ export const FLORENCENET_NETWORK: QSNetwork = {
 };
 
 export const EDONET_NETWORK: QSNetwork = {
-  id: "edonet",
+  id: "edo2net",
   name: "Edonet Testnet",
   type: "test",
   rpcBaseURL: "https://edonet.smartpy.io/",
