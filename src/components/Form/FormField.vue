@@ -80,7 +80,7 @@
             v-model="searchValue"
             @keydown="searchValue = $event.target.value"
             ref="searchInput"
-            placeholder="Search..."
+            placeholder="Enter token name or contract address..."
             class="w-full"
           />
         </div>
