@@ -60,7 +60,11 @@ export async function loadTokens() {
 export function addCustomToken(token: QSAsset) {
   try {
     const current = getCustomTokens();
-    localStorage.setItem("custom_tokens", JSON.stringify([token, ...current]));
+    const net = getNetwork();
+    localStorage.setItem(
+      `custom_tokens_${net.id}`,
+      JSON.stringify([token, ...current])
+    );
   } catch {}
   store.commit("addToken", token);
 }

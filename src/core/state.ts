@@ -86,7 +86,8 @@ export async function getTokens() {
 
 export function getCustomTokens() {
   try {
-    const val = localStorage.getItem("custom_tokens");
+    const net = getNetwork();
+    const val = localStorage.getItem(`custom_tokens_${net.id}`);
     if (!val) return [];
     return JSON.parse(val);
   } catch {
