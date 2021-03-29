@@ -233,7 +233,7 @@ export default class FormField extends Vue {
         );
         addCustomToken({
           type: "token" as const,
-          tokenType: fa2TokenId ? QSTokenType.FA2 : QSTokenType.FA1_2,
+          tokenType: fa2TokenId !== undefined ? QSTokenType.FA2 : QSTokenType.FA1_2,
           id: contractAddress,
           fa2TokenId,
           exchange,
