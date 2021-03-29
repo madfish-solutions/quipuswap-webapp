@@ -41,7 +41,7 @@ export const EDONET_NETWORK: QSNetwork = {
   id: "edonet",
   name: "Edonet Testnet",
   type: "test",
-  rpcBaseURL: "https://api.tez.ie/rpc/edonet",
+  rpcBaseURL: "https://edonet.smartpy.io/",
   fa1_2FactoryContract: FA1_2_FACTORY_CONTRACT_EDONET,
   fa2FactoryContract: FA2_FACTORY_CONTRACT_EDONET,
   description: "Edo testnet",
