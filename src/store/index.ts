@@ -9,6 +9,7 @@ import {
   getCustomTokens,
   LOGO_URL,
   ReadOnlySigner,
+  michelEncoder,
 } from "@/core";
 import { TezosToolkit } from "@taquito/taquito";
 
@@ -116,6 +117,7 @@ async function useWalletTemple(forcePermission: boolean) {
   }
 
   const tezos = wallet.toTezos();
+  tezos.setPackerProvider(michelEncoder);
   const { pkh, publicKey } = wallet.permission!;
   tezos.setSignerProvider(new ReadOnlySigner(pkh, publicKey));
   if (getAccount().pkh !== pkh) {
@@ -139,6 +141,7 @@ async function useWalletBeacon(forcePermission: boolean) {
   }
 
   const tezos = new TezosToolkit(net.rpcBaseURL);
+  tezos.setPackerProvider(michelEncoder);
   tezos.setWalletProvider(beaconWallet);
   const activeAcc = await beaconWallet.client.getActiveAccount();
   if (!activeAcc) {

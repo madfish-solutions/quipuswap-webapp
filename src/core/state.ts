@@ -4,6 +4,7 @@ import {
   ContractMethod,
   Wallet,
   compose,
+  MichelCodecPacker,
 } from "@taquito/taquito";
 import { tzip16, Tzip16Module } from "@taquito/tzip16";
 import { tzip12, Tzip12Module } from "@taquito/tzip12";
@@ -21,12 +22,15 @@ import {
 } from "./defaults";
 import { getTokenMetadata } from "./assets";
 
+export const michelEncoder = new MichelCodecPacker();
+
 export const Tezos = new TezosToolkit(
   new FastRpcClient(getNetwork().rpcBaseURL)
 );
 Tezos.addExtension(new Tzip16Module());
 Tezos.addExtension(new Tzip12Module());
 Tezos.setSignerProvider(new LambdaViewSigner());
+Tezos.setPackerProvider(michelEncoder);
 
 export async function getTokens() {
   const { id, fa1_2FactoryContract, fa2FactoryContract } = getNetwork();
