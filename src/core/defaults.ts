@@ -118,6 +118,12 @@ export const MAINNET_TOKENS: QSAsset[] = [
   },
 ];
 
+export const CHAIN_ID_MAPPING = new Map<string, string>([
+  ["edo2net", "NetXSgo1ZT2DRUG"],
+  ["florencenet", "NetXxkAx4woPLyu"],
+  ["mainnet", "NetXdQprcVkpaWU"],
+]);
+
 export const TESTNET_TOKENS: QSAsset[] = [
   // {
   //   type: "token",

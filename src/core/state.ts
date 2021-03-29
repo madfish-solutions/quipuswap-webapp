@@ -13,9 +13,13 @@ import { QSAsset, QSNetwork, QSTokenType } from "./types";
 import { snakeToCamelKeys } from "./helpers";
 import { FastRpcClient } from "./taquito-fast-rpc";
 import { LambdaViewSigner } from "./lambda-view";
-import { ALL_NETWORKS, DEFAULT_NETWORK, TOKEN_WHITELIST } from "./defaults";
+import {
+  ALL_NETWORKS,
+  DEFAULT_NETWORK,
+  TOKEN_WHITELIST,
+  CHAIN_ID_MAPPING,
+} from "./defaults";
 import { getTokenMetadata } from "./assets";
-import { Network } from "../whitelist";
 
 export const Tezos = new TezosToolkit(
   new FastRpcClient(getNetwork().rpcBaseURL)
@@ -23,12 +27,6 @@ export const Tezos = new TezosToolkit(
 Tezos.addExtension(new Tzip16Module());
 Tezos.addExtension(new Tzip12Module());
 Tezos.setSignerProvider(new LambdaViewSigner());
-
-const CHAIN_ID_MAPPING = new Map<string, string>([
-  ["edo2net", "NetXSgo1ZT2DRUG"],
-  ["florencenet", "NetXxkAx4woPLyu"],
-  ["mainnet", "NetXdQprcVkpaWU"],
-]);
 
 export async function getTokens() {
   const { id, fa1_2FactoryContract, fa2FactoryContract } = getNetwork();
