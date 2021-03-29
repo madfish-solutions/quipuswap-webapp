@@ -138,6 +138,7 @@ import GovernancePairSelect from "@/components/GovernancePairSelect.vue";
 import BakerFormField from "@/components/Form/BakerFormField.vue";
 import Loader from "@/components/Loader.vue";
 import BigNumber from "bignumber.js";
+import { OpKind } from "@taquito/taquito";
 
 @Component({
   components: {
@@ -284,9 +285,49 @@ export default class Veto extends Vue {
       const me = await tezos.wallet.pkh();
       const contract = await tezos.wallet.at(this.selectedToken!.exchange);
 
-      const batch = tezos.wallet
-        .batch([])
-        .withTransfer(
+      let withAllowanceReset = false;
+      try {
+        await tezos.estimate.batch([
+          {
+            kind: OpKind.TRANSACTION,
+            ...approveToken(
+              {
+                tokenType: this.selectedToken!.tokenType,
+                fa2TokenId: 0,
+              },
+              contract,
+              me,
+              contract.address,
+              sharesToVeto
+            ).toTransferParams()
+          },
+        ]);
+      } catch (err) {
+        if (err?.message === "UnsafeAllowanceChange") {
+          withAllowanceReset = true;
+        } else {
+          console.error(err);
+        }
+      }
+
+      let batch = tezos.wallet.batch([]);
+
+      if (withAllowanceReset) {
+        batch = batch.withTransfer(
+          approveToken(
+            {
+              tokenType: this.selectedToken!.tokenType,
+              fa2TokenId: 0,
+            },
+            contract,
+            me,
+            contract.address,
+            0
+          ).toTransferParams()
+        );
+      }
+
+      batch = batch.withTransfer(
           approveToken(
             {
               tokenType: this.selectedToken!.tokenType,
