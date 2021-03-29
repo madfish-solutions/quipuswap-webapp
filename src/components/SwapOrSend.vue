@@ -16,7 +16,7 @@
 
       <FormIcon :style="'padding-top: 0.25rem; padding-bottom: 0.25rem;'">
         <button
-          class="p-2 rounded-full transition ease-in-out duration-300 hover:bg-alphawhite focus:outline-none rotate-when-hover"
+          class="p-2 transition duration-300 ease-in-out rounded-full hover:bg-alphawhite focus:outline-none rotate-when-hover"
           @click="changeDirections"
         >
           <img
@@ -93,7 +93,7 @@
           </button>
 
           <div
-            class="px-2 py-2 ml-2 text-xs font-light rounded-md shadow-xs focus:outline-none leading-tight"
+            class="px-2 py-2 ml-2 text-xs font-light leading-tight rounded-md shadow-xs focus:outline-none"
             :class="
               slippagePercentages.includes(activeSlippagePercentage)
                 ? ''
@@ -101,7 +101,7 @@
             "
           >
             <input
-              class="bg-transparent outline-none text-right w-12"
+              class="w-12 text-right bg-transparent outline-none"
               v-bind:placeholder="activeSlippagePercentage"
               v-model="customSlippagePercentage"
               @input="e => handleCustomSlippageChange(e.target.value)"
@@ -188,7 +188,7 @@ export default class SwapOrSend extends Vue {
   recipientAddress: string = "";
 
   slippagePercentages = [0.5, 1, 3];
-  activeSlippagePercentage: number | undefined = 1;
+  activeSlippagePercentage: number | undefined = 0.5;
   lastValidCustomSlippagePercentage: string = "";
   customSlippagePercentage: string = "";
   fee: string | null = null;
