@@ -58,7 +58,7 @@ export const MAINNET_NETWORK: QSNetwork = {
   fa2FactoryContract: FA2_FACTORY_CONTRACT_MAINNET,
   description: "Tezos mainnet",
   color: "#83b300",
-  disabled: true,
+  disabled: false,
 };
 
 export const ALL_NETWORKS = [

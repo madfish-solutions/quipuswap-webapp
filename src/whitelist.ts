@@ -23,7 +23,29 @@ export const TOKEN_WHITELIST: WhitelistedToken[] = [
   /**
    * Mainnet
    */
-
+  {
+    network: Network.Main,
+    type: "fa1.2",
+    contractAddress: "KT1K9gCRgaLRFKTErYt1wVxA3Frb9FjasjTV",
+    metadata: {
+      decimals: 18,
+      symbol: "KUSD",
+      name: "Kolibri",
+      thumbnailUri: "https://kolibri-data.s3.amazonaws.com/logo.png",
+    },
+  },
+  {
+    network: Network.Main,
+    type: "fa1.2",
+    contractAddress: "KT1VYsVfmobT7rsMVivvZ4J8i3bPiqz12NaH",
+    metadata: {
+      decimals: 6,
+      symbol: "wXTZ",
+      name: "Wrapped Tezos",
+      thumbnailUri:
+        "https://raw.githubusercontent.com/StakerDAO/wrapped-xtz/dev/assets/wXTZ-token-FullColor.png",
+    },
+  },
   {
     network: Network.Main,
     type: "fa1.2",
