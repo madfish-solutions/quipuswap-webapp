@@ -205,6 +205,16 @@ export default class FormField extends Vue {
   }
 
   async addTokenToList(contractAddress: string, tokenId?: BigNumber) {
+    const fa2TokenId = tokenId ? tokenId.toNumber() : undefined;
+
+    if (store.state.tokens.some((t) =>
+      fa2TokenId === undefined
+        ? (t.id === this.searchValue)
+        : (t.id === this.searchValue && t.fa2TokenId === fa2TokenId))
+    ) {
+      return;
+    }
+
     this.processing = true;
     try {
       const { fa1_2FactoryContract, fa2FactoryContract } = getNetwork();
@@ -226,7 +236,6 @@ export default class FormField extends Vue {
       }
 
       if (exchange) {
-        const fa2TokenId = tokenId ? tokenId.toNumber() : undefined;
         const metadata = await getTokenMetadata(
           contractAddress,
           tokenId ? tokenId.toNumber() : undefined
@@ -249,10 +258,15 @@ export default class FormField extends Vue {
 
   get filteredTokens(): QSAsset[] {
     return [...(this.withTezos ? [XTZ_TOKEN] : []), ...store.state.tokens].filter(
-      (t: QSAsset) =>
-        t.name.toLowerCase().includes(this.searchValue.toLowerCase()) ||
-        t.symbol.toLowerCase().includes(this.searchValue.toLowerCase()) ||
-        t.id.includes(this.searchValue)
+      (t: QSAsset) => {
+        const base = t.name.toLowerCase().includes(this.searchValue.toLowerCase()) ||
+          t.symbol.toLowerCase().includes(this.searchValue.toLowerCase()) ||
+          t.id.includes(this.searchValue);
+
+        return this.tokenId
+          ? (base && +this.tokenId === t.fa2TokenId)
+          : base;
+      }
     );
   }
 
