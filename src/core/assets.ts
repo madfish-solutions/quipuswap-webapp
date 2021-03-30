@@ -8,7 +8,11 @@ import {
   getContractForMetadata,
 } from "./state";
 import { mutezToTz } from "./helpers";
-import { DEFAULT_TOKEN_LOGO_URL } from "./defaults";
+import {
+  DEFAULT_TOKEN_LOGO_URL,
+  TOKEN_WHITELIST,
+  CHAIN_ID_MAPPING,
+} from "./defaults";
 
 const network = getNetwork();
 const lambdaView =
@@ -152,7 +156,7 @@ export async function getNewTokenData(
       }
 
       if (shouldTryGetMetadata) {
-        decimals = (await getTokenMetadata(tokenAddress)).decimals;
+        decimals = (await getNewTokenMetadata(tokenAddress)).decimals;
       }
 
       return { bal: nat, decimals };
@@ -178,7 +182,7 @@ export async function getNewTokenData(
       }
 
       if (shouldTryGetMetadata) {
-        decimals = (await getTokenMetadata(tokenAddress, tokenId)).decimals;
+        decimals = (await getNewTokenMetadata(tokenAddress, tokenId)).decimals;
       }
 
       return { bal: nat, decimals };
@@ -186,6 +190,22 @@ export async function getNewTokenData(
     default:
       throw new Error("Token type not supported");
   }
+}
+
+export async function getNewTokenMetadata(
+  contractAddress: string,
+  fa2TokenId?: number
+) {
+  const net = getNetwork();
+  const chainId = CHAIN_ID_MAPPING.get(net.id);
+  const whitelist = TOKEN_WHITELIST.filter(t => t.network === chainId);
+  const whitelisted = whitelist.find(wt =>
+    typeof fa2TokenId === "number"
+      ? wt.contractAddress === contractAddress && wt.fa2TokenId === fa2TokenId
+      : wt.contractAddress === contractAddress
+  );
+
+  return whitelisted?.metadata ?? getTokenMetadata(contractAddress, fa2TokenId);
 }
 
 export async function toTransferParams(
