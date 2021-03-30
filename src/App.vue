@@ -42,7 +42,7 @@
         <div class="flex flex-col items-center justify-center">
           <router-link to="/">
             <h1 class="text-xl font-medium tracking-tight text-gray-300">
-              Quipuswap
+              QuipuSwap <span class="text-xs text-primary">beta</span>
             </h1>
           </router-link>
 
