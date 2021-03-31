@@ -1,9 +1,9 @@
 <template>
   <div id="app" class="flex flex-col">
     <div class="container relative px-4 py-4 mx-auto xs:px-6">
-      <header class="flex items-stretch mb-12">
+      <header class="flex flex-col items-center mb-12 align-middle lg:items-stretch lg:flex-row">
         <div class="flex justify-start flex-1 pt-4">
-          <div class="hidden select-none lg:block">
+          <div class="select-none">
             <div
               class="flex flex-row justify-between w-auto cursor-pointer network-selector align-center"
               @click="toggleNetworkSelect"
@@ -39,7 +39,7 @@
           </div>
         </div>
 
-        <div class="flex flex-col items-center justify-center">
+        <div class="flex flex-col items-center justify-center py-10 lg:py-0">
           <router-link to="/">
             <h1 class="text-xl font-medium tracking-tight text-gray-300">
               QuipuSwap <span class="text-xs text-primary">beta</span>
@@ -50,7 +50,7 @@
         </div>
 
         <div class="flex justify-end flex-1 pt-4">
-          <div class="hidden lg:block">
+          <div class="lg:block">
             <template v-if="!account.pkh">
               <div class="flex flex-col">
                 <button
