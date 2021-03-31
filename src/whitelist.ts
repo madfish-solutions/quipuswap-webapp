@@ -48,13 +48,26 @@ export const TOKEN_WHITELIST: WhitelistedToken[] = [
   },
   {
     network: Network.Main,
-    type: "fa1.2",
-    contractAddress: "KT1LN4LPSqTMS7Sd2CJw4bbDGRkMv2t68Fy9",
+    type: "fa2",
+    contractAddress: "KT1REEb5VxWRjcHm5GzDMwErMmNFftsE5Gpf",
+    fa2TokenId: 0,
     metadata: {
       decimals: 6,
-      symbol: "USDtz",
-      name: "USD Tez",
-      thumbnailUri: "https://usdtz.com/lightlogo10USDtz.png",
+      symbol: "USDS",
+      name: "Stably USD",
+      thumbnailUri: require("@/assets/tokens/stably.png"),
+    },
+  },
+  {
+    network: Network.Main,
+    type: "fa1.2",
+    contractAddress: "KT1PWx2mnDueood7fEmfbBDKx1D9BAnnXitn",
+    metadata: {
+      decimals: 8,
+      symbol: "tzBTC",
+      name: "tzBTC",
+      thumbnailUri:
+        "https://tzbtc.io/wp-content/uploads/2020/03/tzbtc_logo_single.svg",
     },
   },
   {
@@ -72,13 +85,23 @@ export const TOKEN_WHITELIST: WhitelistedToken[] = [
   {
     network: Network.Main,
     type: "fa1.2",
-    contractAddress: "KT1PWx2mnDueood7fEmfbBDKx1D9BAnnXitn",
+    contractAddress: "KT1LN4LPSqTMS7Sd2CJw4bbDGRkMv2t68Fy9",
     metadata: {
-      decimals: 8,
-      symbol: "tzBTC",
-      name: "tzBTC",
-      thumbnailUri:
-        "https://tzbtc.io/wp-content/uploads/2020/03/tzbtc_logo_single.svg",
+      decimals: 6,
+      symbol: "USDtz",
+      name: "USDtez",
+      thumbnailUri: "https://usdtz.com/lightlogo10USDtz.png",
+    },
+  },
+  {
+    network: Network.Main,
+    type: "fa1.2",
+    contractAddress: "KT19at7rQUvyjxnZ2fBv7D9zc8rkyG7gAoU8",
+    metadata: {
+      decimals: 18,
+      symbol: "ETHtz",
+      name: "ETHtez",
+      thumbnailUri: "https://ethtz.io/ETHtz_purple.png",
     },
   },
 
