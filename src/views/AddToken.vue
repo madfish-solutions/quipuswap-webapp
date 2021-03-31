@@ -148,6 +148,7 @@ import {
   approveToken,
   QSTokenType,
   deapproveFA2,
+  isUnsafeAllowanceChangeError,
 } from "@/core";
 import { XTZ_TOKEN } from "@/core/defaults";
 
@@ -386,7 +387,7 @@ export default class AddToken extends Vue {
           },
         ]);
       } catch (err) {
-        if (err?.message === "UnsafeAllowanceChange") {
+        if (isUnsafeAllowanceChangeError(err)) {
           withAllowanceReset = true;
         } else {
           console.error(err);
