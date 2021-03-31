@@ -103,6 +103,12 @@ export const TOKEN_WHITELIST: WhitelistedToken[] = [
       thumbnailUri: "https://ethtz.io/ETHtz_purple.png",
     },
   },
+  {
+    network: Network.Main,
+    type: "fa2",
+    contractAddress: "KT1AFA2mwNUMNd4SsujE1YYp29vd8BZejyKW",
+    fa2TokenId: 0,
+  },
 
   /**
    * Testnet
