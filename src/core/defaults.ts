@@ -66,7 +66,7 @@ export const ALL_NETWORKS = [
   EDONET_NETWORK,
   FLORENCENET_NETWORK,
 ];
-export const DEFAULT_NETWORK = FLORENCENET_NETWORK;
+export const DEFAULT_NETWORK = MAINNET_NETWORK;
 
 export const XTZ_TOKEN: QSAsset = {
   type: "xtz",
