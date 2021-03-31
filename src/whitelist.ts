@@ -73,13 +73,12 @@ export const TOKEN_WHITELIST: WhitelistedToken[] = [
   {
     network: Network.Main,
     type: "fa1.2",
-    contractAddress: "KT1EctCuorV2NfVb1XTQgvzJ88MQtWP8cMMv",
+    contractAddress: "KT1AEfeckNbdEYwaMKkytBwPJPycz7jdSGea",
     metadata: {
-      decimals: 0,
+      decimals: 18,
       symbol: "STKR",
-      name: "Staker",
-      thumbnailUri:
-        "https://miro.medium.com/fit/c/160/160/1*LzmHCYryGmuN9ZR7JX951w.png",
+      name: "Staker Governance Token",
+      thumbnailUri: "https://github.com/StakerDAO/resources/raw/main/stkr.png",
     },
   },
   {
