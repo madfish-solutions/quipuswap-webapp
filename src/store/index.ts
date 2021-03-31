@@ -1,8 +1,16 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import { BeaconWallet } from "@taquito/beacon-wallet";
-// import { getCurrentPermission, onAvailabilityChange } from "@temple-wallet/dapp";
-import { QSAsset, getTokens, getNetwork, LOGO_URL } from "@/core";
+import { TempleWallet } from "@temple-wallet/dapp";
+import {
+  QSAsset,
+  getTokens,
+  getNetwork,
+  getCustomTokens,
+  LOGO_URL,
+  ReadOnlySigner,
+  michelEncoder,
+} from "@/core";
 import { TezosToolkit } from "@taquito/taquito";
 
 Vue.use(Vuex);
@@ -26,6 +34,9 @@ const store = new Vuex.Store<StoreState>({
     tokens(state, tokens) {
       state.tokens = tokens;
     },
+    addToken(state, token) {
+      state.tokens = [token, ...state.tokens];
+    },
     account(state, account) {
       state.account = account;
     },
@@ -47,87 +58,103 @@ export async function loadTokens() {
   }
 }
 
-const wallet = new BeaconWallet({
+export function addCustomToken(token: QSAsset) {
+  try {
+    const current = getCustomTokens();
+    const net = getNetwork();
+    localStorage.setItem(
+      `custom_tokens_${net.id}`,
+      JSON.stringify([token, ...current])
+    );
+  } catch {}
+  store.commit("addToken", token);
+}
+
+const beaconWallet = new BeaconWallet({
   name: "Quipuswap",
   iconUrl: LOGO_URL,
-  // eventHandlers: {
-  //   PERMISSION_REQUEST_SUCCESS: {
-  //     handler: async data => {
-  //       console.log("permission data:", data);
-  //     },
-  //   },
-  // },
 });
 
-// setTimeout(async () => {
-//   try {
-//     if (await isAvailable()) {
-//       const p = await getCurrentPermission();
-//       if (!p) {
-//         await wallet.disconnect();
-//       }
-//     }
-//   } catch {}
+export async function useWallet(
+  connectType?: "temple" | "beacon",
+  forcePermission = false
+) {
+  if (!forcePermission && !getAccount().pkh) {
+    throw new Error("Not connected");
+  }
 
-//   console.info("DONE");
-// }, 1000);
+  if (!connectType) {
+    const last = getLastUsedConnect();
+    if (!last) {
+      throw new Error("There no connect type");
+    }
 
-// let templeAvailable = false;
-// onAvailabilityChange((available) => {
-//   templeAvailable = available;
-// });
+    connectType = last;
+  }
 
-export async function useWallet(opts = { forcePermission: false }) {
+  return connectType === "temple"
+    ? useWalletTemple(forcePermission)
+    : useWalletBeacon(forcePermission);
+}
+
+async function useWalletTemple(forcePermission: boolean) {
   const net = getNetwork();
 
-  const beaconCheck = localStorage.getItem("beacon_seed_check");
-  if (
-    beaconCheck &&
-    beaconCheck !== localStorage.getItem("beacon:sdk-secret-seed")
-  ) {
-    await wallet.disconnect();
-    await wallet.clearActiveAccount();
+  const available = await TempleWallet.isAvailable();
+  if (!available) {
+    throw new Error("Temple Wallet not installed");
   }
 
-  const activeAccount = await wallet.client.getActiveAccount();
-  if (opts.forcePermission || !activeAccount) {
-    if (activeAccount) {
-      await wallet.clearActiveAccount();
-    }
-    await wallet.requestPermissions({
-      network: { type: toBeaconNetworkType(net.id) },
-    });
-    localStorage.setItem(
-      "beacon_seed_check",
-      localStorage.getItem("beacon:sdk-secret-seed")!
-    );
+  let perm;
+  if (!forcePermission) {
+    perm = await TempleWallet.getCurrentPermission();
   }
 
-  const tezos = new TezosToolkit(net.rpcBaseURL);
-  tezos.setWalletProvider(wallet);
-  tezos.setSignerProvider({
-    async publicKeyHash() {
-      const acc = await wallet.client.getActiveAccount();
-      if (!acc) throw new Error("Not connected");
-      return acc.address;
-    },
-    async publicKey() {
-      const acc = await wallet.client.getActiveAccount();
-      if (!acc) throw new Error("Not connected");
-      return acc.publicKey;
-    },
-    async secretKey(): Promise<string> {
-      throw new Error("Secret key cannot be exposed");
-    },
-    async sign() {
-      throw new Error("Cannot sign");
-    },
-  });
-  const pkh = await wallet.getPKH();
+  const wallet = new TempleWallet("Quipuswap", perm);
 
+  if (!wallet.connected) {
+    await wallet.connect(net.id as any, { forcePermission: true });
+  }
+
+  const tezos = wallet.toTezos();
+  tezos.setPackerProvider(michelEncoder);
+  const { pkh, publicKey } = wallet.permission!;
+  tezos.setSignerProvider(new ReadOnlySigner(pkh, publicKey));
   if (getAccount().pkh !== pkh) {
     setAccount(pkh);
   }
+  setLastUsedConnect("temple");
+  return tezos;
+}
+
+async function useWalletBeacon(forcePermission: boolean) {
+  const net = getNetwork();
+
+  const activeAccount = await beaconWallet.client.getActiveAccount();
+  if (forcePermission || !activeAccount) {
+    if (activeAccount) {
+      await beaconWallet.clearActiveAccount();
+    }
+    await beaconWallet.requestPermissions({
+      network: { type: toBeaconNetworkType(net.id) },
+    });
+  }
+
+  const tezos = new TezosToolkit(net.rpcBaseURL);
+  tezos.setPackerProvider(michelEncoder);
+  tezos.setWalletProvider(beaconWallet);
+  const activeAcc = await beaconWallet.client.getActiveAccount();
+  if (!activeAcc) {
+    throw new Error("Not connected");
+  }
+
+  tezos.setSignerProvider(
+    new ReadOnlySigner(activeAcc.address, activeAcc.publicKey)
+  );
+  if (getAccount().pkh !== activeAcc.address) {
+    setAccount(activeAcc.address);
+  }
+  setLastUsedConnect("beacon");
   return tezos;
 }
 
@@ -152,4 +179,15 @@ function getAccountInitial() {
 
 function toBeaconNetworkType(netId: string): any {
   return netId === "edo2net" ? "edonet" : netId;
+}
+
+function getLastUsedConnect() {
+  return localStorage.getItem("last-used-connect") as
+    | "temple"
+    | "beacon"
+    | null;
+}
+
+function setLastUsedConnect(val: "temple" | "beacon") {
+  return localStorage.setItem("last-used-connect", val);
 }

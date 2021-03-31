@@ -3,8 +3,11 @@ import {
   WalletContract,
   ContractMethod,
   Wallet,
+  compose,
+  MichelCodecPacker,
+  WalletOperationBatch,
 } from "@taquito/taquito";
-import { tzip16 } from "@taquito/tzip16";
+import { tzip16, Tzip16Module } from "@taquito/tzip16";
 import { tzip12, Tzip12Module } from "@taquito/tzip12";
 import BigNumber from "bignumber.js";
 import mem from "mem";
@@ -15,25 +18,26 @@ import { LambdaViewSigner } from "./lambda-view";
 import {
   ALL_NETWORKS,
   DEFAULT_NETWORK,
-  DEFAULT_TOKEN_LOGO_URL,
-  MAINNET_TOKENS,
-  TESTNET_TOKENS,
+  TOKEN_WHITELIST,
+  CHAIN_ID_MAPPING,
 } from "./defaults";
 import { getTokenMetadata } from "./assets";
+
+export const michelEncoder = new MichelCodecPacker();
 
 export const Tezos = new TezosToolkit(
   new FastRpcClient(getNetwork().rpcBaseURL)
 );
+Tezos.addExtension(new Tzip16Module());
 Tezos.addExtension(new Tzip12Module());
 Tezos.setSignerProvider(new LambdaViewSigner());
+Tezos.setPackerProvider(michelEncoder);
 
 export async function getTokens() {
-  const { type, fa1_2FactoryContract, fa2FactoryContract } = getNetwork();
+  const { id, fa1_2FactoryContract, fa2FactoryContract } = getNetwork();
   if (!fa1_2FactoryContract && !fa2FactoryContract) {
     throw new Error("Contracts for this network not found");
   }
-
-  const knownTokens = type === "main" ? MAINNET_TOKENS : TESTNET_TOKENS;
 
   const [fa1_2FacStorage, fa2FacStorage] = await Promise.all([
     fa1_2FactoryContract &&
@@ -42,33 +46,66 @@ export async function getTokens() {
       getStorage(fa2FactoryContract).then(s => snakeToCamelKeys(s)),
   ]);
 
-  const allTokens: QSAsset[] = await Promise.all([
-    ...(fa1_2FacStorage?.tokenList ?? []).map(async (tAddress: string) => {
-      const exchange = await fa1_2FacStorage.tokenToExchange.get(tAddress);
+  const chainId = CHAIN_ID_MAPPING.get(id);
+  const whitelist = TOKEN_WHITELIST.filter(t => t.network === chainId);
 
-      const knownToken = knownTokens.find(({ id }) => tAddress === id);
-      if (knownToken) {
-        return { ...knownToken, exchange };
+  const allTokens: (QSAsset | null)[] = await Promise.all(
+    whitelist.map(async token => {
+      const fa2 = token.type === "fa2";
+      const facStorage = fa2 ? fa2FacStorage : fa1_2FacStorage;
+      if (!facStorage) return null;
+
+      const exchange = await facStorage.tokenToExchange.get(
+        fa2
+          ? [token.contractAddress, token.fa2TokenId ?? 0]
+          : token.contractAddress
+      );
+      if (!exchange) return null;
+
+      let metadata;
+      if (token.metadata) {
+        metadata = token.metadata;
+      } else {
+        metadata = await getTokenMetadata(
+          token.contractAddress,
+          token.fa2TokenId
+        );
       }
 
-      return toUnknownToken(tAddress, exchange, QSTokenType.FA1_2);
-    }),
-    ...(fa2FacStorage?.tokenList ?? []).map(
-      async ({ 0: tAddress, 1: tId }: { 0: string; 1: BigNumber }) => {
-        const exchange = await fa2FacStorage.tokenToExchange.get([
-          tAddress,
-          +tId,
-        ]);
+      return {
+        type: "token" as const,
+        tokenType: fa2 ? QSTokenType.FA2 : QSTokenType.FA1_2,
+        id: token.contractAddress,
+        fa2TokenId: token.fa2TokenId,
+        exchange,
+        decimals: metadata.decimals,
+        symbol: metadata.symbol,
+        name: metadata.name,
+        imgUrl: sanitizeImgUri(metadata.thumbnailUri),
+      };
+    })
+  );
 
-        return toUnknownToken(tAddress, exchange, QSTokenType.FA2, +tId);
-      }
-    ),
-  ]);
+  return [...allTokens, ...getCustomTokens()].filter(Boolean);
+}
 
-  return [
-    ...allTokens.filter(t => t.default),
-    ...allTokens.filter(t => !t.default),
-  ];
+export function getCustomTokens() {
+  try {
+    const net = getNetwork();
+    const val = localStorage.getItem(`custom_tokens_${net.id}`);
+    if (!val) return [];
+    return JSON.parse(val);
+  } catch {
+    return [];
+  }
+}
+
+export function sanitizeImgUri(origin: string) {
+  if (origin.startsWith("ipfs://")) {
+    return `https://ipfs.io/ipfs/${origin.substring(7)}/`;
+  }
+
+  return origin;
 }
 
 export function approveToken(
@@ -93,20 +130,30 @@ export function approveToken(
   }
 }
 
-async function toUnknownToken(
-  address: string,
-  exchange: string,
-  tokenType: QSTokenType,
-  fa2TokenId?: number
-): Promise<QSAsset> {
-  return {
-    ...(await getTokenMetadata(tokenType, address, fa2TokenId)),
-    type: "token",
-    tokenType,
-    id: address,
-    exchange,
-    fa2TokenId,
-  };
+export function deapproveFA2(
+  batch: WalletOperationBatch,
+  token: Pick<QSAsset, "tokenType" | "fa2TokenId">,
+  tokenContract: WalletContract,
+  from: string,
+  to: string
+) {
+  if (token.tokenType === QSTokenType.FA2) {
+    return batch.withTransfer(
+      tokenContract.methods
+        .update_operators([
+          {
+            remove_operator: {
+              owner: from,
+              operator: to,
+              token_id: token.fa2TokenId,
+            },
+          },
+        ])
+        .toTransferParams()
+    );
+  } else {
+    return batch;
+  }
 }
 
 export async function getDexShares(
@@ -150,12 +197,8 @@ export async function getStoragePure(contractAddress: string) {
 
 export const getContract = mem(getContractPure);
 
-export const getTzip16Contract = mem((address: string) =>
-  Tezos.contract.at(address, tzip16)
-);
-
-export const getTzip12Contract = mem((address: string) =>
-  Tezos.contract.at(address, tzip12)
+export const getContractForMetadata = mem((address: string) =>
+  Tezos.contract.at(address, compose(tzip12, tzip16))
 );
 
 export function getContractPure(address: string) {
@@ -175,5 +218,6 @@ export function getNetwork() {
 
 export function setNetwork(net: QSNetwork) {
   localStorage.setItem("netid", net.id);
+  localStorage.removeItem("accpkh");
   location.reload();
 }

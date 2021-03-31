@@ -1,6 +1,13 @@
 import { validateAddress, ValidationResult } from "@taquito/utils";
+import { Signer } from "@taquito/taquito";
 import BigNumber from "bignumber.js";
-import { Tezos } from "./state";
+import { Tezos, getContract } from "./state";
+
+export async function isDexContainsLiquidity(dexAddress: string) {
+  const dex = await getContract(dexAddress);
+  const dexStorage = await dex.storage<any>();
+  return !new BigNumber(dexStorage.storage.invariant).isZero();
+}
 
 export function toValidAmount(amount?: BigNumber) {
   return amount && amount.isFinite() && amount.isGreaterThan(0)
@@ -44,4 +51,26 @@ export function snakeToCamel(str: string) {
       .replace("-", "")
       .replace("_", "")
   );
+}
+
+export class ReadOnlySigner implements Signer {
+  constructor(private pkh: string, private pk: string) {}
+
+  async publicKeyHash() {
+    return this.pkh;
+  }
+  async publicKey() {
+    return this.pk;
+  }
+  async secretKey(): Promise<string> {
+    throw new Error("Secret key cannot be exposed");
+  }
+  async sign(): Promise<{
+    bytes: string;
+    sig: string;
+    prefixSig: string;
+    sbytes: string;
+  }> {
+    throw new Error("Cannot sign");
+  }
 }

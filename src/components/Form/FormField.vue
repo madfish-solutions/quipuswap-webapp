@@ -74,14 +74,28 @@
       </div>
     </div>
     <div class="field-search rounded-b-3px" v-if="isSearchOpened && !onlyTezos">
-      <div class="px-3 xs:px-6 py-3 text-sm border-b border-gray-800">
-        <input
-          v-model="searchValue"
-          @keydown="searchValue = $event.target.value"
-          ref="searchInput"
-          placeholder="Search..."
-        />
+      <div class="flex items-stretch">
+        <div class="flex-1 px-3 xs:px-6 py-3 text-sm border-b border-gray-800">
+          <input
+            v-model="searchValue"
+            @keydown="searchValue = $event.target.value"
+            ref="searchInput"
+            placeholder="Enter token name or contract address..."
+            class="w-full"
+          />
+        </div>
+
+        <div v-if="tokenIdDisplayed" class="w-40 px-3 xs:px-6 py-3 text-sm border-b border-l border-gray-800">
+          <input
+            type="number"
+            v-model="tokenId"
+            @keydown="tokenId = $event.target.value"
+            placeholder="Token ID"
+            class="w-full"
+          />
+        </div>
       </div>
+
       <div class="overflow-auto" style="max-height: 13.5rem">
         <template v-if="filteredTokens.length">
           <TokenItem
@@ -94,7 +108,7 @@
             @click.native="selectToken(token)"
           />
         </template>
-        <div v-else class="text-center py-4 text-xl">Not Found...</div>
+        <div v-else class="text-center py-4 text-xl">{{ notFoundStatus }}</div>
       </div>
     </div>
   </div>
@@ -105,9 +119,10 @@ import { Vue, Component, Prop, Ref, Watch } from "vue-property-decorator";
 import TokenItem from "@/components/Form/TokenItem.vue";
 import Loader from "@/components/Loader.vue";
 
-import store from "@/store";
-import { QSAsset, isAddressValid } from "@/core";
+import store, { addCustomToken } from "@/store";
+import { QSAsset, isAddressValid, getContract, isFA2, getNetwork, getStorage, getTokenMetadata, QSTokenType, sanitizeImgUri } from "@/core";
 import { XTZ_TOKEN } from "@/core/defaults";
+import BigNumber from "bignumber.js";
 
 @Component({
   components: { TokenItem, Loader },
@@ -127,8 +142,24 @@ export default class FormField extends Vue {
   value: string = "0.0";
 
   searchValue: string = "";
+  tokenId: string = "";
+  tokenIdDisplayed: boolean = false;
   isSearchOpened: boolean = false;
   localToken: QSAsset | null = null;
+  processing = false;
+
+  get notFoundStatus() {
+    switch (true) {
+      case this.processing:
+        return "Finding...";
+
+      case this.tokenIdDisplayed:
+        return "Specify token ID";
+
+      default:
+        return "Not Found";
+    }
+  }
 
   get formattedLocalTokenSymbol() {
     if (!this.localToken) return "";
@@ -139,15 +170,104 @@ export default class FormField extends Vue {
     } else return term;
   }
 
+  @Watch("searchValue")
+  onSearchValueChange() {
+    if (isAddressValid(this.searchValue)) {
+      this.checkFA2OrAddToken(this.searchValue);
+    } else {
+      this.tokenIdDisplayed = false;
+      this.tokenId = "";
+    }
+  }
+
+  @Watch("tokenId")
+  onTokenIdChanged() {
+    if (isAddressValid(this.searchValue) && `${this.tokenId}`.length > 0) {
+      const tokenId = new BigNumber(this.tokenId).integerValue();
+      if (!tokenId.isNaN() && tokenId.isGreaterThanOrEqualTo(0)) {
+        this.addTokenToList(this.searchValue, tokenId);
+      }
+    }
+  }
+
+  async checkFA2OrAddToken(contractAddress: string) {
+    this.processing = true;
+    try {
+      const contract = await getContract(contractAddress);
+      const fa2 = await isFA2(contract);
+      if (fa2) {
+        this.tokenIdDisplayed = true;
+      } else {
+        this.addTokenToList(contractAddress);
+      }
+    } catch {}
+    this.processing = false;
+  }
+
+  async addTokenToList(contractAddress: string, tokenId?: BigNumber) {
+    const fa2TokenId = tokenId ? tokenId.toNumber() : undefined;
+
+    if (store.state.tokens.some((t) =>
+      fa2TokenId === undefined
+        ? (t.id === this.searchValue)
+        : (t.id === this.searchValue && t.fa2TokenId === fa2TokenId))
+    ) {
+      return;
+    }
+
+    this.processing = true;
+    try {
+      const { fa1_2FactoryContract, fa2FactoryContract } = getNetwork();
+      if (!fa1_2FactoryContract && !fa2FactoryContract) {
+        throw new Error("Contracts for this network not found");
+      }
+
+      let exchange;
+      if (tokenId) {
+        if (fa2FactoryContract) {
+          const facStorage = await getStorage(fa2FactoryContract);
+          exchange = await facStorage.token_to_exchange.get([contractAddress, tokenId.toString()]);
+        }
+      } else {
+        if (fa1_2FactoryContract) {
+          const facStorage = await getStorage(fa1_2FactoryContract);
+          exchange = await facStorage.token_to_exchange.get(contractAddress);
+        }
+      }
+
+      if (exchange) {
+        const metadata = await getTokenMetadata(
+          contractAddress,
+          tokenId ? tokenId.toNumber() : undefined
+        );
+        addCustomToken({
+          type: "token" as const,
+          tokenType: fa2TokenId !== undefined ? QSTokenType.FA2 : QSTokenType.FA1_2,
+          id: contractAddress,
+          fa2TokenId,
+          exchange,
+          decimals: metadata.decimals,
+          symbol: metadata.symbol,
+          name: metadata.name,
+          imgUrl: sanitizeImgUri(metadata.thumbnailUri),
+        })
+      }
+    } catch {}
+    this.processing = false;
+  }
+
   get filteredTokens(): QSAsset[] {
-    return [
-      ...(this.withTezos ? [XTZ_TOKEN] : []),
-      ...store.state.tokens.filter(
-        (t: QSAsset) =>
-          t.name.toLowerCase().includes(this.searchValue.toLowerCase()) ||
-          t.symbol.toLowerCase().includes(this.searchValue.toLowerCase())
-      ),
-    ];
+    return [...(this.withTezos ? [XTZ_TOKEN] : []), ...store.state.tokens].filter(
+      (t: QSAsset) => {
+        const base = t.name.toLowerCase().includes(this.searchValue.toLowerCase()) ||
+          t.symbol.toLowerCase().includes(this.searchValue.toLowerCase()) ||
+          t.id.includes(this.searchValue);
+
+        return this.tokenId
+          ? (base && +this.tokenId === t.fa2TokenId)
+          : base;
+      }
+    );
   }
 
   created() {

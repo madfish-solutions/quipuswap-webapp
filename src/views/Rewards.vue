@@ -54,6 +54,7 @@ import {
   clearMem,
   mutezToTz,
   ACCURANCY_MULTIPLIER,
+  getDexShares
 } from "@/core";
 import NavTabs from "@/components/NavTabs.vue";
 import NavGovernance from "@/components/NavGovernance.vue";
@@ -61,6 +62,7 @@ import Form, { FormField, FormIcon, FormInfo } from "@/components/Form";
 import SubmitBtn from "@/components/SubmitBtn.vue";
 import Loader from "@/components/Loader.vue";
 import GovernancePairSelect from "@/components/GovernancePairSelect.vue";
+import BigNumber from "bignumber.js";
 
 @Component({
   components: {
@@ -121,13 +123,39 @@ export default class Rewards extends Vue {
 
     this.dataLoading = true;
     try {
-      const storage = await getDexStorage(this.selectedToken.exchange);
-      const myCl = await storage.userRewards.get(this.account.pkh);
-      if (myCl) {
-        this.rewards = mutezToTz(
-          myCl.reward.div(ACCURANCY_MULTIPLIER)
-        ).toFormat(6);
+      // const now = new Date();
+      // const periodFinish = new Date(storage.periodFinish);
+      // const lastUpdateTime = new Date(storage.lastUpdateTime);
+      // const rewardsTime = now > periodFinish ? periodFinish : now;
+      // const newReward = new BigNumber(Math.abs(+rewardsTime - +lastUpdateTime)).times(storage.rewardPerSec);
+
+      const [storage, myShares] = await Promise.all([
+        getDexStorage(this.selectedToken.exchange),
+        getDexShares(
+          this.account.pkh,
+          this.selectedToken.exchange
+        )
+      ]);
+
+      const stgReward = await storage.userRewards.get(this.account.pkh);
+
+      let reward: BigNumber;
+      if (!myShares) {
+        if (stgReward) {
+          reward = stgReward.reward
+        }
+
+        return;
       }
+
+      const currentReward = myShares!.total.times(storage.rewardPerShare);
+      reward = new BigNumber(stgReward?.reward ?? 0).plus(
+        new BigNumber(currentReward).minus(stgReward.reward_paid).abs()
+      );
+
+      this.rewards = mutezToTz(
+        reward.div(ACCURANCY_MULTIPLIER)
+      ).toFormat(6);
     } catch (err) {
       console.error(err);
     } finally {

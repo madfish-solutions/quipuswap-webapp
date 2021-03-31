@@ -3,7 +3,7 @@
     <div class="flex-1">
       <div class="flex items-center">
         <!-- <div class="w-10 h-10 mr-3 rounded-full bg-accent"></div> -->
-        <img class="w-8 h-8 mr-3 xs:w-10 xs:h-10" :src="token.imgUrl" />
+        <img class="w-8 h-8 mr-3 xs:w-10 xs:h-10" :src="token.imgUrl" @error="replaceByDefault" />
         <div class="flex-1">
           <div class="text-base font-normal xs:text-lg">
             {{ formattedTokenSymbol }}
@@ -33,7 +33,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from "vue-property-decorator";
-import { isAddressValid } from "@/core";
+import { isAddressValid, DEFAULT_TOKEN_LOGO_URL } from "@/core";
 
 @Component
 export default class TokenItem extends Vue {
@@ -50,6 +50,10 @@ export default class TokenItem extends Vue {
       const ln = term.length;
       return [term.slice(0, 7), "...", term.slice(ln - 4, ln)].join("");
     } else return term;
+  }
+
+  replaceByDefault(e: any) {
+    e.target.src = DEFAULT_TOKEN_LOGO_URL;
   }
 }
 </script>
