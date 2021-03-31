@@ -15,6 +15,22 @@ export function toValidAmount(amount?: BigNumber) {
     : "";
 }
 
+export function isUnsafeAllowanceChangeError(err: any) {
+  try {
+    if (err?.message === "UnsafeAllowanceChange") {
+      return true;
+    }
+
+    if (err?.errors?.some((e: any) => e?.with?.int === "23")) {
+      return true;
+    }
+
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 export function tzToMutez(tz: any): BigNumber {
   return Tezos.format("tz", "mutez", tz) as any;
 }
