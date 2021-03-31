@@ -86,7 +86,7 @@ export async function getTokens() {
     })
   );
 
-  return [...allTokens, ...getCustomTokens()].filter(Boolean);
+  return sanitizeTokens([...allTokens, ...getCustomTokens()]);
 }
 
 export function getCustomTokens() {
@@ -98,6 +98,25 @@ export function getCustomTokens() {
   } catch {
     return [];
   }
+}
+
+function sanitizeTokens(tokens: (QSAsset | null)[]): QSAsset[] {
+  const uniques = new Set<string>();
+  const finalTokens: QSAsset[] = [];
+  for (const token of tokens) {
+    if (token) {
+      const slug = toTokenSlug(token);
+      if (!uniques.has(slug)) {
+        finalTokens.push(token);
+        uniques.add(slug);
+      }
+    }
+  }
+  return finalTokens;
+}
+
+function toTokenSlug(token: QSAsset) {
+  return `${token.id}_${token.fa2TokenId ?? 0}`;
 }
 
 export function sanitizeImgUri(origin: string) {
