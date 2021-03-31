@@ -54,16 +54,50 @@
       <FormInfo class="overflow-x-auto whitespace-no-wrap">
         <div class="flex justify-between mb-1">
           <span class="mr-2">Input Dex contract</span>
-          <span class="font-mono text-gray-400">{{
-            inputDexAddress || "-"
-          }}</span>
+
+          <div class="flex items-center">
+            <template v-if="inputDexAddress">
+              <span
+                class="mr-1 opacity-50 text-xs text-yellow-600 rounded-sm border border-yellow-600 px-1"
+              >
+                {{ inputToken.tokenType === "FA2" ? "FA2" : "FA1.2" }}
+              </span>
+              <span
+                v-if="inputToken.tokenType === 'FA2'"
+                class="mr-2 opacity-50 text-xs text-yellow-600 rounded-sm border border-yellow-600 px-1"
+              >
+                id: 0
+              </span>
+            </template>
+
+            <span class="font-mono text-gray-400">
+              {{ inputDexAddress || "-" }}
+            </span>
+          </div>
         </div>
 
         <div class="flex justify-between mb-1">
           <span class="mr-2">Output Dex contract</span>
-          <span class="font-mono text-gray-400">{{
-            outputDexAddress || "-"
-          }}</span>
+
+          <div class="flex items-center">
+            <template v-if="outputDexAddress">
+              <span
+                class="mr-1 opacity-50 text-xs text-yellow-600 rounded-sm border border-yellow-600 px-1"
+              >
+                {{ outputToken.tokenType === "FA2" ? "FA2" : "FA1.2" }}
+              </span>
+              <span
+                v-if="outputToken.tokenType === 'FA2'"
+                class="mr-2 opacity-50 text-xs text-yellow-600 rounded-sm border border-yellow-600 px-1"
+              >
+                id: 0
+              </span>
+            </template>
+
+            <span class="font-mono text-gray-400">
+              {{ outputDexAddress || "-" }}
+            </span>
+          </div>
         </div>
 
         <div class="flex justify-between mb-1">
