@@ -34,6 +34,16 @@
       />
 
       <FormInfo class="overflow-x-auto whitespace-no-wrap">
+        <template v-if="notWhitelistedPair">
+          <div class="mb-4">
+            <div class="p-4 bg-redalpha rounded text-white whitespace-normal font-medium">
+              Attention! Token pair you’re trying to add liquidity to is not whitelisted.
+              <br />
+              You can interact with it at your own risk.
+            </div>
+          </div>
+        </template>
+
         <div class="flex justify-between mb-1">
           <span class="mr-2">Dex contract</span>
           <span class="font-mono text-gray-400">{{ dexAddress || "-" }}</span>
@@ -111,6 +121,7 @@ import {
   fromNat,
   deapproveFA2,
   isUnsafeAllowanceChangeError,
+  isTokenWhitelisted,
 } from "@/core";
 import { XTZ_TOKEN } from "@/core/defaults";
 import { OpKind } from "@taquito/taquito";
@@ -173,6 +184,10 @@ export default class AddLiquidity extends Vue {
       this.selectedToken &&
       [this.tezAmount, this.tokenAmount].every((a) => a && +a > 0)
     );
+  }
+
+  get notWhitelistedPair() {
+    return this.selectedToken ? !isTokenWhitelisted(this.selectedToken) : false;
   }
 
   get exchangeRate() {

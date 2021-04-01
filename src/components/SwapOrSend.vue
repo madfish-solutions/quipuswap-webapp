@@ -52,6 +52,16 @@
       </template>
 
       <FormInfo class="overflow-x-auto whitespace-no-wrap">
+        <template v-if="notWhitelistedPair">
+          <div class="mb-4">
+            <div class="p-4 bg-redalpha rounded text-white whitespace-normal font-medium">
+              Attention! One of the tokens you’re trying to exchange is not whitelisted.
+              <br />
+              You can interact with them at your own risk.
+            </div>
+          </div>
+        </template>
+
         <div class="flex justify-between mb-1">
           <span class="mr-2">Input Dex contract</span>
           <span class="font-mono text-gray-400">{{
@@ -163,6 +173,8 @@ import {
   QSTokenType,
   deapproveFA2,
   isUnsafeAllowanceChangeError,
+  toAssetSlug,
+  isTokenWhitelisted,
 } from "@/core";
 
 @Component({
@@ -179,12 +191,10 @@ import {
 export default class SwapOrSend extends Vue {
   @Prop({ default: false }) send?: boolean;
 
-  inputToken: QSAsset | null = XTZ_TOKEN;
   inputAmount = "";
   inputBalance: string | null = null;
   inputLoading = false;
 
-  outputToken: QSAsset | null = null;
   outputAmount = "";
   outputLoading = false;
 
@@ -207,6 +217,52 @@ export default class SwapOrSend extends Vue {
 
   get account() {
     return getAccount();
+  }
+
+  get inputToken() {
+    const { from } = this.$route.query;
+    if (from === "tez") {
+      return XTZ_TOKEN;
+    }
+    return (
+      store.state.tokens.find((t) => toAssetSlug(t) === from) ?? null
+    );
+  }
+
+  set inputToken(val: QSAsset | null) {
+    const usp = new URLSearchParams(this.$route.query as any);
+    if (val) {
+      usp.set("from", toAssetSlug(val));
+    } else {
+      usp.delete("from");
+    }
+    this.$router.replace(`${this.$route.path}?${usp}`);
+  }
+
+  get outputToken() {
+    const { to } = this.$route.query;
+    if (to === "tez") {
+      return XTZ_TOKEN;
+    }
+    return (
+      store.state.tokens.find((t) => toAssetSlug(t) === to) ?? null
+    );
+  }
+
+  set outputToken(val: QSAsset | null) {
+    const usp = new URLSearchParams(this.$route.query as any);
+    if (val) {
+      usp.set("to", toAssetSlug(val));
+    } else {
+      usp.delete("to");
+    }
+    this.$router.replace(`${this.$route.path}?${usp}`);
+  }
+
+  get notWhitelistedPair() {
+    return [this.inputToken, this.outputToken].some((t) =>
+      t ? !isTokenWhitelisted(t) : false
+    );
   }
 
   get exchangeRate() {
