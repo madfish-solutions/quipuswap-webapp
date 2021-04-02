@@ -192,14 +192,26 @@ export async function getNewTokenData(
   }
 }
 
+const filteredWhitelist = (() => {
+  const net = getNetwork();
+  const chainId = CHAIN_ID_MAPPING.get(net.id);
+  return TOKEN_WHITELIST.filter(t => t.network === chainId);
+})();
+
+export function isTokenWhitelisted(token: QSAsset) {
+  if (token.type === "xtz") return true;
+  return filteredWhitelist.some(wt =>
+    token.tokenType === QSTokenType.FA2
+      ? wt.contractAddress === token.id && wt.fa2TokenId === token.fa2TokenId
+      : wt.contractAddress === token.id
+  );
+}
+
 export async function getNewTokenMetadata(
   contractAddress: string,
   fa2TokenId?: number
 ) {
-  const net = getNetwork();
-  const chainId = CHAIN_ID_MAPPING.get(net.id);
-  const whitelist = TOKEN_WHITELIST.filter(t => t.network === chainId);
-  const whitelisted = whitelist.find(wt =>
+  const whitelisted = filteredWhitelist.find(wt =>
     typeof fa2TokenId === "number"
       ? wt.contractAddress === contractAddress && wt.fa2TokenId === fa2TokenId
       : wt.contractAddress === contractAddress

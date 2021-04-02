@@ -10,8 +10,15 @@ import {
   LOGO_URL,
   ReadOnlySigner,
   michelEncoder,
+  getTokenMetadata,
+  getStorage,
+  QSTokenType,
+  sanitizeImgUri,
+  getContract,
 } from "@/core";
 import { TezosToolkit } from "@taquito/taquito";
+import { Route } from "vue-router";
+import router from "../router";
 
 Vue.use(Vuex);
 
@@ -46,6 +53,29 @@ const store = new Vuex.Store<StoreState>({
 export default store;
 
 loadTokens();
+router.onReady((route: Route) => {
+  [route.query.from, route.query.to].forEach(assetSlug => {
+    if (assetSlug && assetSlug !== "tez") {
+      try {
+        const [tokenAddress, fa2TokenId] = (assetSlug as any).split("_");
+        loadCustomTokenIfExist(tokenAddress, fa2TokenId);
+      } catch {}
+    }
+  });
+
+  if (route.params.token) {
+    (async () => {
+      try {
+        const dex = await getContract(route.params.token);
+        const { storage } = await dex.storage<any>();
+        loadCustomTokenIfExist(
+          storage.token_address,
+          storage.token_id ? +storage.token_id : undefined
+        );
+      } catch {}
+    })();
+  }
+});
 
 export async function loadTokens() {
   try {
@@ -56,6 +86,50 @@ export async function loadTokens() {
   } finally {
     store.commit("tokensLoading", false);
   }
+}
+
+export async function loadCustomTokenIfExist(
+  contractAddress: string,
+  fa2TokenId?: number
+) {
+  try {
+    const { fa1_2FactoryContract, fa2FactoryContract } = getNetwork();
+    if (!fa1_2FactoryContract && !fa2FactoryContract) {
+      throw new Error("Contracts for this network not found");
+    }
+
+    let exchange;
+    if (fa2TokenId !== undefined) {
+      if (fa2FactoryContract) {
+        const facStorage = await getStorage(fa2FactoryContract);
+        exchange = await facStorage.token_to_exchange.get([
+          contractAddress,
+          fa2TokenId.toString(),
+        ]);
+      }
+    } else {
+      if (fa1_2FactoryContract) {
+        const facStorage = await getStorage(fa1_2FactoryContract);
+        exchange = await facStorage.token_to_exchange.get(contractAddress);
+      }
+    }
+
+    if (exchange) {
+      const metadata = await getTokenMetadata(contractAddress, fa2TokenId);
+      addCustomToken({
+        type: "token" as const,
+        tokenType:
+          fa2TokenId !== undefined ? QSTokenType.FA2 : QSTokenType.FA1_2,
+        id: contractAddress,
+        fa2TokenId,
+        exchange,
+        decimals: metadata.decimals,
+        symbol: metadata.symbol,
+        name: metadata.name,
+        imgUrl: sanitizeImgUri(metadata.thumbnailUri),
+      });
+    }
+  } catch {}
 }
 
 export function addCustomToken(token: QSAsset) {

@@ -119,8 +119,13 @@ import { Vue, Component, Prop, Ref, Watch } from "vue-property-decorator";
 import TokenItem from "@/components/Form/TokenItem.vue";
 import Loader from "@/components/Loader.vue";
 
-import store, { addCustomToken } from "@/store";
-import { QSAsset, isAddressValid, getContract, isFA2, getNetwork, getStorage, getTokenMetadata, QSTokenType, sanitizeImgUri } from "@/core";
+import store, { loadCustomTokenIfExist } from "@/store";
+import {
+  QSAsset,
+  isAddressValid,
+  getContract,
+  isFA2
+} from "@/core";
 import { XTZ_TOKEN } from "@/core/defaults";
 import BigNumber from "bignumber.js";
 
@@ -216,43 +221,7 @@ export default class FormField extends Vue {
     }
 
     this.processing = true;
-    try {
-      const { fa1_2FactoryContract, fa2FactoryContract } = getNetwork();
-      if (!fa1_2FactoryContract && !fa2FactoryContract) {
-        throw new Error("Contracts for this network not found");
-      }
-
-      let exchange;
-      if (tokenId) {
-        if (fa2FactoryContract) {
-          const facStorage = await getStorage(fa2FactoryContract);
-          exchange = await facStorage.token_to_exchange.get([contractAddress, tokenId.toString()]);
-        }
-      } else {
-        if (fa1_2FactoryContract) {
-          const facStorage = await getStorage(fa1_2FactoryContract);
-          exchange = await facStorage.token_to_exchange.get(contractAddress);
-        }
-      }
-
-      if (exchange) {
-        const metadata = await getTokenMetadata(
-          contractAddress,
-          tokenId ? tokenId.toNumber() : undefined
-        );
-        addCustomToken({
-          type: "token" as const,
-          tokenType: fa2TokenId !== undefined ? QSTokenType.FA2 : QSTokenType.FA1_2,
-          id: contractAddress,
-          fa2TokenId,
-          exchange,
-          decimals: metadata.decimals,
-          symbol: metadata.symbol,
-          name: metadata.name,
-          imgUrl: sanitizeImgUri(metadata.thumbnailUri),
-        })
-      }
-    } catch {}
+    await loadCustomTokenIfExist(contractAddress, fa2TokenId);
     this.processing = false;
   }
 
