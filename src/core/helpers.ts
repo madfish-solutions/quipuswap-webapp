@@ -22,7 +22,14 @@ export function isUnsafeAllowanceChangeError(err: any) {
       return true;
     }
 
-    if (err?.errors?.some((e: any) => e?.with?.int === "23")) {
+    if (
+      err?.errors?.some(
+        (e: any) =>
+          e?.with?.int === "23" ||
+          e?.with?.string === "UnsafeAllowanceChange" ||
+          e?.with?.args?.[0]?.string === "UnsafeAllowanceChange"
+      )
+    ) {
       return true;
     }
 
