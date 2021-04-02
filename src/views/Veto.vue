@@ -70,9 +70,8 @@
           label="Shares to veto"
           :withSelect="false"
           :withTezos="false"
-          :subLabel="
-            availableSharesToVeto ? `Your shares: ${availableSharesToVeto}` : ''
-          "
+          :subLabelName="availableSharesToVeto ? 'Your shares: ' : undefined"
+          :subLabelValue="availableSharesToVeto || undefined"
           :isLoading="dataLoading"
           v-model="sharesToVeto"
           @input="(e) => handleSharesToVetoChange(e.target.value)"

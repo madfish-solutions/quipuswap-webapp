@@ -102,9 +102,8 @@
           label="Shares to vote"
           :withSelect="false"
           :withTezos="false"
-          :subLabel="
-            availableSharesToVote ? `Your shares: ${availableSharesToVote}` : ''
-          "
+          :subLabelName="availableSharesToVote ? 'Your shares: ' : undefined"
+          :subLabelValue="availableSharesToVote || undefined"
           :isLoading="isLoading"
           v-model="sharesToVote"
           @input="(e) => handleSharesToVoteChange(e.target.value)"
