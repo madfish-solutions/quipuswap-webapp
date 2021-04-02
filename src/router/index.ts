@@ -14,7 +14,8 @@ import Rewards from "@/views/Rewards.vue";
 Vue.use(VueRouter);
 
 const routes: RouteConfig[] = [
-  { path: "/", name: "Swap", component: Swap },
+  { path: "/", redirect: "/swap" },
+  { path: "/swap", name: "Swap", component: Swap },
   { path: "/send", name: "Send", component: Send },
   { path: "/invest", redirect: "/invest/add-liquidity" },
   {
@@ -45,6 +46,7 @@ const routes: RouteConfig[] = [
   },
   { path: "/governance/veto/:token?", name: "Veto", component: Veto },
   { path: "/governance/rewards/:token?", name: "Rewards", component: Rewards },
+  { path: "*", redirect: "/" },
 ];
 
 const router = new VueRouter({

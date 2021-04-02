@@ -1,6 +1,6 @@
 <template>
   <div class="h-10 nav-wrapper shadow-lg">
-    <router-link class="nav-item" active-class="active" exact to="/">
+    <router-link class="nav-item" active-class="active" to="/swap">
       <span>Swap</span></router-link
     >
     <router-link class="nav-item" active-class="active" to="/send"

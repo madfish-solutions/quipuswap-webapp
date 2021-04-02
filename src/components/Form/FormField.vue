@@ -26,7 +26,12 @@
           <Loader />
         </div>
         <div class="flex-1" />
-        <div class="label sm:text-sm font-light w-full">{{ subLabel }}</div>
+        <div class="label sm:text-sm font-light w-full">
+          <template v-if="subLabelName">{{ subLabelName }}</template>
+          <template v-if="subLabelValue">
+            <button class="underline focus:outline-none" @click="handleSubLabelValueClick">{{ subLabelValue }}</button>
+          </template>
+        </div>
       </div>
 
       <div class="flex items-center">
@@ -134,7 +139,8 @@ import BigNumber from "bignumber.js";
 })
 export default class FormField extends Vue {
   @Prop() label?: string;
-  @Prop() subLabel?: string;
+  @Prop() subLabelName?: string;
+  @Prop() subLabelValue?: string;
   @Prop({ default: false }) isLoading?: boolean;
   @Prop({ default: true }) withSelect?: boolean;
   @Prop({ default: true }) showSearch?: boolean;
@@ -192,6 +198,12 @@ export default class FormField extends Vue {
       if (!tokenId.isNaN() && tokenId.isGreaterThanOrEqualTo(0)) {
         this.addTokenToList(this.searchValue, tokenId);
       }
+    }
+  }
+
+  handleSubLabelValueClick() {
+    if (typeof this.subLabelValue === "string") {
+      (this.$listeners.input as any)({ target: { value: this.subLabelValue } })
     }
   }
 
