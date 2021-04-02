@@ -17,7 +17,6 @@
           "
           v-bind="$attrs"
           v-on="$listeners"
-          ref="input"
         />
         <div
           v-if="!withSelect && isLoading"
@@ -204,7 +203,7 @@ export default class FormField extends Vue {
 
   handleSubLabelValueClick() {
     if (typeof this.subLabelValue === "string") {
-      (this.$refs["input"] as HTMLInputElement).value = this.subLabelValue;
+      (this.$listeners.input as any)({ target: { value: this.subLabelValue } })
     }
   }
 
