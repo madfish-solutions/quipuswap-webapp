@@ -192,7 +192,7 @@ export async function getNewTokenData(
   }
 }
 
-const filteredWhitelist = (() => {
+export const filteredWhitelist = (() => {
   const net = getNetwork();
   const chainId = CHAIN_ID_MAPPING.get(net.id);
   return TOKEN_WHITELIST.filter(t => t.network === chainId);

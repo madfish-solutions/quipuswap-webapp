@@ -15,6 +15,7 @@ import {
   QSTokenType,
   sanitizeImgUri,
   getContract,
+  filteredWhitelist,
 } from "@/core";
 import { TezosToolkit } from "@taquito/taquito";
 import { Route } from "vue-router";
@@ -93,6 +94,23 @@ export async function loadCustomTokenIfExist(
   fa2TokenId?: number
 ) {
   try {
+    const currentCustom = getCustomTokens();
+    if (
+      filteredWhitelist.some(wt =>
+        fa2TokenId !== undefined
+          ? wt.contractAddress === contractAddress &&
+            wt.fa2TokenId === fa2TokenId
+          : wt.contractAddress === contractAddress
+      ) ||
+      currentCustom.some((ct: QSAsset) =>
+        ct.tokenType === QSTokenType.FA2
+          ? ct.id === contractAddress && ct.fa2TokenId === fa2TokenId
+          : ct.id === contractAddress
+      )
+    ) {
+      return;
+    }
+
     const { fa1_2FactoryContract, fa2FactoryContract } = getNetwork();
     if (!fa1_2FactoryContract && !fa2FactoryContract) {
       throw new Error("Contracts for this network not found");
