@@ -55,7 +55,7 @@ export const TOKEN_WHITELIST: WhitelistedToken[] = [
       decimals: 6,
       symbol: "USDS",
       name: "Stably USD",
-      thumbnailUri: require("@/assets/tokens/stably.png"),
+      thumbnailUri: "https://quipuswap.com/tokens/stably.png",
     },
   },
   {
