@@ -5,8 +5,9 @@
   "scripts": {
     "start": "vue-cli-service serve",
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "build": "vue-cli-service build; yarn generate-public-whitelist",
+    "lint": "vue-cli-service lint",
+    "generate-public-whitelist": "ts-node-transpile-only -O '{\"module\":\"commonjs\"}' ./bin/generate-public-whitelist.ts"
   },
   "dependencies": {
     "@taquito/beacon-wallet": "8.1.0",
@@ -51,6 +52,7 @@
     "eslint-plugin-vue": "^6.1.2",
     "sass": "^1.25.0",
     "sass-loader": "^8.0.2",
+    "ts-node": "^9.1.1",
     "typescript": "~4",
     "vue-cli-plugin-tailwind": "^1.2.0",
     "vue-template-compiler": "^2.6.11"
