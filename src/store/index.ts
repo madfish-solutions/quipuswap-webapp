@@ -178,7 +178,8 @@ export async function useWallet(
   if (!connectType) {
     const last = getLastUsedConnect();
     if (!last) {
-      throw new Error("There no connect type");
+      signout();
+      throw new Error("Not connected");
     }
 
     connectType = last;
@@ -212,10 +213,10 @@ async function useWalletTemple(forcePermission: boolean) {
   tezos.setPackerProvider(michelEncoder);
   const { pkh, publicKey } = wallet.permission!;
   tezos.setSignerProvider(new ReadOnlySigner(pkh, publicKey));
+  setLastUsedConnect("temple");
   if (getAccount().pkh !== pkh) {
     setAccount(pkh);
   }
-  setLastUsedConnect("temple");
   return tezos;
 }
 
@@ -243,10 +244,10 @@ async function useWalletBeacon(forcePermission: boolean) {
   tezos.setSignerProvider(
     new ReadOnlySigner(activeAcc.address, activeAcc.publicKey)
   );
+  setLastUsedConnect("beacon");
   if (getAccount().pkh !== activeAcc.address) {
     setAccount(activeAcc.address);
   }
-  setLastUsedConnect("beacon");
   return tezos;
 }
 
@@ -260,6 +261,7 @@ export function setAccount(pkh: string) {
 }
 
 export function signout() {
+  cleanLastUsedConnect();
   localStorage.removeItem("accpkh");
   store.commit("account", { pkh: "" });
 }
@@ -282,4 +284,8 @@ function getLastUsedConnect() {
 
 function setLastUsedConnect(val: "temple" | "beacon") {
   return localStorage.setItem("last-used-connect", val);
+}
+
+function cleanLastUsedConnect() {
+  localStorage.removeItem("last-used-connect");
 }
