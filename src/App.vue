@@ -118,27 +118,27 @@
 
     <div class="flex flex-col items-center justify-center p-4 mt-10">
       <div class="p-4 text-sm font-light text-center text-white">
-        <a href="https://twitter.com/madfishofficial" class="px-4">
+        <a href="https://twitter.com/madfishofficial" target="_blank" rel="noopener noreferrer" class="px-4">
           Twitter
         </a>
         |
-        <a href="https://t.me/MadFishCommunity" class="px-4">
+        <a href="https://t.me/MadFishCommunity" target="_blank" rel="noopener noreferrer" class="px-4">
           Telegram
         </a>
         |
-        <a href="https://www.madfish.solutions/discord" class="px-4">
+        <a href="https://www.madfish.solutions/discord" target="_blank" rel="noopener noreferrer" class="px-4">
           Discord
         </a>
         |
-        <a href="https://www.reddit.com/r/MadFishCommunity" class="px-4">
+        <a href="https://www.reddit.com/r/MadFishCommunity" target="_blank" rel="noopener noreferrer" class="px-4">
           Reddit
         </a>
         |
-        <a href="https://docs.quipuswap.com/faq" class="px-4">
+        <a href="https://docs.quipuswap.com/faq" target="_blank" rel="noopener noreferrer" class="px-4">
           FAQ
         </a>
         |
-        <a href="https://docs.quipuswap.com" class="px-4">
+        <a href="https://docs.quipuswap.com" target="_blank" rel="noopener noreferrer" class="px-4">
           Docs
         </a>
       </div>
