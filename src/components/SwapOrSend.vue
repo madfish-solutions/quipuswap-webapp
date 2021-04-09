@@ -365,7 +365,7 @@ export default class SwapOrSend extends Vue {
   async handleInputSelect(token: QSAsset) {
     this.inputToken = token;
 
-    if (this.outputToken && token.id === this.outputToken.id) {
+    if (this.outputToken && toAssetSlug(token) === toAssetSlug(this.outputToken)) {
       this.outputToken = null;
       this.outputAmount = "";
     }
@@ -385,7 +385,7 @@ export default class SwapOrSend extends Vue {
     this.outputToken = token;
 
     if (this.inputToken) {
-      if (token.id === this.inputToken.id) {
+      if (toAssetSlug(token) === toAssetSlug(this.inputToken)) {
         this.inputToken = null;
       } else if (!this.inputAmount) {
         this.inputAmount = "1";
