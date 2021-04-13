@@ -105,7 +105,7 @@
         <template v-if="filteredTokens.length">
           <TokenItem
             v-for="token in filteredTokens"
-            :key="token.id"
+            :key="getAssetSlug(token)"
             :token="token"
             :symbol="token.symbol"
             :name="token.name"
@@ -129,7 +129,8 @@ import {
   QSAsset,
   isAddressValid,
   getContract,
-  isFA2
+  isFA2,
+  toAssetSlug
 } from "@/core";
 import { XTZ_TOKEN } from "@/core/defaults";
 import BigNumber from "bignumber.js";
@@ -219,6 +220,10 @@ export default class FormField extends Vue {
       }
     } catch {}
     this.processing = false;
+  }
+
+  getAssetSlug(asset: QSAsset) {
+    return toAssetSlug(asset);
   }
 
   async addTokenToList(contractAddress: string, tokenId?: BigNumber) {

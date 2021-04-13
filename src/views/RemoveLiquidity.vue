@@ -288,7 +288,7 @@ export default class RemoveLiquidity extends Vue {
 
   handleSharesToRemoveChange(amount: string) {
     this.sharesToRemove = amount;
-    const isNum = /^[0-9]*$/g.test(amount);
+    const isNum = /^[0-9.]*$/g.test(amount);
     if (isNum) {
       this.calcInTokens();
     } else {
