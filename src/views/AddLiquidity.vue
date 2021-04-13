@@ -360,13 +360,8 @@ export default class AddLiquidity extends Vue {
       const tezTk = this.tezToken!;
       const selTk = this.selectedToken!;
 
-      const [tezBalance, tokenBalance] = await Promise.all([
-        getBalance(me, tezTk),
-        getBalance(me, selTk)
-      ]);
-
-      const initialTezAmount = BigNumber.min(this.tezAmount, tezBalance);
-      const initialTokenAmount = BigNumber.min(this.tokenAmount, tokenBalance);
+      const initialTezAmount = new BigNumber(this.tezAmount);
+      const initialTokenAmount = new BigNumber(this.tokenAmount);
 
       const dexStorage = await getDexStorage(selTk.exchange);
 
@@ -377,20 +372,15 @@ export default class AddLiquidity extends Vue {
         selTk
       );
 
-      let shares = BigNumber.max(tezShares, tokensShares);
-      if (
-        tezBalance.isLessThan(
-          estimateInTezos(shares, dexStorage).plus(TZ_PENNY)
-        ) ||
-        tokenBalance.isLessThan(
-          estimateInTokens(shares, dexStorage, selTk)
-        )
-      ) {
-        shares = BigNumber.min(tezShares, tokensShares);
-      }
-      shares = BigNumber.max(shares, 1);
+      const shares = BigNumber.max(
+        BigNumber.min(tezShares, tokensShares),
+        1
+      );
 
-      const tokenAmount = estimateInTokens(shares, dexStorage, selTk)
+      const tokenAmount = fromNat(
+        toNat(estimateInTokens(shares, dexStorage, selTk), selTk).plus(1),
+        selTk
+      );
       const tezAmount = estimateInTezos(shares, dexStorage).plus(TZ_PENNY);
 
       const toCheck = [

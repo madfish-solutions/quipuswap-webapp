@@ -75,11 +75,14 @@ export function estimateTokenToTezInverse(
   const tempTokenPool = new BigNumber(dexStorage.invariant)
     .div(newTezPool)
     .integerValue(BigNumber.ROUND_DOWN);
-  const fee = tempTokenPool
-    .minus(dexStorage.tokenPool)
-    .div(new BigNumber(FEE_RATE).minus(1))
-    .integerValue(BigNumber.ROUND_DOWN);
-  return fromNat(fee.times(FEE_RATE), token);
+  return fromNat(
+    tempTokenPool
+      .minus(dexStorage.tokenPool)
+      .times(FEE_RATE)
+      .div(new BigNumber(FEE_RATE).minus(1))
+      .integerValue(BigNumber.ROUND_DOWN),
+    token
+  );
 }
 
 export function estimateShares(tezAmount: any, dexStorage: any) {

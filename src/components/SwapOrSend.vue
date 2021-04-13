@@ -420,7 +420,7 @@ export default class SwapOrSend extends Vue {
 
   handleOutputAmountChange(amount: string) {
     this.outputAmount = amount;
-    const isNum = /^[0-9]*$/g.test(amount);
+    const isNum = /^[0-9.]*$/g.test(amount);
     if (isNum) {
       this.calcInputAmount();
     } else {
