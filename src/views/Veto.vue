@@ -388,7 +388,7 @@ export default class Veto extends Vue {
       const batch = tezos.wallet
         .batch([])
         .withTransfer(
-          contract.methods.use(7, "veto", 0, this.voter).toTransferParams()
+          contract.methods.use("veto", 0, this.voter).toTransferParams()
         );
 
       const operation = await batch.send();
