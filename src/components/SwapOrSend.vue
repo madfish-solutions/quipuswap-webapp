@@ -571,8 +571,8 @@ export default class SwapOrSend extends Vue {
 
       const inTk = this.inputToken!;
       const outTk = this.outputToken!;
-      const inpAmn = +this.inputAmount!;
-      const minOut = +this.minimumReceived!;
+      const inpAmn = new BigNumber(this.inputAmount!);
+      const minOut = new BigNumber(this.minimumReceived!);
 
       let bal: BigNumber | undefined;
       try {
@@ -587,7 +587,7 @@ export default class SwapOrSend extends Vue {
 
         const operation = await contract.methods
           .use("tezToTokenPayment", toNat(minOut, outTk).toFixed(), recipient)
-          .send({ amount: inpAmn });
+          .send({ amount: inpAmn as any });
 
         await operation.confirmation();
       } else if (inTk.type === "token" && outTk.type === "xtz") {

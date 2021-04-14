@@ -205,11 +205,9 @@ export default class AddToken extends Vue {
       this.tezToken &&
       isKTAddress(this.tokenAddress) &&
       [this.tezAmount, this.tokenAmount].every((a) => a && +a > 0) &&
-      Number(
-        new BigNumber(this.tokenAmount).toFormat(this.tokenDecimals, {
-          decimalSeparator: ".",
-        })
-      ) === +this.tokenAmount
+      new BigNumber(this.tokenAmount).toFormat(this.tokenDecimals, {
+        decimalSeparator: ".",
+      }) === this.tokenAmount
     );
   }
 
