@@ -20,6 +20,7 @@ import {
   DEFAULT_NETWORK,
   TOKEN_WHITELIST,
   CHAIN_ID_MAPPING,
+  LP_TOKEN_DECIMALS,
 } from "./defaults";
 import { getTokenMetadata } from "./assets";
 
@@ -175,24 +176,30 @@ export function deapproveFA2(
   }
 }
 
-export async function getDexShares(
-  address: string,
-  exchange: string,
-  decimals = 0
-) {
+export async function getDexShares(address: string, exchange: string) {
   const storage = await getDexStorage(exchange);
   const ledger = storage.ledger || storage.accounts;
   const val = await ledger.get(address);
   if (!val) return null;
 
-  const unfrozen = new BigNumber(val.balance).div(10 ** decimals);
-  const frozen = new BigNumber(val.frozen_balance).div(10 ** decimals);
+  const unfrozen = new BigNumber(val.balance);
+  const frozen = new BigNumber(val.frozen_balance);
 
   return {
     unfrozen,
     frozen,
     total: unfrozen.plus(frozen),
   };
+}
+
+export function sharesFromNat(val: BigNumber.Value) {
+  return new BigNumber(val).div(10 ** LP_TOKEN_DECIMALS);
+}
+
+export function sharesToNat(val: BigNumber.Value) {
+  return new BigNumber(val)
+    .times(10 ** LP_TOKEN_DECIMALS)
+    .integerValue(BigNumber.ROUND_DOWN);
 }
 
 /**

@@ -26,7 +26,7 @@
 
         <FormField
           placeholder="tz.."
-          label="Next candidate"
+          label="Second candidate"
           :withSelect="false"
           v-model="currentCandidate"
           :isLoading="isLoading"
@@ -160,6 +160,8 @@ import {
   approveToken,
   deapproveFA2,
   isUnsafeAllowanceChangeError,
+  sharesFromNat,
+  sharesToNat,
 } from "@/core";
 import NavTabs from "@/components/NavTabs.vue";
 import NavGovernance from "@/components/NavGovernance.vue";
@@ -190,11 +192,11 @@ export default class VoteBaker extends Vue {
 
   currentCandidate: string = "-";
   nextCandidate: string = "-";
-  totalShares: number | null = null;
-  totalVotes: number | null = null;
+  totalShares: string | null = null;
+  totalVotes: string | null = null;
   yourTotalShares: number | string | null = null;
   availableSharesToVote: number | string | null = null;
-  availableSharesToExit: number | null = null;
+  availableSharesToExit: number | string | null = null;
   yourCandidate: string = "-";
 
   bakerAddress: string = "";
@@ -258,8 +260,8 @@ export default class VoteBaker extends Vue {
 
       this.currentCandidate = storage.currentCandidate || "-";
       this.nextCandidate = storage.currentDelegated || "-";
-      this.totalShares = storage.totalSupply;
-      this.totalVotes = storage.totalVotes;
+      this.totalShares = sharesFromNat(storage.totalSupply).toFixed();
+      this.totalVotes = sharesFromNat(storage.totalVotes).toFixed();
 
       const me = this.account.pkh || "";
 
@@ -269,14 +271,16 @@ export default class VoteBaker extends Vue {
           storage.voters.get(me),
         ]);
 
-        this.yourTotalShares = myShares ? myShares.total.toFixed() : null;
+        this.yourTotalShares = myShares ? sharesFromNat(myShares.total).toFixed() : null;
         this.availableSharesToVote = myShares
-          ? myShares.unfrozen.toFixed()
+          ? sharesFromNat(myShares.unfrozen).toFixed()
           : null;
         if (this.availableSharesToVote !== null && voter) {
-          this.availableSharesToVote = new BigNumber(this.availableSharesToVote).plus(voter.vote).toFixed();
+          this.availableSharesToVote = new BigNumber(this.availableSharesToVote)
+            .plus(sharesFromNat(voter.vote))
+            .toFixed();
         }
-        this.availableSharesToExit = voter ? voter.vote.toFixed() : null;
+        this.availableSharesToExit = voter && new BigNumber(voter.vote).isGreaterThan(0) ? sharesFromNat(voter.vote).toFixed() : null;
         this.yourCandidate = voter ? voter.candidate : "-";
       }
 
@@ -311,7 +315,7 @@ export default class VoteBaker extends Vue {
     this.processing = true;
 
     try {
-      const sharesToVote = +this.sharesToVote;
+      const sharesToVote = sharesToNat(this.sharesToVote).toFixed();
 
       const tezos = await useWallet();
       const me = await tezos.wallet.pkh();

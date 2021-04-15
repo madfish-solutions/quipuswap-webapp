@@ -22,6 +22,9 @@ export const VETO_PERIOD = parseInt(process.env.VUE_APP_VETO_PERIOD!);
 export const ACCURANCY_MULTIPLIER = parseInt(
   process.env.VUE_APP_ACCURANCY_MULTIPLIER!
 );
+export const LP_TOKEN_DECIMALS = parseInt(
+  process.env.VUE_APP_LP_TOKEN_DECIMALS!
+);
 
 export const LOGO_URL = process.env.VUE_APP_LOGO_URL;
 
