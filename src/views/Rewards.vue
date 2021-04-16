@@ -63,6 +63,7 @@ import SubmitBtn from "@/components/SubmitBtn.vue";
 import Loader from "@/components/Loader.vue";
 import GovernancePairSelect from "@/components/GovernancePairSelect.vue";
 import BigNumber from "bignumber.js";
+import { notifyConfirm } from "../toast";
 
 @Component({
   components: {
@@ -176,10 +177,11 @@ export default class Rewards extends Vue {
       const operation = await contract.methods
         .use("withdrawProfit", this.recipientAddress)
         .send();
-      await operation.confirmation();
 
-      this.withdrawStatus = "Success";
-      this.refresh();
+      notifyConfirm(
+        operation.confirmation()
+          .then(() => this.refresh())
+      );
     } catch (err) {
       console.error(err);
       const msg = err.message;

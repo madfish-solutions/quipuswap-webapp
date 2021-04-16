@@ -151,7 +151,7 @@ import SubmitBtn from "@/components/SubmitBtn.vue";
 import Loader from "@/components/Loader.vue";
 
 import BigNumber from "bignumber.js";
-import { OpKind } from "@taquito/taquito";
+import { OpKind, WalletOperation } from "@taquito/taquito";
 import store, { getAccount, useWallet } from "@/store";
 import {
   FEE_RATE,
@@ -177,6 +177,7 @@ import {
   toAssetSlug,
   isTokenWhitelisted,
 } from "@/core";
+import { notifyConfirm } from "../toast";
 
 @Component({
   components: {
@@ -582,14 +583,13 @@ export default class SwapOrSend extends Vue {
         throw new Error("Not Enough Funds");
       }
 
+      let operation: WalletOperation;
       if (inTk.type === "xtz" && outTk.type === "token") {
         const contract = await tezos.wallet.at(outTk.exchange);
 
-        const operation = await contract.methods
+        operation = await contract.methods
           .use("tezToTokenPayment", toNat(minOut, outTk).toFixed(), recipient)
           .send({ amount: inpAmn as any });
-
-        await operation.confirmation();
       } else if (inTk.type === "token" && outTk.type === "xtz") {
         const [tokenContract, dexContract] = await Promise.all([
           tezos.wallet.at(inTk.id),
@@ -674,8 +674,7 @@ export default class SwapOrSend extends Vue {
           inTk.exchange,
         );
 
-        const operation = await batch.send();
-        await operation.confirmation();
+        operation = await batch.send();
       } else if (inTk.type === "token" && outTk.type === "token") {
         const [
           inTokenContract,
@@ -786,12 +785,13 @@ export default class SwapOrSend extends Vue {
           inTk.exchange,
         );
 
-        const operation = await batch.send();
-        await operation.confirmation();
+        operation = await batch.send();
       }
 
-      this.swapStatus = "Success!";
-      this.refresh();
+      notifyConfirm(
+        operation!.confirmation()
+          .then(() => this.refresh())
+      );
     } catch (err) {
       console.error(err);
       const msg = err.message;
