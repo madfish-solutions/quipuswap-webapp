@@ -127,6 +127,8 @@ import {
   clearMem,
   toNat,
   fromNat,
+  sharesFromNat,
+  sharesToNat,
 } from "@/core";
 import { XTZ_TOKEN } from "@/core/defaults";
 
@@ -231,7 +233,7 @@ export default class RemoveLiquidity extends Vue {
         if (!shares) {
           this.myShares = "0";
         } else {
-          this.myShares = shares.unfrozen.toFixed();
+          this.myShares = sharesFromNat(shares.unfrozen).toFixed();
         }
       }
     } catch (err) {
@@ -302,9 +304,9 @@ export default class RemoveLiquidity extends Vue {
 
     const dexStorage = await getDexStorage(this.selectedToken.exchange);
 
-    const tezAmount = estimateInTezos(this.sharesToRemove, dexStorage);
+    const tezAmount = estimateInTezos(sharesToNat(this.sharesToRemove), dexStorage);
     const tokenAmount = estimateInTokens(
-      this.sharesToRemove,
+      sharesToNat(this.sharesToRemove),
       dexStorage,
       this.selectedToken
     );
@@ -319,12 +321,10 @@ export default class RemoveLiquidity extends Vue {
     this.processing = true;
     try {
       const tezos = await useWallet();
-      const me = await tezos.wallet.pkh();
 
-      const shares = new BigNumber(this.sharesToRemove!);
+      const shares = sharesToNat(this.sharesToRemove!);
       const selTk = this.selectedToken!;
 
-      const dexStorage = await getDexStorage(selTk.exchange);
       const mySharesPure = await getDexShares(this.account.pkh, selTk.exchange);
       let myShares: string | undefined;
       if (mySharesPure) {
