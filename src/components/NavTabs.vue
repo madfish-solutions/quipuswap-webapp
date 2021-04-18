@@ -25,12 +25,12 @@
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas vel blandit sapien. Nullam condimentum ligula diam, at posuere velit venenatis varius.
       </p>
 
-      <button class="absolute top-0 right-0 p-2 focus:outline-none" @click="handleCloseInfoBanner">
+      <!-- <button class="absolute top-0 right-0 p-2 focus:outline-none" @click="handleCloseInfoBanner">
         <img
           src="@/assets/close.svg"
           style="width: 16px; height: 16px;"
         />
-      </button>
+      </button> -->
     </div>
   </div>
 </template>
