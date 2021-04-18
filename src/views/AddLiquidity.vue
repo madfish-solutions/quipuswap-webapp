@@ -468,10 +468,10 @@ export default class AddLiquidity extends Vue {
             .use("investLiquidity", tokenAmountNat)
             .toTransferParams({ amount: tezAmount.toFixed() as any })
         )
-        .withTransfer(
-          dexContract.methods
-            .use("withdrawProfit", me).toTransferParams()
-        );
+        // .withTransfer(
+        //   dexContract.methods
+        //     .use("withdrawProfit", me).toTransferParams()
+        // );
 
       deapproveFA2(
         batch,
