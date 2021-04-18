@@ -32,10 +32,33 @@
         />
       </button> -->
     </div>
+
+    <a
+      v-for="pool in v1_0pools"
+      :key="pool.dexAddress"
+      :href="pool.link"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="my-2 bg-darkblue rounded text-white flex items-center px-4 py-2 text-sm hover:bg-gray-800"
+    >
+      <img class="w-5 h-5 mr-1" src="@/assets/xtz.png" />
+      <div class="mr-1 opacity-75">+</div>
+      <img class="w-5 h-5 mr-3" :src="pool.underlineTokenMetadata.thumbnailUri" />
+      <span class="mr-3">XTZ / {{ pool.underlineTokenMetadata.symbol }}</span>
+      <span><span class="opacity-75">Shares:</span> <span class="font-semibold">{{ pool.balance }}</span></span>
+      <div class="flex-1" />
+      <div
+        class="text-accent font-medium flex items-center group-hover:underline"
+      >
+        Migrate
+        <img class="w-3 h-3 ml-1" src="@/assets/arrow-right-top.svg" />
+      </div>
+    </a>
   </div>
 </template>
 
 <script lang="ts">
+import store from "@/store";
 import { Vue, Component } from "vue-property-decorator";
 
 const INFO_BANNER_LS_KEY = "info-banner";
@@ -52,6 +75,10 @@ function getInfoBannerDisplayed() {
 @Component
 export default class NavTabs extends Vue {
   infoBannerDisplayed = getInfoBannerDisplayed();
+
+  get v1_0pools() {
+    return store.state.v0Pools;
+  }
 
   updateInfoBanner() {
     this.infoBannerDisplayed = getInfoBannerDisplayed();

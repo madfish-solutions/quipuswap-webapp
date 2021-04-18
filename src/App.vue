@@ -4,7 +4,8 @@
       <header class="flex flex-col items-center mb-12 align-middle lg:items-stretch lg:flex-row">
         <div class="flex flex-col flex-1 pt-4 select-none">
           <div class="flex mb-4 mt-2">
-            <button
+            <a
+              :href="V1_0Url"
               class="flex items-stretch w-48 h-8 text-white border rounded-lg connect-button button-network border-accent focus:outline-none overflow-hidden"
             >
               <div class="w-1/2 flex items-center justify-center">
@@ -13,7 +14,7 @@
               <div class="w-1/2 flex items-center justify-center bg-accent text-gray-800">
                 v<span class="font-semibold">1.1</span>
               </div>
-            </button>
+            </a>
           </div>
 
           <div class="relative flex flex-col w-48">
@@ -194,6 +195,10 @@ export default class App extends Vue {
 
   accountBalance: string | null = null;
   accountLabelHovered = false;
+
+  get V1_0Url() {
+    return process.env.VUE_APP_OLD_QUIPUSWAP_URL;
+  }
 
   get allNetworks() {
     return ALL_NETWORKS;

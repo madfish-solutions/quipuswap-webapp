@@ -16,10 +16,14 @@ import {
   sanitizeImgUri,
   getContract,
   filteredWhitelist,
+  sharesFromNat,
+  getDexShares,
 } from "@/core";
 import { TezosToolkit } from "@taquito/taquito";
 import { Route } from "vue-router";
 import router from "../router";
+import { MAINNET_V1_0_DEX_WHITELIST } from "../v1_0whitelist";
+import BigNumber from "bignumber.js";
 
 Vue.use(Vuex);
 
@@ -27,6 +31,7 @@ interface StoreState {
   tokensLoading: boolean;
   tokens: QSAsset[];
   account: { pkh: string };
+  v0Pools: any[];
 }
 
 const store = new Vuex.Store<StoreState>({
@@ -34,6 +39,7 @@ const store = new Vuex.Store<StoreState>({
     tokensLoading: false,
     tokens: [],
     account: getAccountInitial(),
+    v0Pools: [],
   },
   mutations: {
     tokensLoading(state, tokensLoading) {
@@ -48,10 +54,48 @@ const store = new Vuex.Store<StoreState>({
     account(state, account) {
       state.account = account;
     },
+    setV0Pools(state, pools) {
+      state.v0Pools = pools;
+    },
+    pushV0Pools(state, pool) {
+      state.v0Pools.push(pool);
+    },
   },
 });
 
 export default store;
+
+async function loadV0Pools() {
+  try {
+    const me = store.state.account.pkh;
+    if (getNetwork().type === "main" && me) {
+      store.commit("setV0Pools", []);
+      await Promise.all(
+        MAINNET_V1_0_DEX_WHITELIST.map(async pool => {
+          const shares = await getDexShares(me, pool.dexAddress);
+          const total = shares ? sharesFromNat(shares.total) : new BigNumber(0);
+          if (total.isGreaterThan(0)) {
+            store.commit("pushV0Pools", {
+              ...pool,
+              balance: total.toFixed(),
+              link: `${process.env.VUE_APP_OLD_QUIPUSWAP_URL ||
+                ""}/invest/remove-liquidity/${pool.dexAddress}`,
+            });
+          }
+        })
+      );
+    } else {
+      store.commit("setV0Pools", []);
+    }
+  } catch (_err) {}
+}
+loadV0Pools();
+
+store.subscribe(mutation => {
+  if (mutation.type === "account") {
+    loadV0Pools();
+  }
+});
 
 loadTokens();
 router.onReady((route: Route) => {
