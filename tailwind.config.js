@@ -21,6 +21,7 @@ module.exports = {
       primary: "#5B61F6",
       accent: "#F6CC5B",
       redalpha: "rgba(220, 38, 38, 0.6)",
+      darkblue: "#2a3248",
 
       gray: {
         100: "#f7fafc",

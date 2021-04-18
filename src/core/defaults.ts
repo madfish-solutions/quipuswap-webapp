@@ -17,10 +17,14 @@ export const FA1_2_FACTORY_CONTRACT_MAINNET =
 export const FA2_FACTORY_CONTRACT_MAINNET =
   process.env.VUE_APP_FA2_FACTORY_CONTRACT_MAINNET || null;
 
+export const VOTING_PERIOD = parseInt(process.env.VUE_APP_VOTING_PERIOD!);
 export const FEE_RATE = parseInt(process.env.VUE_APP_FEE_RATE!);
 export const VETO_PERIOD = parseInt(process.env.VUE_APP_VETO_PERIOD!);
 export const ACCURANCY_MULTIPLIER = parseInt(
   process.env.VUE_APP_ACCURANCY_MULTIPLIER!
+);
+export const LP_TOKEN_DECIMALS = parseInt(
+  process.env.VUE_APP_LP_TOKEN_DECIMALS!
 );
 
 export const LOGO_URL = process.env.VUE_APP_LOGO_URL;
@@ -53,7 +57,7 @@ export const MAINNET_NETWORK: QSNetwork = {
   id: "mainnet",
   name: "Tezos Mainnet",
   type: "main",
-  rpcBaseURL: "https://mainnet.smartpy.io/",
+  rpcBaseURL: "https://mainnet-tezos.giganode.io/",
   fa1_2FactoryContract: FA1_2_FACTORY_CONTRACT_MAINNET,
   fa2FactoryContract: FA2_FACTORY_CONTRACT_MAINNET,
   description: "Tezos mainnet",

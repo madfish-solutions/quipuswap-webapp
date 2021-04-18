@@ -127,6 +127,7 @@ import {
 } from "@/core";
 import { XTZ_TOKEN } from "@/core/defaults";
 import { OpKind } from "@taquito/taquito";
+import { notifyConfirm } from "../toast";
 
 type PoolMeta = {
   tezFull: string;
@@ -467,10 +468,10 @@ export default class AddLiquidity extends Vue {
             .use("investLiquidity", tokenAmountNat)
             .toTransferParams({ amount: tezAmount.toFixed() as any })
         )
-        .withTransfer(
-          dexContract.methods
-            .use("withdrawProfit", me).toTransferParams()
-        );
+        // .withTransfer(
+        //   dexContract.methods
+        //     .use("withdrawProfit", me).toTransferParams()
+        // );
 
       deapproveFA2(
         batch,
@@ -481,10 +482,11 @@ export default class AddLiquidity extends Vue {
       );
 
       const operation = await batch.send();
-      await operation.confirmation();
 
-      this.addLiqStatus = "Success!";
-      this.refresh();
+      notifyConfirm(
+        operation.confirmation()
+          .then(() => this.refresh())
+      );
     } catch (err) {
       console.error(err);
       const msg = err.message;

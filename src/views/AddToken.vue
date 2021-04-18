@@ -153,6 +153,7 @@ import {
   isUnsafeAllowanceChangeError,
 } from "@/core";
 import { XTZ_TOKEN } from "@/core/defaults";
+import { notifyConfirm } from "../toast";
 
 type PoolMeta = {
   tezFull: string;
@@ -204,10 +205,10 @@ export default class AddToken extends Vue {
     return (
       this.tezToken &&
       isKTAddress(this.tokenAddress) &&
-      [this.tezAmount, this.tokenAmount].every((a) => a && +a > 0) &&
-      new BigNumber(this.tokenAmount).toFormat(this.tokenDecimals, {
-        decimalSeparator: ".",
-      }) === this.tokenAmount
+      [this.tezAmount, this.tokenAmount].every((a) => a && +a > 0)
+      // new BigNumber(this.tokenAmount).toFormat(this.tokenDecimals, {
+      //   decimalSeparator: ".",
+      // }) === this.tokenAmount
     );
   }
 
@@ -458,10 +459,11 @@ export default class AddToken extends Vue {
       );
 
       const operation = await batch.send();
-      await operation.confirmation();
 
-      this.addTokenStatus = "Success!";
-      this.refresh();
+      notifyConfirm(
+        operation.confirmation()
+          .then(() => this.refresh())
+      );
     } catch (err) {
       console.error(err);
       const msg = err.message;
