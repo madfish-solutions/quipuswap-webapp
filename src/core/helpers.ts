@@ -7,7 +7,10 @@ import { QSAsset } from "./types";
 export async function isDexContainsLiquidity(dexAddress: string) {
   const dex = await getContract(dexAddress);
   const dexStorage = await dex.storage<any>();
-  return !new BigNumber(dexStorage.storage.invariant).isZero();
+  return (
+    new BigNumber(dexStorage.storage.tez_pool).isZero() ||
+    new BigNumber(dexStorage.storage.token_pool).isZero()
+  );
 }
 
 export function toValidAmount(amount?: BigNumber) {

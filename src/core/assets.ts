@@ -20,7 +20,10 @@ const lambdaView =
     ? "KT1BbTmNHmJp2NnQyw5qsAExEYmYuUpR2HdX"
     : undefined;
 
-export async function getBalance(accountPkh: string, asset: QSAsset) {
+export async function getBalance(
+  accountPkh: string,
+  asset: Pick<QSAsset, "tokenType" | "id" | "decimals" | "fa2TokenId">
+) {
   let nat: BigNumber | undefined;
 
   switch (asset.tokenType) {

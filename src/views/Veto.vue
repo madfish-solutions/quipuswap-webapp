@@ -129,6 +129,8 @@ import {
   approveToken,
   deapproveFA2,
   isUnsafeAllowanceChangeError,
+  sharesFromNat,
+  sharesToNat,
 } from "@/core";
 import NavTabs from "@/components/NavTabs.vue";
 import NavGovernance from "@/components/NavGovernance.vue";
@@ -139,6 +141,7 @@ import BakerFormField from "@/components/Form/BakerFormField.vue";
 import Loader from "@/components/Loader.vue";
 import BigNumber from "bignumber.js";
 import { OpKind } from "@taquito/taquito";
+import { notifyConfirm } from "../toast";
 
 @Component({
   components: {
@@ -159,11 +162,11 @@ export default class Veto extends Vue {
 
   currentCandidate: string = "-";
   currentCandidateExist = false;
-  totalVotes: number | null = null;
-  totalVetos: number | null = null;
+  totalVotes: number | string | null = null;
+  totalVetos: number | string | null = null;
   votesToVeto: number | string | null = null;
   availableSharesToVeto: number | string | null = null;
-  availableSharesToExit: number | null = null;
+  availableSharesToExit: number | string | null = null;
   alreadyBanned = false;
 
   voter: string = this.account.pkh;
@@ -222,19 +225,19 @@ export default class Veto extends Vue {
 
       this.currentCandidate = storage.currentDelegated || "-";
       this.currentCandidateExist = Boolean(storage.currentDelegated);
-      this.totalVotes = storage.totalVotes;
-      this.totalVetos = storage.veto;
-      this.votesToVeto = new BigNumber(storage.totalVotes)
+      this.totalVotes = sharesFromNat(storage.totalVotes).toFixed();
+      this.totalVetos = sharesFromNat(storage.veto).toFixed();
+      this.votesToVeto = sharesFromNat(storage.totalVotes)
         .div(2)
-        .minus(storage.veto)
+        .minus(sharesFromNat(storage.veto))
         .toFixed();
       this.availableSharesToVeto = myShares
-        ? myShares.unfrozen.toFixed()
+        ? sharesFromNat(myShares.unfrozen).toFixed()
         : null;
       if (this.availableSharesToVeto !== null && voter) {
-        this.availableSharesToVeto = new BigNumber(this.availableSharesToVeto).plus(voter.veto).toFixed();
+        this.availableSharesToVeto = new BigNumber(this.availableSharesToVeto).plus(sharesFromNat(voter.veto)).toFixed();
       }
-      this.availableSharesToExit = voter ? voter.veto.toFixed() : null;
+      this.availableSharesToExit = voter && new BigNumber(voter.veto).isGreaterThan(0) ? sharesFromNat(voter.veto).toFixed() : null;
 
       if (me) {
         // const myVV = await storage.vetoVoters.get(me);
@@ -279,88 +282,24 @@ export default class Veto extends Vue {
     }
 
     try {
-      const sharesToVeto = +this.sharesToVeto;
+      const sharesToVeto = sharesToNat(this.sharesToVeto).toFixed();
 
       const tezos = await useWallet();
-      const me = await tezos.wallet.pkh();
       const contract = await tezos.wallet.at(this.selectedToken!.exchange);
 
-      let withAllowanceReset = false;
-      try {
-        await tezos.estimate.batch([
-          {
-            kind: OpKind.TRANSACTION,
-            ...approveToken(
-              {
-                tokenType: this.selectedToken!.tokenType,
-                fa2TokenId: 0,
-              },
-              contract,
-              me,
-              contract.address,
-              sharesToVeto
-            ).toTransferParams()
-          },
-        ]);
-      } catch (err) {
-        if (isUnsafeAllowanceChangeError(err)) {
-          withAllowanceReset = true;
-        } else {
-          console.error(err);
-        }
-      }
-
-      let batch = tezos.wallet.batch([]);
-
-      if (withAllowanceReset) {
-        batch = batch.withTransfer(
-          approveToken(
-            {
-              tokenType: this.selectedToken!.tokenType,
-              fa2TokenId: 0,
-            },
-            contract,
-            me,
-            contract.address,
-            0
-          ).toTransferParams()
-        );
-      }
-
-      batch = batch.withTransfer(
-          approveToken(
-            {
-              tokenType: this.selectedToken!.tokenType,
-              fa2TokenId: 0,
-            },
-            contract,
-            me,
-            contract.address,
-            sharesToVeto
-          ).toTransferParams()
-        )
+      const batch = tezos.wallet.batch([])
         .withTransfer(
           contract.methods
             .use("veto", sharesToVeto, this.voter)
             .toTransferParams()
         );
 
-      deapproveFA2(
-        batch,
-        {
-          tokenType: this.selectedToken!.tokenType,
-          fa2TokenId: 0,
-        },
-        contract,
-        me,
-        contract.address,
-      );
-
       const operation = await batch.send();
-      await operation.confirmation();
 
-      this.banStatus = "Success";
-      this.refresh();
+      notifyConfirm(
+        operation.confirmation()
+          .then(() => this.refresh())
+      );
     } catch (err) {
       console.error(err);
       const msg = err.message;
@@ -392,10 +331,11 @@ export default class Veto extends Vue {
         );
 
       const operation = await batch.send();
-      await operation.confirmation();
 
-      this.exitStatus = "Success";
-      this.refresh();
+      notifyConfirm(
+        operation.confirmation()
+          .then(() => this.refresh())
+      );
     } catch (err) {
       console.error(err);
       const msg = err.message;
