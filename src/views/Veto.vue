@@ -285,79 +285,14 @@ export default class Veto extends Vue {
       const sharesToVeto = sharesToNat(this.sharesToVeto).toFixed();
 
       const tezos = await useWallet();
-      const me = await tezos.wallet.pkh();
       const contract = await tezos.wallet.at(this.selectedToken!.exchange);
 
-      let withAllowanceReset = false;
-      try {
-        await tezos.estimate.batch([
-          {
-            kind: OpKind.TRANSACTION,
-            ...approveToken(
-              {
-                tokenType: this.selectedToken!.tokenType,
-                fa2TokenId: 0,
-              },
-              contract,
-              me,
-              contract.address,
-              sharesToVeto
-            ).toTransferParams()
-          },
-        ]);
-      } catch (err) {
-        if (isUnsafeAllowanceChangeError(err)) {
-          withAllowanceReset = true;
-        } else {
-          console.error(err);
-        }
-      }
-
-      let batch = tezos.wallet.batch([]);
-
-      if (withAllowanceReset) {
-        batch = batch.withTransfer(
-          approveToken(
-            {
-              tokenType: this.selectedToken!.tokenType,
-              fa2TokenId: 0,
-            },
-            contract,
-            me,
-            contract.address,
-            0
-          ).toTransferParams()
-        );
-      }
-
-      batch = batch.withTransfer(
-          approveToken(
-            {
-              tokenType: this.selectedToken!.tokenType,
-              fa2TokenId: 0,
-            },
-            contract,
-            me,
-            contract.address,
-            sharesToVeto
-          ).toTransferParams()
-        )
+      const batch = tezos.wallet.batch([])
         .withTransfer(
           contract.methods
             .use("veto", sharesToVeto, this.voter)
             .toTransferParams()
         );
-
-      deapproveFA2(
-        batch,
-        {
-          tokenType: this.selectedToken!.tokenType,
-          fa2TokenId: 0,
-        },
-        contract,
-        me,
-        contract.address,
-      );
 
       const operation = await batch.send();
 
