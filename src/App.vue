@@ -2,8 +2,21 @@
   <div id="app" class="flex flex-col">
     <div class="container relative px-4 py-4 mx-auto xs:px-6">
       <header class="flex flex-col items-center mb-12 align-middle lg:items-stretch lg:flex-row">
-        <div class="flex justify-start flex-1 pt-4">
-          <div class="select-none">
+        <div class="flex flex-col flex-1 pt-4 select-none">
+          <div class="flex mb-4 mt-2">
+            <button
+              class="flex items-stretch w-48 h-8 text-white border rounded-lg connect-button button-network border-accent focus:outline-none overflow-hidden"
+            >
+              <div class="w-1/2 flex items-center justify-center">
+                v<span class="font-semibold">1.0</span>
+              </div>
+              <div class="w-1/2 flex items-center justify-center bg-accent text-gray-800">
+                v<span class="font-semibold">1.1</span>
+              </div>
+            </button>
+          </div>
+
+          <div class="relative flex flex-col w-48">
             <div
               class="flex flex-row justify-between w-auto cursor-pointer network-selector align-center"
               @click="toggleNetworkSelect"
@@ -15,14 +28,15 @@
 
               <img
                 :class="
-                  networkSelectOpened ? 'z-10 transform rotate-180' : 'z-10'
+                  networkSelectOpened ? 'mr-3 z-10 transform rotate-180' : 'mr-3 z-10'
                 "
                 src="@/assets/arrow-down.svg"
               />
             </div>
 
             <div
-              class="absolute flex flex-col justify-end w-48 top-100px"
+              class="absolute flex flex-col justify-end w-48"
+              style="top: 4rem;"
               v-if="networkSelectOpened"
             >
               <button
