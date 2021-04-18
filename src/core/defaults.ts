@@ -57,7 +57,7 @@ export const MAINNET_NETWORK: QSNetwork = {
   id: "mainnet",
   name: "Tezos Mainnet",
   type: "main",
-  rpcBaseURL: "https://mainnet.smartpy.io/",
+  rpcBaseURL: "https://mainnet-tezos.giganode.io/",
   fa1_2FactoryContract: FA1_2_FACTORY_CONTRACT_MAINNET,
   fa2FactoryContract: FA2_FACTORY_CONTRACT_MAINNET,
   description: "Tezos mainnet",
