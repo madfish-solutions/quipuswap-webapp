@@ -54,7 +54,9 @@ import {
   clearMem,
   mutezToTz,
   ACCURANCY_MULTIPLIER,
-  getDexShares
+  VOTING_PERIOD,
+  getDexShares,
+  getContract
 } from "@/core";
 import NavTabs from "@/components/NavTabs.vue";
 import NavGovernance from "@/components/NavGovernance.vue";
@@ -124,39 +126,50 @@ export default class Rewards extends Vue {
 
     this.dataLoading = true;
     try {
-      // const now = new Date();
-      // const periodFinish = new Date(storage.periodFinish);
-      // const lastUpdateTime = new Date(storage.lastUpdateTime);
-      // const rewardsTime = now > periodFinish ? periodFinish : now;
-      // const newReward = new BigNumber(Math.abs(+rewardsTime - +lastUpdateTime)).times(storage.rewardPerSec);
-
-      const [storage, myShares] = await Promise.all([
-        getDexStorage(this.selectedToken.exchange),
-        getDexShares(
-          this.account.pkh,
-          this.selectedToken.exchange
-        )
+      const dexContract = await getContract(this.selectedToken.exchange);
+      const { storage } = await dexContract.storage<any>();
+      const [rewards, shares] = await Promise.all([
+        storage.user_rewards.get(this.account.pkh),
+        storage.ledger.get(this.account.pkh),
       ]);
 
-      const stgReward = await storage.userRewards.get(this.account.pkh);
+      let reward = new BigNumber(rewards?.reward ?? 0);
+      if (shares) {
+        const now = new Date();
+        const periodFinish = new Date(storage.period_finish);
+        const lastUpdateTime = new Date(storage.last_update_time);
+        const rewardsTime = now > periodFinish ? periodFinish : now;
+        let newReward = new BigNumber(
+          Math.abs(+rewardsTime - +lastUpdateTime)
+        ).idiv(1000).times(storage.reward_per_sec);
 
-      let reward: BigNumber;
-      if (!myShares) {
-        if (stgReward) {
-          reward = stgReward.reward
+        if (now > periodFinish) {
+          const periodsDuration = new BigNumber(+now - +periodFinish).idiv(1000)
+            .idiv(VOTING_PERIOD)
+            .plus(1)
+            .times(VOTING_PERIOD);
+          const rewardPerSec = new BigNumber(storage.reward)
+            .times(ACCURANCY_MULTIPLIER)
+            .idiv(periodsDuration.abs());
+          newReward = new BigNumber(+now - +periodFinish).idiv(1000).abs().times(rewardPerSec);
         }
 
-        return;
+        const rewardPerShare = new BigNumber(storage.reward_per_share).plus(
+          newReward.idiv(storage.total_supply)
+        );
+        const totalShares = new BigNumber(shares.balance).plus(
+          shares.frozen_balance
+        );
+        reward = reward.plus(
+          totalShares
+            .times(rewardPerShare)
+            .minus(rewards?.reward_paid ?? 0)
+            .abs()
+        );
       }
 
-      const currentReward = myShares!.total.times(storage.rewardPerShare);
-      reward = new BigNumber(stgReward?.reward ?? 0).plus(
-        new BigNumber(currentReward).minus(stgReward.reward_paid).abs()
-      );
-
-      this.rewards = mutezToTz(
-        reward.div(ACCURANCY_MULTIPLIER)
-      ).toFormat(6);
+      const val = reward.idiv(ACCURANCY_MULTIPLIER);
+      this.rewards = mutezToTz(val).toFormat(6);
     } catch (err) {
       console.error(err);
     } finally {
