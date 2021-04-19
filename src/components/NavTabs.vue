@@ -22,7 +22,7 @@
       />
 
       <p class="ml-3 text-sm">
-        Please, migrate your liquidity from QuipuSwap v1 to QuipuSwap v1.1 contracts. This upgrade is required and ensures correctness of the baking rewards and adds imporvements to the voting system.
+        Please, migrate your liquidity from QuipuSwap v1 to QuipuSwap v1.1 contracts. This upgrade is required and ensures correctness of the baking rewards and adds improvements to the voting system.
       </p>
 
       <!-- <button class="absolute top-0 right-0 p-2 focus:outline-none" @click="handleCloseInfoBanner">
