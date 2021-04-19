@@ -199,7 +199,7 @@ export function addCustomToken(token: QSAsset) {
     const current = getCustomTokens();
     const net = getNetwork();
     localStorage.setItem(
-      `custom_tokens_${net.id}`,
+      `custom_tokens_v1.1_${net.id}`,
       JSON.stringify([token, ...current])
     );
   } catch {}
