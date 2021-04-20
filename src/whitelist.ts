@@ -111,7 +111,7 @@ export const TOKEN_WHITELIST: WhitelistedToken[] = [
   },
 
   /**
-   * Testnet
+   * Florence
    */
 
   {
@@ -136,10 +136,31 @@ export const TOKEN_WHITELIST: WhitelistedToken[] = [
     type: "fa1.2",
     contractAddress: "KT1CMbwrQodEYFpdJmk8pzN8SzieupG6ZrZE",
   },
+
+  /**
+   * Edonet
+   */
+
   {
     network: Network.Edo2net,
     type: "fa2",
-    contractAddress: "KT1SnUsFsP3zQJsuGzBowdzn2tqGk4xuUsWv",
+    contractAddress: "KT1RncEZB9bgYJCvqZKQCZFWhBpmfTDdcaeN",
     fa2TokenId: 0,
+  },
+  {
+    network: Network.Edo2net,
+    type: "fa2",
+    contractAddress: "KT1KLj7ctxde78ksTkz9VBvu6UaowTE8UCiX",
+    fa2TokenId: 0,
+  },
+  {
+    network: Network.Edo2net,
+    type: "fa1.2",
+    contractAddress: "KT1WXUmY2kxVZwAJe3mrXCMmDZFTCYvpvLzz",
+  },
+  {
+    network: Network.Edo2net,
+    type: "fa1.2",
+    contractAddress: "KT1QdiZFqQhnZs4B2inMekSrqCrEVtbPfuVV",
   },
 ];
