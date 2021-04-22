@@ -336,8 +336,8 @@ export default class RemoveLiquidity extends Vue {
         throw new Error("Not Enough Shares");
       }
 
-      const minTezos = tzToMutez(this.inTokens!.tezos);
-      const minToken = toNat(this.inTokens!.token, selTk);
+      const minTezos = withSlippage(tzToMutez(this.inTokens!.tezos), 0.01);
+      const minToken = withSlippage(toNat(this.inTokens!.token, selTk), 0.01);
 
       const dexContract = await tezos.wallet.at(selTk.exchange);
       const operation = await dexContract.methods
@@ -375,6 +375,12 @@ export default class RemoveLiquidity extends Vue {
     this.loadPoolMetadata();
     this.calcInTokens();
   }
+}
+
+function withSlippage(val: BigNumber.Value, tolerance: BigNumber.Value) {
+  return new BigNumber(val)
+    .times(new BigNumber(1).minus(tolerance))
+    .integerValue(BigNumber.ROUND_DOWN);
 }
 </script>
 
