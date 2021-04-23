@@ -6,9 +6,9 @@ export interface QSAsset {
   symbol: string;
   name: string;
   imgUrl: string;
-  exchange: string;
   fa2TokenId?: number;
   default?: boolean;
+  exchange: string;
 }
 
 export enum QSTokenType {
@@ -17,6 +17,11 @@ export enum QSTokenType {
   Staker = "STAKER",
   FA1_2 = "FA1.2",
   FA2 = "FA2",
+}
+
+export interface QST2TPair {
+  storage: any;
+  id: string;
 }
 
 export interface QSNetwork {
@@ -32,6 +37,8 @@ export interface QSNetwork {
   rpcBaseURL: string;
   fa1_2FactoryContract: string | null;
   fa2FactoryContract: string | null;
+  fa1_2T2TDexContract: string | null;
+  fa2T2TDexContract: string | null;
   description: string;
   color: string;
   disabled: boolean;

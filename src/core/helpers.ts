@@ -2,7 +2,7 @@ import { validateAddress, ValidationResult } from "@taquito/utils";
 import { Signer } from "@taquito/taquito";
 import BigNumber from "bignumber.js";
 import { Tezos, getContract } from "./state";
-import { QSAsset } from "./types";
+import { QSAsset, QSTokenType } from "./types";
 
 export async function isDexContainsLiquidity(dexAddress: string) {
   const dex = await getContract(dexAddress);
@@ -43,7 +43,11 @@ export function isUnsafeAllowanceChangeError(err: any) {
 }
 
 export function toAssetSlug(asset: QSAsset) {
-  return asset.type === "xtz" ? "tez" : `${asset.id}_${asset.fa2TokenId ?? 0}`;
+  return asset.type === "xtz"
+    ? "tez"
+    : asset.tokenType === QSTokenType.FA2
+    ? `${asset.id}_${asset.fa2TokenId}`
+    : asset.id;
 }
 
 export function tzToMutez(tz: any): BigNumber {

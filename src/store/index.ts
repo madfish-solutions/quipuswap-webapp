@@ -11,13 +11,12 @@ import {
   ReadOnlySigner,
   michelEncoder,
   getTokenMetadata,
-  getStorage,
   QSTokenType,
   sanitizeImgUri,
-  getContract,
   filteredWhitelist,
   sharesFromNat,
   getDexShares,
+  getDexStorage,
 } from "@/core";
 import { TezosToolkit } from "@taquito/taquito";
 import { Route } from "vue-router";
@@ -111,11 +110,10 @@ router.onReady((route: Route) => {
   if (route.params.token) {
     (async () => {
       try {
-        const dex = await getContract(route.params.token);
-        const { storage } = await dex.storage<any>();
+        const dexStorage = await getDexStorage(route.params.token);
         loadCustomTokenIfExist(
-          storage.token_address,
-          storage.token_id ? +storage.token_id : undefined
+          dexStorage.tokenAddress,
+          dexStorage.tokenId ? +dexStorage.tokenId : undefined
         );
       } catch {}
     })();
@@ -141,7 +139,7 @@ export async function loadCustomTokenIfExist(
     const currentCustom = getCustomTokens();
     if (
       filteredWhitelist.some(wt =>
-        fa2TokenId !== undefined
+        wt.fa2TokenId !== undefined
           ? wt.contractAddress === contractAddress &&
             wt.fa2TokenId === fa2TokenId
           : wt.contractAddress === contractAddress
@@ -155,42 +153,18 @@ export async function loadCustomTokenIfExist(
       return;
     }
 
-    const { fa1_2FactoryContract, fa2FactoryContract } = getNetwork();
-    if (!fa1_2FactoryContract && !fa2FactoryContract) {
-      throw new Error("Contracts for this network not found");
-    }
-
-    let exchange;
-    if (fa2TokenId !== undefined) {
-      if (fa2FactoryContract) {
-        const facStorage = await getStorage(fa2FactoryContract);
-        exchange = await facStorage.token_to_exchange.get([
-          contractAddress,
-          fa2TokenId.toString(),
-        ]);
-      }
-    } else {
-      if (fa1_2FactoryContract) {
-        const facStorage = await getStorage(fa1_2FactoryContract);
-        exchange = await facStorage.token_to_exchange.get(contractAddress);
-      }
-    }
-
-    if (exchange) {
-      const metadata = await getTokenMetadata(contractAddress, fa2TokenId);
-      addCustomToken({
-        type: "token" as const,
-        tokenType:
-          fa2TokenId !== undefined ? QSTokenType.FA2 : QSTokenType.FA1_2,
-        id: contractAddress,
-        fa2TokenId,
-        exchange,
-        decimals: metadata.decimals,
-        symbol: metadata.symbol,
-        name: metadata.name,
-        imgUrl: sanitizeImgUri(metadata.thumbnailUri),
-      });
-    }
+    const metadata = await getTokenMetadata(contractAddress, fa2TokenId);
+    addCustomToken({
+      type: "token" as const,
+      tokenType: fa2TokenId !== undefined ? QSTokenType.FA2 : QSTokenType.FA1_2,
+      id: contractAddress,
+      fa2TokenId,
+      decimals: metadata.decimals,
+      symbol: metadata.symbol,
+      name: metadata.name,
+      imgUrl: sanitizeImgUri(metadata.thumbnailUri),
+      exchange: "",
+    });
   } catch {}
 }
 
