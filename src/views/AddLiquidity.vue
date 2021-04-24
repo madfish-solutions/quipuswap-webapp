@@ -378,11 +378,8 @@ export default class AddLiquidity extends Vue {
         1
       );
 
-      const tokenAmount = fromNat(
-        toNat(estimateInTokens(shares, dexStorage, selTk), selTk).plus(1),
-        selTk
-      );
-      const tezAmount = estimateInTezos(shares, dexStorage).plus(TZ_PENNY);
+      const tokenAmount = estimateInTokens(shares, dexStorage, selTk);
+      const tezAmount = estimateInTezos(shares, dexStorage);
 
       const toCheck = [
         {
