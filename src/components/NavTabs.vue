@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="h-10 nav-wrapper shadow-lg">
+    <div class="h-10 shadow-lg nav-wrapper">
       <router-link class="nav-item" active-class="active" to="/swap">
         <span>Swap</span></router-link
       >
@@ -15,14 +15,14 @@
       >
     </div>
 
-    <div v-if="infoBannerDisplayed" class="relative mt-6 mb-4 bg-accent rounded text-gray-800 flex items-center py-4 pl-4 pr-8">
+    <div v-if="infoBannerDisplayed" class="relative flex items-center py-4 pl-4 pr-8 mt-6 mb-4 text-gray-800 rounded bg-accent">
       <img
         src="@/assets/danger.svg"
         style="width: 24px; height: 24px;"
       />
 
       <p class="ml-3 text-sm">
-        Please, migrate your liquidity from QuipuSwap v1 to QuipuSwap v1.1 contracts. This upgrade is required and ensures correctness of the baking rewards and adds improvements to the voting system.
+        Please, migrate your liquidity from QuipuSwap v1 to QuipuSwap v1.2 contracts. This upgrade is required and ensures correctness of the baking rewards and adds improvements to the voting system.
       </p>
 
       <!-- <button class="absolute top-0 right-0 p-2 focus:outline-none" @click="handleCloseInfoBanner">
@@ -39,7 +39,7 @@
       :href="pool.link"
       target="_blank"
       rel="noopener noreferrer"
-      class="my-2 bg-darkblue rounded text-white flex items-center px-4 py-2 text-sm hover:bg-gray-800"
+      class="flex items-center px-4 py-2 my-2 text-sm text-white rounded bg-darkblue hover:bg-gray-800"
     >
       <img class="w-5 h-5 mr-1" src="@/assets/xtz.png" />
       <div class="mr-1 opacity-75">+</div>
@@ -48,7 +48,7 @@
       <span><span class="opacity-75">Shares:</span> <span class="font-semibold">{{ pool.balance }}</span></span>
       <div class="flex-1" />
       <div
-        class="text-accent font-medium flex items-center group-hover:underline"
+        class="flex items-center font-medium text-accent group-hover:underline"
       >
         Migrate
         <img class="w-3 h-3 ml-1" src="@/assets/arrow-right-top.svg" />
