@@ -3,9 +3,9 @@
 
 
 "@airgap/beacon-sdk@^2.2.3":
-  version "2.2.3"
-  resolved "https://registry.yarnpkg.com/@airgap/beacon-sdk/-/beacon-sdk-2.2.3.tgz#82b0b3060dd6f9d20a78cd81ef366c45f58ed358"
-  integrity sha512-G1VRfHvPNJHq2I5NBVANdgavz8E9AcbhxrcCbmBXXHXgh1eHQb7X2+ntIFgCJ686aOPbbk8JOi6L98VDg57HYg==
+  version "2.2.5"
+  resolved "https://registry.yarnpkg.com/@airgap/beacon-sdk/-/beacon-sdk-2.2.5.tgz#a702964323e1a6148833c1f2ec6fb06061adfddf"
+  integrity sha512-4DNh4aPl92+zFD/E5dC4WgAGYOjcJnSxzkBiQGR/oW74GTJe6hL9p0TBnJFqp5fHnqjBQSjT1zQmXG5TIZ3efw==
   dependencies:
     "@types/chrome" "0.0.115"
     "@types/libsodium-wrappers" "0.7.7"
