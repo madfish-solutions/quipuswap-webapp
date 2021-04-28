@@ -91,39 +91,4 @@ export const MAINNET_V1_0_DEX_WHITELIST: MainnetV10WhitelistedDex[] = [
       thumbnailUri: "https://ethtz.io/ETHtz_purple.png",
     },
   },
-  // hDAO
-  {
-    type: "fa2",
-    dexAddress: "KT1V41fGzkdTJki4d11T1Rp9yPkCmDhB7jph",
-    underlineTokenMetadata: {
-      decimals: 6,
-      symbol: "hDAO",
-      name: "hic et nunc DAO",
-      thumbnailUri:
-        "https://ipfs.io/ipfs/QmPfBrZiRsC39S2VvNbhuxH9HnNcSx8aef9uBCG51J5c4e/",
-    },
-  },
-  // sDAO
-  {
-    type: "fa2",
-    dexAddress: "KT1KKCGmRCy27137wN9WQUYyD14xUbZXyJBA",
-    underlineTokenMetadata: {
-      decimals: 0,
-      symbol: "sDAO",
-      name: "Salsa DAO",
-      thumbnailUri:
-        "https://ipfs.io/ipfs/QmPJ7dMS3T6McqPjjBioKhHqtEUEBhAXpcRf3aicaLNPtV/",
-    },
-  },
-  // Tacos
-  {
-    type: "fa2",
-    dexAddress: "KT1NNwvwvJVrw5Fuq4Nqu4upqqsktsUapzFK",
-    underlineTokenMetadata: {
-      decimals: 18,
-      symbol: "TCZ",
-      name: "Tacoz",
-      thumbnailUri: "https://tacoz.cash/images/logo_small.png",
-    },
-  },
 ];

@@ -75,7 +75,7 @@ export async function getTokens() {
 export function getCustomTokens(): QSAsset[] {
   try {
     const net = getNetwork();
-    const val = localStorage.getItem(`custom_tokens_v1.1_${net.id}`);
+    const val = localStorage.getItem(`custom_tokens_v1.2_${net.id}`);
     if (!val) return [];
     return JSON.parse(val);
   } catch {

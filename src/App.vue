@@ -3,16 +3,16 @@
     <div class="container relative px-4 py-4 mx-auto xs:px-6">
       <header class="flex flex-col items-center mb-12 align-middle lg:items-stretch lg:flex-row">
         <div class="flex flex-col flex-1 pt-4 select-none">
-          <div class="flex mb-4 mt-2">
+          <div class="flex mt-2 mb-4">
             <a
               :href="V1_0Url"
-              class="flex items-stretch w-48 h-8 text-white border rounded-lg connect-button button-network border-accent focus:outline-none overflow-hidden"
+              class="flex items-stretch w-48 h-8 overflow-hidden text-white border rounded-lg connect-button button-network border-accent focus:outline-none"
             >
-              <div class="w-1/2 flex items-center justify-center">
+              <div class="flex items-center justify-center w-1/2">
                 v<span class="font-semibold">1.0</span>
               </div>
-              <div class="w-1/2 flex items-center justify-center bg-accent text-gray-800">
-                v<span class="font-semibold">1.1</span>
+              <div class="flex items-center justify-center w-1/2 text-gray-800 bg-accent">
+                v<span class="font-semibold">1.2</span>
               </div>
             </a>
           </div>

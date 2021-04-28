@@ -68,7 +68,7 @@ export const MAINNET_NETWORK: QSNetwork = {
   id: "mainnet",
   name: "Tezos Mainnet",
   type: "main",
-  rpcBaseURL: "https://mainnet-tezos.giganode.io/",
+  rpcBaseURL: "https://rpc.tzbeta.net/",
   fa1_2FactoryContract: FA1_2_FACTORY_CONTRACT_MAINNET,
   fa2FactoryContract: FA2_FACTORY_CONTRACT_MAINNET,
   fa1_2T2TDexContract: null,
