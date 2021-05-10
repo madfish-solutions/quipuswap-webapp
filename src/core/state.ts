@@ -12,7 +12,7 @@ import { tzip12, Tzip12Module } from "@taquito/tzip12";
 import { Parser } from "@taquito/michel-codec";
 import BigNumber from "bignumber.js";
 import mem from "mem";
-import { QSAsset, QSNetwork, QSTokenType, QST2TPair } from "./types";
+import { QSAsset, QSNetwork, QSTokenType } from "./types";
 import { snakeToCamelKeys, toAssetSlug } from "./helpers";
 import { FastRpcClient } from "./taquito-fast-rpc";
 import { LambdaViewSigner } from "./lambda-view";
@@ -151,93 +151,6 @@ export function deapproveFA2(
     );
   } else {
     return batch;
-  }
-}
-
-export async function getT2TPairId(
-  tokenA: QSAsset,
-  tokenB: QSAsset
-): Promise<QST2TPair | null> {
-  try {
-    if (tokenA.type !== "xtz") {
-      if (tokenA.tokenType === tokenB.tokenType) {
-        if (tokenA.tokenType === QSTokenType.FA2) {
-          const { fa2T2TDexContract } = getNetwork();
-          if (fa2T2TDexContract) {
-            const dexStorage = await getDexStorage(fa2T2TDexContract);
-            const aLower =
-              `${tokenA.id}${tokenA.fa2TokenId}` <
-              `${tokenB.id}${tokenB.fa2TokenId}`;
-
-            const keyMichelson = michelParser.parseMichelineExpression(
-              aLower
-                ? `( Pair (Pair "${tokenA.id}" ${tokenA.fa2TokenId}) (Pair "${tokenB.id}" ${tokenB.fa2TokenId}) )`
-                : `( Pair (Pair "${tokenB.id}" ${tokenB.fa2TokenId}) (Pair "${tokenA.id}" ${tokenA.fa2TokenId}) )`
-            );
-            if (keyMichelson) {
-              const { packed: key } = await michelEncoder.packData({
-                type: {
-                  prim: "pair",
-                  args: [
-                    {
-                      prim: "pair",
-                      args: [{ prim: "address" }, { prim: "nat" }],
-                    },
-                    {
-                      prim: "pair",
-                      args: [{ prim: "address" }, { prim: "nat" }],
-                    },
-                  ],
-                },
-                data: keyMichelson,
-              });
-              const pairId = await dexStorage.tokenToId.get(key);
-              if (pairId) {
-                return {
-                  id: pairId.toString(),
-                  storage: dexStorage,
-                };
-              }
-              // const pairData = await storage.pairs.get(pairId);
-              // console.info(pairData);
-            }
-          }
-        } else {
-          const { fa1_2T2TDexContract } = getNetwork();
-          if (fa1_2T2TDexContract) {
-            const dexStorage = await getDexStorage(fa1_2T2TDexContract);
-            const aLower = tokenA.id < tokenB.id;
-
-            const keyMichelson = michelParser.parseMichelineExpression(
-              aLower
-                ? `( Pair "${tokenA.id}" "${tokenB.id}" )`
-                : `( Pair "${tokenB.id}" "${tokenA.id}" )`
-            );
-            if (keyMichelson) {
-              const { packed: key } = await michelEncoder.packData({
-                type: {
-                  prim: "pair",
-                  args: [{ prim: "address" }, { prim: "address" }],
-                },
-                data: keyMichelson,
-              });
-              const pairId = await dexStorage.tokenToId.get(key);
-              if (pairId) {
-                return {
-                  id: pairId.toString(),
-                  storage: dexStorage,
-                };
-              }
-            }
-          }
-        }
-      }
-    }
-
-    return null;
-  } catch (err) {
-    console.error(err);
-    return null;
   }
 }
 

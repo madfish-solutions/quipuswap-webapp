@@ -19,11 +19,6 @@ export enum QSTokenType {
   FA2 = "FA2",
 }
 
-export interface QST2TPair {
-  storage: any;
-  id: string;
-}
-
 export interface QSNetwork {
   id:
     | "mainnet"
@@ -37,8 +32,6 @@ export interface QSNetwork {
   rpcBaseURL: string;
   fa1_2FactoryContract: string | null;
   fa2FactoryContract: string | null;
-  fa1_2T2TDexContract: string | null;
-  fa2T2TDexContract: string | null;
   description: string;
   color: string;
   disabled: boolean;

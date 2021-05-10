@@ -175,9 +175,6 @@ import {
   isTokenWhitelisted,
   getDexStorage,
   findTezDex,
-  getT2TPairId,
-  QST2TPair,
-  estimateToken2Token,
 } from "@/core";
 import { notifyConfirm } from "../toast";
 
@@ -212,8 +209,6 @@ export default class SwapOrSend extends Vue {
   fee: string | null = null;
   inputDexAddress: string | null = null;
   outputDexAddress: string | null = null;
-  t2tPair: QST2TPair | null = null;
-  t2tPairLoading = false;
 
   swapping = false;
   swapStatus = this.defaultSwapStatus;
@@ -326,14 +321,12 @@ export default class SwapOrSend extends Vue {
   @Watch("inputToken")
   onInputTokenChange() {
     this.loadInputTezDex();
-    this.loadT2TDex();
     this.loadInputBalance();
   }
 
   @Watch("outputToken")
   onOutputTokenChange() {
     this.loadOutputTezDex();
-    this.loadT2TDex();
     this.loadOutputBalance();
   }
 
@@ -346,11 +339,6 @@ export default class SwapOrSend extends Vue {
   @Watch("tokens")
   onTokensChange() {
     this.loadFee();
-  }
-
-  @Watch("t2tPair")
-  onT2TPairIdChange() {
-    console.info(this.t2tPair);
   }
 
   async loadInputTezDex() {
@@ -376,21 +364,6 @@ export default class SwapOrSend extends Vue {
     }
 
     this.calcOutputAmount();
-  }
-
-  async loadT2TDex() {
-    if (this.t2tPairLoading) return;
-    this.t2tPairLoading = true;
-
-    this.t2tPair = null;
-    if (this.inputToken && this.outputToken) {
-      const t2tPairIdBN = await getT2TPairId(this.inputToken, this.outputToken);
-      if (t2tPairIdBN) {
-        this.t2tPair = t2tPairIdBN;
-      }
-    }
-
-    this.t2tPairLoading = false;
   }
 
   async loadInputBalance() {
@@ -532,14 +505,7 @@ export default class SwapOrSend extends Vue {
         break;
 
       case inType === "token" && outType === "token":
-        if (this.t2tPair) {
-          amount = estimateToken2Token(
-            await this.t2tPair.storage.pairs.get(this.t2tPair.storage.id),
-            this.inputToken,
-            this.outputToken,
-            this.inputAmount,
-          );
-        } else if (this.inputDexAddress && this.outputDexAddress) {
+        if (this.inputDexAddress && this.outputDexAddress) {
           amount = estimateTezToToken(
             estimateTokenToTez(
               this.inputAmount,
