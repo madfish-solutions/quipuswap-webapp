@@ -119,7 +119,7 @@ export async function getTokenMetadata(
   const result = {
     decimals: tokenData.decimals ? +tokenData.decimals : 0,
     symbol: tokenData.symbol || contractAddress,
-    name: tokenData.name || "Unknown Token",
+    name: tokenData.name || tokenData.symbol || "Unknown Token",
     thumbnailUri:
       tokenData.thumbnailUri ??
       tokenData.logo ??
