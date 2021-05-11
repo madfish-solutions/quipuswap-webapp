@@ -120,12 +120,11 @@ function toTokenSlug(token: QSAsset) {
   return `${token.id}_${token.fa2TokenId ?? 0}`;
 }
 
-export function sanitizeImgUri(origin: string) {
-  if (origin.startsWith("ipfs://")) {
-    return `https://ipfs.io/ipfs/${origin.substring(7)}/`;
-  }
-
-  return origin;
+export function sanitizeImgUri(origin: string, x = 64, y = 64) {
+  const urlToSanitize = origin.startsWith("ipfs://")
+    ? `https://ipfs.io/ipfs/${origin.substring(7)}/`
+    : origin;
+  return `https://img.templewallet.com/insecure/fit/${x}/${y}/ce/0/plain/${urlToSanitize}`;
 }
 
 export function approveToken(
