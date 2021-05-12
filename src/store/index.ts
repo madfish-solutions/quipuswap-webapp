@@ -17,6 +17,7 @@ import {
   sharesFromNat,
   getDexShares,
   getDexStorage,
+  findTezDex,
 } from "@/core";
 import { TezosToolkit } from "@taquito/taquito";
 import { Route } from "vue-router";
@@ -88,17 +89,17 @@ async function loadV0Pools() {
     }
   } catch (_err) {}
 }
-loadV0Pools();
+// loadV0Pools();
 
-store.subscribe(mutation => {
-  if (mutation.type === "account") {
-    loadV0Pools();
-  }
-});
+// store.subscribe(mutation => {
+//   if (mutation.type === "account") {
+//     loadV0Pools();
+//   }
+// });
 
 loadTokens();
 router.onReady((route: Route) => {
-  [route.query.from, route.query.to].forEach(assetSlug => {
+  [route.query.from, route.query.to, route.params.token].forEach(assetSlug => {
     if (assetSlug && assetSlug !== "tez") {
       try {
         const [tokenAddress, fa2TokenId] = (assetSlug as any).split("_");
@@ -106,18 +107,6 @@ router.onReady((route: Route) => {
       } catch {}
     }
   });
-
-  if (route.params.token) {
-    (async () => {
-      try {
-        const dexStorage = await getDexStorage(route.params.token);
-        loadCustomTokenIfExist(
-          dexStorage.tokenAddress,
-          dexStorage.tokenId ? +dexStorage.tokenId : undefined
-        );
-      } catch {}
-    })();
-  }
 });
 
 export async function loadTokens() {
