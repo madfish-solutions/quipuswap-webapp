@@ -115,6 +115,12 @@ export const TOKEN_WHITELIST: WhitelistedToken[] = [
     contractAddress: "KT1LRboPna9yQY9BrjtQYDS1DVxhKESK4VVd",
     fa2TokenId: 0,
   },
+  {
+    network: Network.Main,
+    type: "fa2",
+    contractAddress: "KT1BHCumksALJQJ8q8to2EPigPW6qpyTr7Ng",
+    fa2TokenId: 0,
+  },
 
   {
     network: Network.Main,
