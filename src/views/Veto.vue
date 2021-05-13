@@ -131,6 +131,7 @@ import {
   isUnsafeAllowanceChangeError,
   sharesFromNat,
   sharesToNat,
+  LP_TOKEN_DECIMALS,
 } from "@/core";
 import NavTabs from "@/components/NavTabs.vue";
 import NavGovernance from "@/components/NavGovernance.vue";
@@ -228,9 +229,9 @@ export default class Veto extends Vue {
       this.totalVotes = sharesFromNat(storage.totalVotes).toFixed();
       this.totalVetos = sharesFromNat(storage.veto).toFixed();
       this.votesToVeto = sharesFromNat(storage.totalVotes)
-        .div(2)
+        .div(3)
         .minus(sharesFromNat(storage.veto))
-        .toFixed();
+        .toFixed(LP_TOKEN_DECIMALS);
       this.availableSharesToVeto = myShares
         ? sharesFromNat(myShares.unfrozen).toFixed()
         : null;
