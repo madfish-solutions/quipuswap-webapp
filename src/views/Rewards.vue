@@ -56,7 +56,9 @@ import {
   ACCURANCY_MULTIPLIER,
   VOTING_PERIOD,
   getDexShares,
-  getContract
+  getContract,
+  toAssetSlug,
+  findTezDex
 } from "@/core";
 import NavTabs from "@/components/NavTabs.vue";
 import NavGovernance from "@/components/NavGovernance.vue";
@@ -83,6 +85,7 @@ import { notifyConfirm } from "../toast";
 export default class Rewards extends Vue {
   dataLoading = false;
   rewards = "0";
+  dexAddress: string | null = null;
 
   recipientAddress: string = this.account.pkh;
 
@@ -94,14 +97,14 @@ export default class Rewards extends Vue {
   }
 
   get selectedToken(): QSAsset | null {
-    const tokenExchange = this.$route.params.token;
+    const tokenSlug = this.$route.params.token;
     return (
-      store.state.tokens.find((t: any) => t.exchange === tokenExchange) || null
+      store.state.tokens.find((t) => toAssetSlug(t) === tokenSlug) || null
     );
   }
 
   get valid() {
-    return isAddressValid(this.recipientAddress);
+    return this.dexAddress && isAddressValid(this.recipientAddress);
   }
 
   created() {
@@ -126,50 +129,56 @@ export default class Rewards extends Vue {
 
     this.dataLoading = true;
     try {
-      const dexContract = await getContract(this.selectedToken.exchange);
-      const { storage } = await dexContract.storage<any>();
-      const [rewards, shares] = await Promise.all([
-        storage.user_rewards.get(this.account.pkh),
-        storage.ledger.get(this.account.pkh),
-      ]);
+      this.dexAddress = null;
+      const dex = await findTezDex(this.selectedToken);
+      if (dex) {
+        this.dexAddress = dex.address;
 
-      let reward = new BigNumber(rewards?.reward ?? 0);
-      if (shares) {
-        const now = new Date();
-        const periodFinish = new Date(storage.period_finish);
-        const lastUpdateTime = new Date(storage.last_update_time);
-        const rewardsTime = now > periodFinish ? periodFinish : now;
-        let newReward = new BigNumber(
-          Math.abs(+rewardsTime - +lastUpdateTime)
-        ).idiv(1000).times(storage.reward_per_sec);
+        const dexContract = await getContract(dex.address);
+        const { storage } = await dexContract.storage<any>();
+        const [rewards, shares] = await Promise.all([
+          storage.user_rewards.get(this.account.pkh),
+          storage.ledger.get(this.account.pkh),
+        ]);
 
-        if (now > periodFinish) {
-          const periodsDuration = new BigNumber(+now - +periodFinish).idiv(1000)
-            .idiv(VOTING_PERIOD)
-            .plus(1)
-            .times(VOTING_PERIOD);
-          const rewardPerSec = new BigNumber(storage.reward)
-            .times(ACCURANCY_MULTIPLIER)
-            .idiv(periodsDuration.abs());
-          newReward = new BigNumber(+now - +periodFinish).idiv(1000).abs().times(rewardPerSec);
+        let reward = new BigNumber(rewards?.reward ?? 0);
+        if (shares) {
+          const now = new Date();
+          const periodFinish = new Date(storage.period_finish);
+          const lastUpdateTime = new Date(storage.last_update_time);
+          const rewardsTime = now > periodFinish ? periodFinish : now;
+          let newReward = new BigNumber(
+            Math.abs(+rewardsTime - +lastUpdateTime)
+          ).idiv(1000).times(storage.reward_per_sec);
+
+          if (now > periodFinish) {
+            const periodsDuration = new BigNumber(+now - +periodFinish).idiv(1000)
+              .idiv(VOTING_PERIOD)
+              .plus(1)
+              .times(VOTING_PERIOD);
+            const rewardPerSec = new BigNumber(storage.reward)
+              .times(ACCURANCY_MULTIPLIER)
+              .idiv(periodsDuration.abs());
+            newReward = new BigNumber(+now - +periodFinish).idiv(1000).abs().times(rewardPerSec);
+          }
+
+          const rewardPerShare = new BigNumber(storage.reward_per_share).plus(
+            newReward.idiv(storage.total_supply)
+          );
+          const totalShares = new BigNumber(shares.balance).plus(
+            shares.frozen_balance
+          );
+          reward = reward.plus(
+            totalShares
+              .times(rewardPerShare)
+              .minus(rewards?.reward_paid ?? 0)
+              .abs()
+          );
         }
 
-        const rewardPerShare = new BigNumber(storage.reward_per_share).plus(
-          newReward.idiv(storage.total_supply)
-        );
-        const totalShares = new BigNumber(shares.balance).plus(
-          shares.frozen_balance
-        );
-        reward = reward.plus(
-          totalShares
-            .times(rewardPerShare)
-            .minus(rewards?.reward_paid ?? 0)
-            .abs()
-        );
+        const val = reward.idiv(ACCURANCY_MULTIPLIER);
+        this.rewards = mutezToTz(val).toFormat(6);
       }
-
-      const val = reward.idiv(ACCURANCY_MULTIPLIER);
-      this.rewards = mutezToTz(val).toFormat(6);
     } catch (err) {
       console.error(err);
     } finally {
@@ -178,15 +187,17 @@ export default class Rewards extends Vue {
   }
 
   selectToken(token: QSAsset) {
-    this.$router.replace(`/governance/rewards/${token.exchange}`);
+    this.$router.replace(`/governance/rewards/${toAssetSlug(token)}`);
   }
 
   async handleWithdraw() {
     if (this.processing) return;
     this.processing = true;
     try {
+      const dexAddress = this.dexAddress!;
+
       const tezos = await useWallet();
-      const contract = await tezos.wallet.at(this.selectedToken!.exchange);
+      const contract = await tezos.wallet.at(dexAddress);
       const operation = await contract.methods
         .use("withdrawProfit", this.recipientAddress)
         .send();

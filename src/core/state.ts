@@ -191,7 +191,9 @@ export function clearMem() {
 export const getDexStorage = (contractAddress: string) =>
   getStorage(contractAddress).then(s => snakeToCamelKeys(s.storage));
 
-export async function findTezDex(token: QSAsset) {
+export const findTezDex = mem(findTezDexPure);
+
+export async function findTezDexPure(token: QSAsset) {
   if (token.type === "xtz") return null;
 
   try {
