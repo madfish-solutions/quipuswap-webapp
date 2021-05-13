@@ -11,7 +11,7 @@
         <div class="w-full">
           <template v-if="selectedToken">
             <div class="flex items-center">
-              <img class="w-5 h-5 mr-2" :src="selectedToken.imgUrl" />
+              <img class="w-5 h-5 mr-2" :src="tokenImgUrl" />
               <span class="truncate">{{ formattedSelectedTokenSymbol }}</span>
             </div>
 
@@ -68,7 +68,7 @@ import { Vue, Component, Prop, Ref, Watch } from "vue-property-decorator";
 import TokenItem from "@/components/Form/TokenItem.vue";
 import Loader from "@/components/Loader.vue";
 
-import { QSAsset, isAddressValid } from "@/core";
+import { QSAsset, isAddressValid, sanitizeImgUrl } from "@/core";
 import store from "@/store";
 
 @Component({
@@ -89,6 +89,10 @@ export default class GovernancePairSelect extends Vue {
     if (this.selectedToken) {
       this.isSearchOpened = false;
     }
+  }
+
+  get tokenImgUrl() {
+    return this.selectedToken ? sanitizeImgUrl(this.selectedToken.imgUrl) : "";
   }
 
   get formattedSelectedTokenSymbol() {

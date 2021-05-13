@@ -13,7 +13,7 @@ import {
   getTokenMetadata,
   getStorage,
   QSTokenType,
-  sanitizeImgUri,
+  formatImgUri,
   getContract,
   filteredWhitelist,
   sharesFromNat,
@@ -188,7 +188,7 @@ export async function loadCustomTokenIfExist(
         decimals: metadata.decimals,
         symbol: metadata.symbol,
         name: metadata.name,
-        imgUrl: sanitizeImgUri(metadata.thumbnailUri),
+        imgUrl: formatImgUri(metadata.thumbnailUri),
       });
     }
   } catch {}
