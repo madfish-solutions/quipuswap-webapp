@@ -149,7 +149,7 @@
           Reddit
         </a>
         |
-        <a href="https://docs.quipuswap.com/faq" target="_blank" rel="noopener noreferrer" class="px-4">
+        <a href="https://madfish.crunch.help/quipu-swap" target="_blank" rel="noopener noreferrer" class="px-4">
           FAQ
         </a>
         |
