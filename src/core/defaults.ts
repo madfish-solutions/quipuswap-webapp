@@ -2,16 +2,19 @@ import { QSAsset, QSTokenType, QSNetwork } from "@/core/types";
 
 export { TOKEN_WHITELIST } from "../whitelist";
 
+// Florencenet
 export const FA1_2_FACTORY_CONTRACT_FLORENCENET =
   process.env.VUE_APP_FA1_2_FACTORY_CONTRACT_FLORENCENET || null;
 export const FA2_FACTORY_CONTRACT_FLORENCENET =
   process.env.VUE_APP_FA2_FACTORY_CONTRACT_FLORENCENET || null;
 
+// Edonet
 export const FA1_2_FACTORY_CONTRACT_EDONET =
   process.env.VUE_APP_FA1_2_FACTORY_CONTRACT_EDONET || null;
 export const FA2_FACTORY_CONTRACT_EDONET =
   process.env.VUE_APP_FA2_FACTORY_CONTRACT_EDONET || null;
 
+// Mainnet
 export const FA1_2_FACTORY_CONTRACT_MAINNET =
   process.env.VUE_APP_FA1_2_FACTORY_CONTRACT_MAINNET || null;
 export const FA2_FACTORY_CONTRACT_MAINNET =

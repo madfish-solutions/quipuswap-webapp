@@ -11,7 +11,7 @@
         <div class="w-full">
           <template v-if="selectedToken">
             <div class="flex items-center">
-              <img class="w-5 h-5 mr-2" :src="selectedToken.imgUrl" />
+              <img class="w-5 h-5 mr-2" :src="tokenImgUrl" />
               <span class="truncate">{{ formattedSelectedTokenSymbol }}</span>
             </div>
 
@@ -20,7 +20,7 @@
             >
               <span class="mr-1">Dex contract:</span>
               <span class="font-mono text-gray-400">{{
-                selectedToken.exchange
+                dexAddress || ""
               }}</span>
             </div>
           </template>
@@ -50,7 +50,7 @@
         <template v-if="filteredTokens.length">
           <TokenItem
             v-for="token in filteredTokens"
-            :key="token.id"
+            :key="`${token.id}_${token.fa2TokenId}`"
             :token="token"
             :symbol="token.symbol"
             :name="token.name"
@@ -68,7 +68,7 @@ import { Vue, Component, Prop, Ref, Watch } from "vue-property-decorator";
 import TokenItem from "@/components/Form/TokenItem.vue";
 import Loader from "@/components/Loader.vue";
 
-import { QSAsset, isAddressValid } from "@/core";
+import { QSAsset, isAddressValid, toAssetSlug, findTezDex, sanitizeImgUrl } from "@/core";
 import store from "@/store";
 
 @Component({
@@ -83,12 +83,22 @@ export default class GovernancePairSelect extends Vue {
   searchValue: string = "";
   isSearchOpened: boolean = !Boolean((this as any).selectedToken);
   isLoading: boolean = false;
+  dexAddress: string | null = null;
+
+  created() {
+    this.loadDex();
+  }
 
   @Watch("selectedToken")
   onSelectedTokenChanged() {
     if (this.selectedToken) {
       this.isSearchOpened = false;
     }
+    this.loadDex();
+  }
+
+  get tokenImgUrl() {
+    return this.selectedToken ? sanitizeImgUrl(this.selectedToken.imgUrl) : "";
   }
 
   get formattedSelectedTokenSymbol() {
@@ -117,10 +127,21 @@ export default class GovernancePairSelect extends Vue {
 
   selectToken(token: QSAsset) {
     this.searchValue = "";
-    if (!this.selectedToken || this.selectedToken.exchange !== token.exchange) {
+    if (!this.selectedToken || toAssetSlug(this.selectedToken) !== toAssetSlug(token)) {
       this.$emit("token-selected", token);
     } else {
       this.isSearchOpened = false;
+    }
+  }
+
+  async loadDex() {
+    this.dexAddress = null;
+
+    if (this.selectedToken) {
+      const dex = await findTezDex(this.selectedToken);
+      if (dex) {
+        this.dexAddress = dex.address;
+      }
     }
   }
 }

@@ -129,6 +129,8 @@ import {
   fromNat,
   sharesFromNat,
   sharesToNat,
+  toAssetSlug,
+  findTezDex,
 } from "@/core";
 import { XTZ_TOKEN } from "@/core/defaults";
 import { notifyConfirm } from "../toast";
@@ -170,9 +172,9 @@ export default class RemoveLiquidity extends Vue {
   remLiqStatus = this.defaultRemLiqStatus;
 
   get selectedToken(): QSAsset | null {
-    const tokenExchange = this.$route.params.token;
+     const tokenSlug = this.$route.params.token;
     return (
-      store.state.tokens.find((t: any) => t.exchange === tokenExchange) || null
+      store.state.tokens.find((t) => toAssetSlug(t) === tokenSlug) || null
     );
   }
 
@@ -187,6 +189,7 @@ export default class RemoveLiquidity extends Vue {
   get valid() {
     return (
       this.selectedToken &&
+      this.dexAddress &&
       this.sharesToRemove &&
       +this.sharesToRemove > 0 &&
       this.inTokens
@@ -211,25 +214,29 @@ export default class RemoveLiquidity extends Vue {
 
   @Watch("selectedToken")
   onSelectedTokenChange() {
-    this.loadMyShares();
+    this.loadDex();
+  }
+
+  @Watch("dexAddress")
+  onDexAddressChange() {
     this.loadPoolMetadata();
+    this.loadMyShares();
   }
 
   @Watch("account")
   onAccountChange() {
-    this.loadMyShares();
     this.loadPoolMetadata();
+    this.loadMyShares();
   }
 
   async loadMyShares() {
     this.myShares = null;
+
     try {
-      this.tokenLoading = true;
-      if (this.selectedToken && this.account.pkh) {
-        const dexStorage = await getDexStorage(this.selectedToken.exchange);
+      if (this.selectedToken && this.dexAddress && this.account.pkh) {
         const shares = await getDexShares(
           this.account.pkh,
-          this.selectedToken.exchange
+          this.dexAddress
         );
         if (!shares) {
           this.myShares = "0";
@@ -241,20 +248,33 @@ export default class RemoveLiquidity extends Vue {
       if (process.env.NODE_ENV === "development") {
         console.error(err);
       }
-    } finally {
+    }
+  }
+
+  async loadDex() {
+    this.dexAddress = null;
+
+    if (this.selectedToken) {
+      this.tokenLoading = true;
+      const dex = await findTezDex(this.selectedToken);
+      if (dex) {
+        this.dexAddress = dex.address;
+      }
       this.tokenLoading = false;
+
+      this.calcInTokens();
     }
   }
 
   async loadPoolMetadata() {
     this.poolMeta = null;
 
-    if (this.selectedToken && this.account.pkh) {
+    if (this.selectedToken && this.dexAddress && this.account.pkh) {
       const myShares = await getDexShares(
         this.account.pkh,
-        this.selectedToken.exchange
+        this.dexAddress
       );
-      const dexStorage = await getDexStorage(this.selectedToken.exchange);
+      const dexStorage = await getDexStorage(this.dexAddress);
 
       const myShare =
         myShares &&
@@ -280,13 +300,11 @@ export default class RemoveLiquidity extends Vue {
   }
 
   async handleTokenSelect(token: QSAsset) {
-    this.$router.replace(`/invest/remove-liquidity/${token.exchange}`);
-    this.dexAddress = token.exchange;
+    this.$router.replace(`/invest/remove-liquidity/${toAssetSlug(token)}`);
 
     if (!this.sharesToRemove) {
       this.sharesToRemove = "1";
     }
-    this.calcInTokens();
   }
 
   handleSharesToRemoveChange(amount: string) {
@@ -301,9 +319,9 @@ export default class RemoveLiquidity extends Vue {
 
   async calcInTokens() {
     this.inTokens = null;
-    if (!this.selectedToken || !this.sharesToRemove) return;
+    if (!this.selectedToken || !this.dexAddress || !this.sharesToRemove) return;
 
-    const dexStorage = await getDexStorage(this.selectedToken.exchange);
+    const dexStorage = await getDexStorage(this.dexAddress);
 
     const tezAmount = estimateInTezos(sharesToNat(this.sharesToRemove), dexStorage);
     const tokenAmount = estimateInTokens(
@@ -325,8 +343,9 @@ export default class RemoveLiquidity extends Vue {
 
       const shares = sharesToNat(this.sharesToRemove!);
       const selTk = this.selectedToken!;
+      const dexAddress = this.dexAddress!;
 
-      const mySharesPure = await getDexShares(this.account.pkh, selTk.exchange);
+      const mySharesPure = await getDexShares(this.account.pkh, dexAddress);
       let myShares: string | undefined;
       if (mySharesPure) {
         myShares = mySharesPure.unfrozen.toFixed();
@@ -339,7 +358,7 @@ export default class RemoveLiquidity extends Vue {
       const minTezos = withSlippage(tzToMutez(this.inTokens!.tezos), 0.01);
       const minToken = withSlippage(toNat(this.inTokens!.token, selTk), 0.01);
 
-      const dexContract = await tezos.wallet.at(selTk.exchange);
+      const dexContract = await tezos.wallet.at(dexAddress);
       const operation = await dexContract.methods
         .use(
           "divestLiquidity",
