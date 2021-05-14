@@ -122,6 +122,139 @@ export const TOKEN_WHITELIST: WhitelistedToken[] = [
     fa2TokenId: 0,
   },
 
+  {
+    network: Network.Main,
+    type: "fa2",
+    contractAddress: "KT1LRboPna9yQY9BrjtQYDS1DVxhKESK4VVd",
+    fa2TokenId: 0,
+  },
+  {
+    network: Network.Main,
+    type: "fa2",
+    contractAddress: "KT18fp5rcTW7mbWDmzFwjLDUhs5MeJmagDSZ",
+    fa2TokenId: 0,
+  },
+  {
+    network: Network.Main,
+    type: "fa2",
+    contractAddress: "KT18fp5rcTW7mbWDmzFwjLDUhs5MeJmagDSZ",
+    fa2TokenId: 1,
+  },
+  {
+    network: Network.Main,
+    type: "fa2",
+    contractAddress: "KT18fp5rcTW7mbWDmzFwjLDUhs5MeJmagDSZ",
+    fa2TokenId: 2,
+  },
+  {
+    network: Network.Main,
+    type: "fa2",
+    contractAddress: "KT18fp5rcTW7mbWDmzFwjLDUhs5MeJmagDSZ",
+    fa2TokenId: 3,
+  },
+  {
+    network: Network.Main,
+    type: "fa2",
+    contractAddress: "KT18fp5rcTW7mbWDmzFwjLDUhs5MeJmagDSZ",
+    fa2TokenId: 4,
+  },
+  {
+    network: Network.Main,
+    type: "fa2",
+    contractAddress: "KT18fp5rcTW7mbWDmzFwjLDUhs5MeJmagDSZ",
+    fa2TokenId: 5,
+  },
+  {
+    network: Network.Main,
+    type: "fa2",
+    contractAddress: "KT18fp5rcTW7mbWDmzFwjLDUhs5MeJmagDSZ",
+    fa2TokenId: 6,
+  },
+  {
+    network: Network.Main,
+    type: "fa2",
+    contractAddress: "KT18fp5rcTW7mbWDmzFwjLDUhs5MeJmagDSZ",
+    fa2TokenId: 7,
+  },
+  {
+    network: Network.Main,
+    type: "fa2",
+    contractAddress: "KT18fp5rcTW7mbWDmzFwjLDUhs5MeJmagDSZ",
+    fa2TokenId: 8,
+  },
+  {
+    network: Network.Main,
+    type: "fa2",
+    contractAddress: "KT18fp5rcTW7mbWDmzFwjLDUhs5MeJmagDSZ",
+    fa2TokenId: 9,
+  },
+  {
+    network: Network.Main,
+    type: "fa2",
+    contractAddress: "KT18fp5rcTW7mbWDmzFwjLDUhs5MeJmagDSZ",
+    fa2TokenId: 10,
+  },
+  {
+    network: Network.Main,
+    type: "fa2",
+    contractAddress: "KT18fp5rcTW7mbWDmzFwjLDUhs5MeJmagDSZ",
+    fa2TokenId: 11,
+  },
+  {
+    network: Network.Main,
+    type: "fa2",
+    contractAddress: "KT18fp5rcTW7mbWDmzFwjLDUhs5MeJmagDSZ",
+    fa2TokenId: 12,
+  },
+  {
+    network: Network.Main,
+    type: "fa2",
+    contractAddress: "KT18fp5rcTW7mbWDmzFwjLDUhs5MeJmagDSZ",
+    fa2TokenId: 13,
+  },
+  {
+    network: Network.Main,
+    type: "fa2",
+    contractAddress: "KT18fp5rcTW7mbWDmzFwjLDUhs5MeJmagDSZ",
+    fa2TokenId: 14,
+  },
+  {
+    network: Network.Main,
+    type: "fa2",
+    contractAddress: "KT18fp5rcTW7mbWDmzFwjLDUhs5MeJmagDSZ",
+    fa2TokenId: 15,
+  },
+  {
+    network: Network.Main,
+    type: "fa2",
+    contractAddress: "KT18fp5rcTW7mbWDmzFwjLDUhs5MeJmagDSZ",
+    fa2TokenId: 16,
+  },
+  {
+    network: Network.Main,
+    type: "fa2",
+    contractAddress: "KT18fp5rcTW7mbWDmzFwjLDUhs5MeJmagDSZ",
+    fa2TokenId: 17,
+  },
+  {
+    network: Network.Main,
+    type: "fa2",
+    contractAddress: "KT18fp5rcTW7mbWDmzFwjLDUhs5MeJmagDSZ",
+    fa2TokenId: 18,
+  },
+  {
+    network: Network.Main,
+    type: "fa2",
+    contractAddress: "KT18fp5rcTW7mbWDmzFwjLDUhs5MeJmagDSZ",
+    fa2TokenId: 19,
+  },
+  {
+    network: Network.Main,
+    type: "fa2",
+    contractAddress: "KT18fp5rcTW7mbWDmzFwjLDUhs5MeJmagDSZ",
+    fa2TokenId: 20,
+  },
+
   /**
    * Florence
    */
@@ -147,6 +280,29 @@ export const TOKEN_WHITELIST: WhitelistedToken[] = [
     network: Network.Florence,
     type: "fa1.2",
     contractAddress: "KT1CMbwrQodEYFpdJmk8pzN8SzieupG6ZrZE",
+  },
+  // Token2Token
+  {
+    network: Network.Florence,
+    type: "fa2",
+    contractAddress: "KT1L7udNhU9mD85sSrME6mHmoqRGu3JtkQVJ",
+    fa2TokenId: 0,
+  },
+  {
+    network: Network.Florence,
+    type: "fa2",
+    contractAddress: "KT1Pdj5m49kFsX6pQqSc1Ze1nNVrqkFH1Qmc",
+    fa2TokenId: 0,
+  },
+  {
+    network: Network.Florence,
+    type: "fa1.2",
+    contractAddress: "KT1JoqpEcpiYkv5bt3b4SoZLTWZ2mhKWtC5h",
+  },
+  {
+    network: Network.Florence,
+    type: "fa1.2",
+    contractAddress: "KT1Xgw9dCKbsHeRXdoQ8YwjDHzyLbwddtRVM",
   },
 
   /**

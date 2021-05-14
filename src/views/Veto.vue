@@ -131,6 +131,8 @@ import {
   isUnsafeAllowanceChangeError,
   sharesFromNat,
   sharesToNat,
+  toAssetSlug,
+  findTezDex,
   LP_TOKEN_DECIMALS,
 } from "@/core";
 import NavTabs from "@/components/NavTabs.vue";
@@ -160,6 +162,7 @@ import { notifyConfirm } from "../toast";
 })
 export default class Veto extends Vue {
   dataLoading: boolean = false;
+  dexAddress: string | null = null;
 
   currentCandidate: string = "-";
   currentCandidateExist = false;
@@ -182,14 +185,15 @@ export default class Veto extends Vue {
   }
 
   get selectedToken(): QSAsset | null {
-    const tokenExchange = this.$route.params.token;
+    const tokenSlug = this.$route.params.token;
     return (
-      store.state.tokens.find((t: any) => t.exchange === tokenExchange) || null
+      store.state.tokens.find((t) => toAssetSlug(t) === tokenSlug) || null
     );
   }
 
   get valid() {
     return (
+      this.dexAddress &&
       this.currentCandidateExist &&
       isAddressValid(this.voter) &&
       +this.sharesToVeto > 0
@@ -216,33 +220,39 @@ export default class Veto extends Vue {
 
     this.dataLoading = true;
     try {
-      const me = this.account.pkh;
+      this.dexAddress = null;
+      const dex = await findTezDex(this.selectedToken);
+      if (dex) {
+        this.dexAddress = dex.address;
 
-      const storage = await getDexStorage(this.selectedToken.exchange);
-      const [myShares, voter] = await Promise.all([
-        getDexShares(me, this.selectedToken.exchange),
-        storage.voters.get(me),
-      ]);
+        const me = this.account.pkh;
 
-      this.currentCandidate = storage.currentDelegated || "-";
-      this.currentCandidateExist = Boolean(storage.currentDelegated);
-      this.totalVotes = sharesFromNat(storage.totalVotes).toFixed();
-      this.totalVetos = sharesFromNat(storage.veto).toFixed();
-      this.votesToVeto = sharesFromNat(storage.totalVotes)
-        .div(3)
-        .minus(sharesFromNat(storage.veto))
-        .toFixed(LP_TOKEN_DECIMALS);
-      this.availableSharesToVeto = myShares
-        ? sharesFromNat(myShares.unfrozen).toFixed()
-        : null;
-      if (this.availableSharesToVeto !== null && voter) {
-        this.availableSharesToVeto = new BigNumber(this.availableSharesToVeto).plus(sharesFromNat(voter.veto)).toFixed();
-      }
-      this.availableSharesToExit = voter && new BigNumber(voter.veto).isGreaterThan(0) ? sharesFromNat(voter.veto).toFixed() : null;
+        const storage = await getDexStorage(dex.address);
+        const [myShares, voter] = await Promise.all([
+          getDexShares(me, dex.address),
+          storage.voters.get(me),
+        ]);
 
-      if (me) {
-        // const myVV = await storage.vetoVoters.get(me);
-        // this.alreadyBanned = Boolean(myVV);
+        this.currentCandidate = storage.currentDelegated || "-";
+        this.currentCandidateExist = Boolean(storage.currentDelegated);
+        this.totalVotes = sharesFromNat(storage.totalVotes).toFixed();
+        this.totalVetos = sharesFromNat(storage.veto).toFixed();
+        this.votesToVeto = sharesFromNat(storage.totalVotes)
+          .div(3)
+          .minus(sharesFromNat(storage.veto))
+          .toFixed(LP_TOKEN_DECIMALS);
+        this.availableSharesToVeto = myShares
+          ? sharesFromNat(myShares.unfrozen).toFixed()
+          : null;
+        if (this.availableSharesToVeto !== null && voter) {
+          this.availableSharesToVeto = new BigNumber(this.availableSharesToVeto).plus(sharesFromNat(voter.veto)).toFixed();
+        }
+        this.availableSharesToExit = voter && new BigNumber(voter.veto).isGreaterThan(0) ? sharesFromNat(voter.veto).toFixed() : null;
+
+        if (me) {
+          // const myVV = await storage.vetoVoters.get(me);
+          // this.alreadyBanned = Boolean(myVV);
+        }
       }
     } catch (err) {
       console.error(err);
@@ -252,7 +262,7 @@ export default class Veto extends Vue {
   }
 
   selectToken(token: QSAsset) {
-    this.$router.replace(`/governance/veto/${token.exchange}`);
+    this.$router.replace(`/governance/veto/${toAssetSlug(token)}`);
   }
 
   toPercentage(val: any) {
@@ -283,10 +293,12 @@ export default class Veto extends Vue {
     }
 
     try {
+      const dexAddress = this.dexAddress!;
+
       const sharesToVeto = sharesToNat(this.sharesToVeto).toFixed();
 
       const tezos = await useWallet();
-      const contract = await tezos.wallet.at(this.selectedToken!.exchange);
+      const contract = await tezos.wallet.at(dexAddress);
 
       const batch = tezos.wallet.batch([])
         .withTransfer(
@@ -322,8 +334,10 @@ export default class Veto extends Vue {
     this.exiting = true;
 
     try {
+      const dexAddress = this.dexAddress!;
+
       const tezos = await useWallet();
-      const contract = await tezos.wallet.at(this.selectedToken!.exchange);
+      const contract = await tezos.wallet.at(dexAddress);
 
       const batch = tezos.wallet
         .batch([])

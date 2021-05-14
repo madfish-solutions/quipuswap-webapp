@@ -9,10 +9,11 @@ import {
 } from "@taquito/taquito";
 import { tzip16, Tzip16Module } from "@taquito/tzip16";
 import { tzip12, Tzip12Module } from "@taquito/tzip12";
+import { Parser } from "@taquito/michel-codec";
 import BigNumber from "bignumber.js";
 import mem from "mem";
 import { QSAsset, QSNetwork, QSTokenType } from "./types";
-import { snakeToCamelKeys } from "./helpers";
+import { snakeToCamelKeys, toAssetSlug } from "./helpers";
 import { FastRpcClient } from "./taquito-fast-rpc";
 import { LambdaViewSigner } from "./lambda-view";
 import {
@@ -25,6 +26,7 @@ import {
 import { getTokenMetadata } from "./assets";
 
 export const michelEncoder = new MichelCodecPacker();
+export const michelParser = new Parser();
 
 export const Tezos = new TezosToolkit(
   new FastRpcClient(getNetwork().rpcBaseURL)
@@ -35,33 +37,13 @@ Tezos.setSignerProvider(new LambdaViewSigner());
 Tezos.setPackerProvider(michelEncoder);
 
 export async function getTokens() {
-  const { id, fa1_2FactoryContract, fa2FactoryContract } = getNetwork();
-  if (!fa1_2FactoryContract && !fa2FactoryContract) {
-    throw new Error("Contracts for this network not found");
-  }
-
-  const [fa1_2FacStorage, fa2FacStorage] = await Promise.all([
-    fa1_2FactoryContract &&
-      getStorage(fa1_2FactoryContract).then(s => snakeToCamelKeys(s)),
-    fa2FactoryContract &&
-      getStorage(fa2FactoryContract).then(s => snakeToCamelKeys(s)),
-  ]);
+  const { id } = getNetwork();
 
   const chainId = CHAIN_ID_MAPPING.get(id);
   const whitelist = TOKEN_WHITELIST.filter(t => t.network === chainId);
-
-  const allTokens: (QSAsset | null)[] = await Promise.all(
+  const allTokens: QSAsset[] = await Promise.all(
     whitelist.map(async token => {
       const fa2 = token.type === "fa2";
-      const facStorage = fa2 ? fa2FacStorage : fa1_2FacStorage;
-      if (!facStorage) return null;
-
-      const exchange = await facStorage.tokenToExchange.get(
-        fa2
-          ? [token.contractAddress, token.fa2TokenId ?? 0]
-          : token.contractAddress
-      );
-      if (!exchange) return null;
 
       let metadata;
       if (token.metadata) {
@@ -78,11 +60,11 @@ export async function getTokens() {
         tokenType: fa2 ? QSTokenType.FA2 : QSTokenType.FA1_2,
         id: token.contractAddress,
         fa2TokenId: token.fa2TokenId,
-        exchange,
         decimals: metadata.decimals,
         symbol: metadata.symbol,
         name: metadata.name,
         imgUrl: formatImgUri(metadata.thumbnailUri),
+        exchange: "",
       };
     })
   );
@@ -90,7 +72,7 @@ export async function getTokens() {
   return sanitizeTokens([...allTokens, ...getCustomTokens()]);
 }
 
-export function getCustomTokens() {
+export function getCustomTokens(): QSAsset[] {
   try {
     const net = getNetwork();
     const val = localStorage.getItem(`custom_tokens_v1.2_${net.id}`);
@@ -106,7 +88,7 @@ function sanitizeTokens(tokens: (QSAsset | null)[]): QSAsset[] {
   const finalTokens: QSAsset[] = [];
   for (const token of tokens) {
     if (token) {
-      const slug = toTokenSlug(token);
+      const slug = toAssetSlug(token);
       if (!uniques.has(slug)) {
         finalTokens.push(token);
         uniques.add(slug);
@@ -114,10 +96,6 @@ function sanitizeTokens(tokens: (QSAsset | null)[]): QSAsset[] {
     }
   }
   return finalTokens;
-}
-
-function toTokenSlug(token: QSAsset) {
-  return `${token.id}_${token.fa2TokenId ?? 0}`;
 }
 
 export function formatImgUri(origin: string) {
@@ -219,6 +197,48 @@ export function clearMem() {
 
 export const getDexStorage = (contractAddress: string) =>
   getStorage(contractAddress).then(s => snakeToCamelKeys(s.storage));
+
+export const findTezDex = mem(findTezDexPure);
+
+export async function findTezDexPure(token: QSAsset) {
+  if (token.type === "xtz") return null;
+
+  try {
+    const { fa1_2FactoryContract, fa2FactoryContract } = getNetwork();
+
+    let exchange;
+
+    if (token.tokenType === QSTokenType.FA2) {
+      if (fa2FactoryContract) {
+        const facStorage = await getFactoryStorage(fa2FactoryContract);
+        exchange = await facStorage.token_to_exchange.get([
+          token.id,
+          token.fa2TokenId,
+        ]);
+      }
+    } else {
+      if (fa1_2FactoryContract) {
+        const facStorage = await getFactoryStorage(fa1_2FactoryContract);
+        exchange = await facStorage.token_to_exchange.get(token.id);
+      }
+    }
+
+    if (exchange) {
+      return getContract(exchange);
+    }
+
+    return null;
+  } catch (_err) {
+    return null;
+  }
+}
+
+export const getFactoryStorage = mem(getFactoryStoragePure);
+
+export async function getFactoryStoragePure(address: string) {
+  const contract = await getContract(address);
+  return contract.storage<any>();
+}
 
 export const getStorage = mem(getStoragePure, { maxAge: 30000 });
 

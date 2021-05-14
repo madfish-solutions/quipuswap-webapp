@@ -6,9 +6,9 @@ export interface QSAsset {
   symbol: string;
   name: string;
   imgUrl: string;
-  exchange: string;
   fa2TokenId?: number;
   default?: boolean;
+  exchange: string;
 }
 
 export enum QSTokenType {

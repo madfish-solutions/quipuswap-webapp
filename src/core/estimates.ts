@@ -4,6 +4,26 @@ import { QSAsset } from "./types";
 
 const PENNY = 0.000001;
 
+export function estimateToken2Token(
+  pool: any,
+  inputToken: QSAsset,
+  outputToken: QSAsset,
+  amount: BigNumber.Value
+) {
+  if (!amount) return new BigNumber(0);
+
+  console.info(pool, inputToken, outputToken, amount);
+
+  const tezInWithFee = toNat(amount, inputToken).times(997);
+  const numerator = tezInWithFee.times(pool.token_b_pool);
+  const denominator = new BigNumber(pool.token_a_pool)
+    .times(1000)
+    .plus(tezInWithFee);
+  const tokensOut = numerator.idiv(denominator);
+
+  return fromNat(tokensOut, outputToken);
+}
+
 export function estimateTezToToken(
   tezAmount: any,
   dexStorage: any,
