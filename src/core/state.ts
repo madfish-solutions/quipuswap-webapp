@@ -63,7 +63,7 @@ export async function getTokens() {
         decimals: metadata.decimals,
         symbol: metadata.symbol,
         name: metadata.name,
-        imgUrl: sanitizeImgUri(metadata.thumbnailUri),
+        imgUrl: formatImgUri(metadata.thumbnailUri),
         exchange: "",
       };
     })
@@ -98,11 +98,18 @@ function sanitizeTokens(tokens: (QSAsset | null)[]): QSAsset[] {
   return finalTokens;
 }
 
-export function sanitizeImgUri(origin: string, x = 64, y = 64) {
-  const urlToSanitize = origin.startsWith("ipfs://")
-    ? `https://ipfs.io/ipfs/${origin.substring(7)}/`
-    : origin;
-  return `https://img.templewallet.com/insecure/fit/${x}/${y}/ce/0/plain/${urlToSanitize}`;
+export function formatImgUri(origin: string) {
+  if (origin.startsWith("ipfs://")) {
+    return `https://ipfs.io/ipfs/${origin.substring(7)}/`;
+  }
+  return origin;
+}
+
+export function sanitizeImgUrl(url: string, x = 64, y = 64) {
+  if (url.startsWith("http")) {
+    return `https://img.templewallet.com/insecure/fit/${x}/${y}/ce/0/plain/${url}`;
+  }
+  return url;
 }
 
 export function approveToken(

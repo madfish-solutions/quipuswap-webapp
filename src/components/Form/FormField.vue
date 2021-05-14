@@ -42,7 +42,7 @@
           >
             <template v-if="!isLoading">
               <template v-if="localToken">
-                <img class="w-5 h-5 mr-2" :src="localToken.imgUrl" />
+                <img class="w-5 h-5 mr-2" :src="tokenImgUrl" />
                 <span class="truncate">{{ formattedLocalTokenSymbol }}</span>
               </template>
               <span v-else>Select a token</span>
@@ -130,7 +130,8 @@ import {
   isAddressValid,
   getContract,
   isFA2,
-  toAssetSlug
+  toAssetSlug,
+  sanitizeImgUrl
 } from "@/core";
 import { XTZ_TOKEN } from "@/core/defaults";
 import BigNumber from "bignumber.js";
@@ -159,6 +160,10 @@ export default class FormField extends Vue {
   isSearchOpened: boolean = false;
   localToken: QSAsset | null = null;
   processing = false;
+
+  get tokenImgUrl() {
+    return this.localToken ? sanitizeImgUrl(this.localToken.imgUrl) : "";
+  }
 
   get notFoundStatus() {
     switch (true) {
