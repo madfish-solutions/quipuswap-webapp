@@ -760,7 +760,7 @@ export default class SwapOrSend extends Vue {
                   tzToMutez(tezAmount)
                     .integerValue(BigNumber.ROUND_DOWN)
                     .toFixed(),
-                  recipient
+                  me
                 )
                 .toTransferParams(),
             },
@@ -811,7 +811,7 @@ export default class SwapOrSend extends Vue {
                 tzToMutez(tezAmount)
                   .integerValue(BigNumber.ROUND_DOWN)
                   .toFixed(),
-                recipient
+                me
               )
               .toTransferParams()
           )
