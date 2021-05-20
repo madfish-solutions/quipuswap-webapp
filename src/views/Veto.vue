@@ -22,6 +22,10 @@
 
         <FormInfo>
           <div class="flex justify-between mb-1">
+            <span class="mr-2">Dex contract</span>
+            <span class="font-mono text-gray-400">{{ dexAddress || "-" }}</span>
+          </div>
+          <div class="flex justify-between mb-1">
             <span class="mr-2 whitespace-no-wrap">Total votes</span>
             <span>{{ totalVotes !== null ? totalVotes : "-" }}</span>
           </div>
