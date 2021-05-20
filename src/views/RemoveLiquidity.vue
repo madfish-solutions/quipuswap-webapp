@@ -85,6 +85,40 @@
           <span class="mr-2">Your pool share</span>
           <span>{{ poolMeta ? poolMeta.myShare : "-" }}</span>
         </div>
+
+        <div class="flex mb-1">
+          <span class="mr-2">Slippage tolerance</span>
+          <span class="flex-1"></span>
+          <button
+            v-for="percentage in slippagePercentages"
+            :key="percentage"
+            class="px-2 py-px ml-2 text-xs rounded-md shadow-xs focus:outline-none"
+            :class="
+              activeSlippagePercentage === percentage ? 'bg-alphawhite' : ''
+            "
+            v-on:click="setActiveSlippagePercentage(percentage)"
+          >
+            {{ percentage }}
+            <span class="opacity-75">%</span>
+          </button>
+
+          <div
+            class="px-2 py-2 ml-2 text-xs font-light leading-tight rounded-md shadow-xs focus:outline-none"
+            :class="
+              slippagePercentages.includes(activeSlippagePercentage)
+                ? ''
+                : 'bg-alphawhite'
+            "
+          >
+            <input
+              class="w-12 text-right bg-transparent outline-none"
+              v-bind:placeholder="activeSlippagePercentage"
+              v-model="customSlippagePercentage"
+              @input="e => handleCustomSlippageChange(e.target.value)"
+            />
+            %
+          </div>
+        </div>
       </FormInfo>
     </Form>
 
@@ -171,8 +205,13 @@ export default class RemoveLiquidity extends Vue {
   processing = false;
   remLiqStatus = this.defaultRemLiqStatus;
 
+  slippagePercentages = [0.5, 1, 3];
+  activeSlippagePercentage: number | undefined = 1;
+  lastValidCustomSlippagePercentage: string = "";
+  customSlippagePercentage: string = "";
+
   get selectedToken(): QSAsset | null {
-     const tokenSlug = this.$route.params.token;
+    const tokenSlug = this.$route.params.token;
     return (
       store.state.tokens.find((t) => toAssetSlug(t) === tokenSlug) || null
     );
@@ -227,6 +266,32 @@ export default class RemoveLiquidity extends Vue {
   onAccountChange() {
     this.loadPoolMetadata();
     this.loadMyShares();
+  }
+
+  setActiveSlippagePercentage(percentage: number) {
+    this.activeSlippagePercentage = percentage;
+    this.customSlippagePercentage = "";
+    this.lastValidCustomSlippagePercentage = "";
+  }
+
+  handleCustomSlippageChange(amount: string) {
+    const numAmount = amount ? Number(amount) : undefined;
+    const shouldRevertChange =
+      numAmount !== undefined && (numAmount < 0 || numAmount > 30);
+
+    if (
+      numAmount !== undefined &&
+      !Number.isNaN(numAmount) &&
+      !shouldRevertChange
+    ) {
+      this.activeSlippagePercentage = numAmount;
+    }
+
+    if (shouldRevertChange) {
+      this.customSlippagePercentage = this.lastValidCustomSlippagePercentage;
+    } else {
+      this.lastValidCustomSlippagePercentage = amount;
+    }
   }
 
   async loadMyShares() {
@@ -355,8 +420,10 @@ export default class RemoveLiquidity extends Vue {
         throw new Error("Not Enough Shares");
       }
 
-      const minTezos = withSlippage(tzToMutez(this.inTokens!.tezos), 0.01);
-      const minToken = withSlippage(toNat(this.inTokens!.token, selTk), 0.01);
+      const slippage = new BigNumber(this.activeSlippagePercentage || 0).div(100);
+
+      const minTezos = withSlippage(tzToMutez(this.inTokens!.tezos), slippage);
+      const minToken = withSlippage(toNat(this.inTokens!.token, selTk), slippage);
 
       const dexContract = await tezos.wallet.at(dexAddress);
       const operation = await dexContract.methods
