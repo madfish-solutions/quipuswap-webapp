@@ -63,7 +63,7 @@ export const MAINNET_NETWORK: QSNetwork = {
   connectType: "custom",
   name: "Tezos Mainnet",
   type: "main",
-  rpcBaseURL: "https://mainnet.madpoint.xyz/",
+  rpcBaseURL: "https://mainnet.point.ninja/",
   fa1_2FactoryContract: FA1_2_FACTORY_CONTRACT_MAINNET,
   fa2FactoryContract: FA2_FACTORY_CONTRACT_MAINNET,
   description: "Tezos mainnet",
