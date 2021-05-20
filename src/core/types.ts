@@ -27,7 +27,6 @@ export interface QSNetwork {
     | "edonet"
     | "delphinet"
     | "carthagenet";
-  connectType: "default" | "custom";
   name: string;
   type: "main" | "test";
   rpcBaseURL: string;

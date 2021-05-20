@@ -2,7 +2,6 @@ import Vue from "vue";
 import Vuex from "vuex";
 import { BeaconWallet } from "@taquito/beacon-wallet";
 import { TempleWallet } from "@temple-wallet/dapp";
-import { NetworkType } from "@airgap/beacon-sdk";
 import {
   QSAsset,
   getTokens,
@@ -215,15 +214,7 @@ async function useWalletTemple(forcePermission: boolean) {
   const wallet = new TempleWallet("Quipuswap", perm);
 
   if (!wallet.connected) {
-    await wallet.connect(
-      net.connectType === "default"
-        ? (net.id as any)
-        : {
-            name: net.name,
-            rpc: net.rpcBaseURL,
-          },
-      { forcePermission: true }
-    );
+    await wallet.connect(net.id as any, { forcePermission: true });
   }
 
   const tezos = wallet.toTezos();
@@ -246,14 +237,7 @@ async function useWalletBeacon(forcePermission: boolean) {
       await beaconWallet.clearActiveAccount();
     }
     await beaconWallet.requestPermissions({
-      network:
-        net.connectType === "default"
-          ? { type: toBeaconNetworkType(net.id) }
-          : {
-              type: NetworkType.CUSTOM,
-              name: net.name,
-              rpcUrl: net.rpcBaseURL,
-            },
+      network: { type: toBeaconNetworkType(net.id) },
     });
   }
 
