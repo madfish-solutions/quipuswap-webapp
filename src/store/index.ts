@@ -199,6 +199,17 @@ export async function useWallet(
     : useWalletBeacon(forcePermission);
 }
 
+class PatchedTempleWallet extends TempleWallet {
+  async sendOperations(opParams: any[]) {
+    return super.sendOperations(opParams.map(removeFeeAndLimit));
+  }
+}
+
+function removeFeeAndLimit(op: any) {
+  const { fee, gas_limit, storage_limit, ...rest } = op;
+  return rest;
+}
+
 async function useWalletTemple(forcePermission: boolean) {
   const net = getNetwork();
 
@@ -212,7 +223,7 @@ async function useWalletTemple(forcePermission: boolean) {
     perm = await TempleWallet.getCurrentPermission();
   }
 
-  const wallet = new TempleWallet("Quipuswap", perm);
+  const wallet = new PatchedTempleWallet("Quipuswap", perm);
 
   if (!wallet.connected) {
     await wallet.connect(
