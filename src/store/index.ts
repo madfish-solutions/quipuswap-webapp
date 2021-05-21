@@ -246,14 +246,14 @@ async function useWalletBeacon(forcePermission: boolean) {
       await beaconWallet.clearActiveAccount();
     }
     await beaconWallet.requestPermissions({
-      network:
-        net.connectType === "default"
-          ? { type: toBeaconNetworkType(net.id) }
-          : {
-              type: NetworkType.CUSTOM,
-              name: net.name,
-              rpcUrl: net.rpcBaseURL,
-            },
+      network: { type: toBeaconNetworkType(net.id) },
+      // net.connectType === "default"
+      //   ? { type: toBeaconNetworkType(net.id) }
+      //   : {
+      //       type: NetworkType.CUSTOM,
+      //       name: net.name,
+      //       rpcUrl: net.rpcBaseURL,
+      //     },
     });
   }
 
