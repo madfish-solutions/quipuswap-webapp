@@ -37,7 +37,7 @@ export const FLORENCENET_NETWORK: QSNetwork = {
   connectType: "default",
   name: "Florence Testnet",
   type: "test",
-  rpcBaseURL: "https://florencenet.smartpy.io",
+  rpcBaseURL: "https://testnet-tezos.giganode.io",
   fa1_2FactoryContract: FA1_2_FACTORY_CONTRACT_FLORENCENET,
   fa2FactoryContract: FA2_FACTORY_CONTRACT_FLORENCENET,
   description: "Florence testnet",
