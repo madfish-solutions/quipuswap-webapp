@@ -109,6 +109,17 @@
     <div
       class="mx-auto mt-8 mb-8 text-sm font-normal text-center text-lightgray"
     ></div>
+
+    <template v-if="noDecimalsToken">
+      <div class="-mt-4 mb-8 px-4">
+        <div class="p-4 bg-redalpha rounded text-white whitespace-normal font-medium">
+          Creation of this pool is disabled on the UI due to possible manipulations.
+          Please, stay tuned, the newer contract version fixing this issue is coming soon.
+          <a href="https://www.madfish.solutions/blog/quipuswap-important-announcement-the-issue-affecting-token-pools-without-decimals/" target="_blank" rel="noopener noreferrer" class="underline">Read more</a>
+        </div>
+      </div>
+    </template>
+
     <div class="flex justify-center text-center">
       <SubmitBtn @click="addToken" :disabled="!valid">
         <template v-if="!processing">{{ addTokenStatus }}</template>
@@ -189,6 +200,7 @@ export default class AddToken extends Vue {
 
   processing = false;
   addTokenStatus = this.defaultAddTokenStatus;
+  tokenDataLoaded = false;
 
   tokenType = QSTokenType.FA1_2;
   tokenId = 0;
@@ -201,10 +213,23 @@ export default class AddToken extends Vue {
     return getAccount();
   }
 
+  get noDecimalsToken() {
+    return this.tokenDataLoaded
+      ? this.tokenDecimals === 0 ||
+        new BigNumber(this.tezAmount)
+          .times(10 ** 6)
+          .div(
+            new BigNumber(this.tokenAmount).times(10 ** this.tokenDecimals)
+          ).isGreaterThan(15000)
+      : false;
+  }
+
   get valid() {
     return (
       this.tezToken &&
       isKTAddress(this.tokenAddress) &&
+      this.tokenDataLoaded &&
+      !this.noDecimalsToken &&
       [this.tezAmount, this.tokenAmount].every((a) => a && +a > 0)
       // new BigNumber(this.tokenAmount).toFormat(this.tokenDecimals, {
       //   decimalSeparator: ".",
@@ -274,6 +299,7 @@ export default class AddToken extends Vue {
 
   async loadTokenData() {
     this.tokenBalance = null;
+    this.tokenDataLoaded = false;
     if (isKTAddress(this.tokenAddress) && this.account.pkh) {
       try {
         const { bal, decimals } = await getNewTokenData(
@@ -291,6 +317,8 @@ export default class AddToken extends Vue {
         this.tokenBalance = "?";
         this.tokenDecimals = 0;
       }
+
+      this.tokenDataLoaded = true;
     }
   }
 

@@ -81,6 +81,17 @@
     <div
       class="mx-auto mt-8 mb-8 text-sm font-normal text-center text-lightgray"
     ></div>
+
+    <template v-if="noDecimalsToken">
+      <div class="-mt-4 mb-8 px-4">
+        <div class="p-4 bg-redalpha rounded text-white whitespace-normal font-medium">
+          This pool is disabled for use on the UI due to possible manipulations.
+          Please, stay tuned, the newer contract version fixing this issue is coming soon.
+          <a href="https://www.madfish.solutions/blog/quipuswap-important-announcement-the-issue-affecting-token-pools-without-decimals/" target="_blank" rel="noopener noreferrer" class="underline">Read more</a>
+        </div>
+      </div>
+    </template>
+
     <div class="flex justify-center text-center">
       <SubmitBtn @click="addLiquidity" :disabled="!valid">
         <template v-if="!processing">{{ addLiqStatus }}</template>
@@ -173,6 +184,10 @@ export default class AddLiquidity extends Vue {
     );
   }
 
+  get noDecimalsToken() {
+    return this.selectedToken ? this.selectedToken.decimals === 0 : false;
+  }
+
   get defaultAddLiqStatus() {
     return "Add Liquidity";
   }
@@ -185,6 +200,7 @@ export default class AddLiquidity extends Vue {
     return (
       this.tezToken &&
       this.selectedToken &&
+      !this.noDecimalsToken &&
       this.dexAddress &&
       [this.tezAmount, this.tokenAmount].every((a) => a && +a > 0)
     );
