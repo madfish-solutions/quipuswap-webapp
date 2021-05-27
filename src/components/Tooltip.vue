@@ -1,6 +1,7 @@
 <template>
   <button
     v-tooltip="{
+      placement: 'auto',
       content: content,
       autoHide: false,
       targetClasses: `tooltip-wrapper ${positions[position]} ${$attrs.parentclasses}`,
@@ -44,5 +45,10 @@ export default class Tootip extends Vue {
   top: 0;
   right: 0;
   margin: 0;
+}
+@media (hover: none), (max-width: 768px) {
+  .tooltip-wrapper {
+    display: none;
+  }
 }
 </style>
