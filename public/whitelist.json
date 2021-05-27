@@ -98,12 +98,6 @@
   {
     "network": "NetXdQprcVkpaWU",
     "type": "fa2",
-    "contractAddress": "KT1LRboPna9yQY9BrjtQYDS1DVxhKESK4VVd",
-    "fa2TokenId": 0
-  },
-  {
-    "network": "NetXdQprcVkpaWU",
-    "type": "fa2",
     "contractAddress": "KT18fp5rcTW7mbWDmzFwjLDUhs5MeJmagDSZ",
     "fa2TokenId": 0
   },
