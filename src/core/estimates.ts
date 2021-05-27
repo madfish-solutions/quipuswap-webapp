@@ -140,13 +140,20 @@ export function estimateInTezos(shares: any, dexStorage: any) {
 export function estimateInTokens(shares: any, dexStorage: any, token: QSAsset) {
   if (!shares) return new BigNumber(0);
 
-  return fromNat(
+  let nat = new BigNumber(shares)
+    .times(dexStorage.tokenPool)
+    .div(dexStorage.totalSupply)
+    .integerValue(BigNumber.ROUND_DOWN);
+
+  if (
     new BigNumber(shares)
       .times(dexStorage.tokenPool)
-      .div(dexStorage.totalSupply)
-      .integerValue(BigNumber.ROUND_DOWN),
-    token
-  );
+      .isGreaterThan(nat.times(dexStorage.totalSupply))
+  ) {
+    nat = nat.plus(1);
+  }
+
+  return fromNat(nat, token);
 }
 
 export function estimateToTezos(
