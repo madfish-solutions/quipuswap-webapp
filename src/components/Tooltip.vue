@@ -5,9 +5,6 @@
       autoHide: false,
       targetClasses: `tooltip-wrapper ${positions[position]} ${$attrs.parentclasses}`,
       classes: 'tooltip-content',
-      delay: {
-        hide: 150,
-      },
     }"
   >
     <img
@@ -25,7 +22,7 @@ Vue.use(VTooltip);
 
 @Component
 export default class Tootip extends Vue {
-  @Prop() content?: HTMLElement | string;
+  @Prop() content?: string;
   @Prop({ default: "default" }) position?: string;
   positions: object = {
     default: "",
