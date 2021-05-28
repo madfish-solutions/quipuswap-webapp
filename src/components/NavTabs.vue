@@ -30,7 +30,13 @@
       />
 
       <p class="ml-3 text-sm">
-        Please, migrate your liquidity from QuipuSwap v1 to QuipuSwap v1.2 contracts. This upgrade is required and ensures correctness of the baking rewards and adds improvements to the voting system.
+        Attention! QuipuSwap Factory contracts have been upgraded to properly handle pools with low number of decimals.
+All the old pools are going to stay on the old contracts, while all the newly created pools will be managed using the new contracts.
+
+      <template v-if="poolsToMigrate.length > 0">
+        <br />
+        It seems you had liquidity in the affected pools. Please, withdraw it using the interface below.
+      </template>
       </p>
 
       <!-- <button class="absolute top-0 right-0 p-2 focus:outline-none" @click="handleCloseInfoBanner">
@@ -56,7 +62,7 @@
       <div
         class="flex items-center font-medium text-accent group-hover:underline"
       >
-        Migrate
+        Remove Liqudity
         <img class="w-3 h-3 ml-1" src="@/assets/arrow-right-top.svg" />
       </div>
     </button>

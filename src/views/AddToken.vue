@@ -214,14 +214,15 @@ export default class AddToken extends Vue {
   }
 
   get noDecimalsToken() {
-    return this.tokenDataLoaded
-      ? this.tokenDecimals === 0 ||
-        new BigNumber(this.tezAmount)
-          .times(10 ** 6)
-          .div(
-            new BigNumber(this.tokenAmount).times(10 ** this.tokenDecimals)
-          ).isGreaterThan(15000)
-      : false;
+    // return this.tokenDataLoaded
+    //   ? this.tokenDecimals === 0 ||
+    //     new BigNumber(this.tezAmount)
+    //       .times(10 ** 6)
+    //       .div(
+    //         new BigNumber(this.tokenAmount).times(10 ** this.tokenDecimals)
+    //       ).isGreaterThan(15000)
+    //   : false;
+    return false;
   }
 
   get valid() {
