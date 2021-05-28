@@ -24,7 +24,7 @@ import {
 import { TezosToolkit } from "@taquito/taquito";
 import { Route } from "vue-router";
 import router from "../router";
-import { MAINNET_V1_0_DEX_WHITELIST } from "../v1_0whitelist";
+import { MAINNET_POOLS_TO_MIGRATE } from "../pools-to-migrate";
 import BigNumber from "bignumber.js";
 
 Vue.use(Vuex);
@@ -33,7 +33,7 @@ interface StoreState {
   tokensLoading: boolean;
   tokens: QSAsset[];
   account: { pkh: string };
-  v0Pools: any[];
+  poolsToMigrate: any[];
 }
 
 const store = new Vuex.Store<StoreState>({
@@ -41,7 +41,7 @@ const store = new Vuex.Store<StoreState>({
     tokensLoading: false,
     tokens: [],
     account: getAccountInitial(),
-    v0Pools: [],
+    poolsToMigrate: [],
   },
   mutations: {
     tokensLoading(state, tokensLoading) {
@@ -56,48 +56,62 @@ const store = new Vuex.Store<StoreState>({
     account(state, account) {
       state.account = account;
     },
-    setV0Pools(state, pools) {
-      state.v0Pools = pools;
+    setPoolsToMigrate(state, pools) {
+      state.poolsToMigrate = pools;
     },
-    pushV0Pools(state, pool) {
-      state.v0Pools.push(pool);
+    pushPoolToMigrate(state, pool) {
+      state.poolsToMigrate.push(pool);
     },
   },
 });
 
 export default store;
 
-async function loadV0Pools() {
+export async function loadPoolsToMigrate() {
   try {
     const me = store.state.account.pkh;
     if (getNetwork().type === "main" && me) {
-      store.commit("setV0Pools", []);
+      store.commit("setPoolsToMigrate", []);
       await Promise.all(
-        MAINNET_V1_0_DEX_WHITELIST.map(async pool => {
-          const shares = await getDexShares(me, pool.dexAddress);
-          const total = shares ? sharesFromNat(shares.total) : new BigNumber(0);
-          if (total.isGreaterThan(0)) {
-            store.commit("pushV0Pools", {
+        MAINNET_POOLS_TO_MIGRATE.map(async pool => {
+          const storage = await getDexStorage(pool.dexAddress);
+          const ledger = storage.ledger || storage.accounts;
+
+          const [val, voter] = await Promise.all([
+            ledger.get(me),
+            storage.voters.get(me),
+          ]);
+
+          const totalShares = val
+            ? new BigNumber(val.balance).plus(val.frozen_balance)
+            : null;
+          const voteShares = voter ? new BigNumber(voter.vote) : null;
+          const vetoShares = voter ? new BigNumber(voter.veto) : null;
+
+          if (totalShares && totalShares.isGreaterThan(0)) {
+            store.commit("pushPoolToMigrate", {
               ...pool,
-              balance: total.toFixed(),
-              link: `${process.env.VUE_APP_OLD_QUIPUSWAP_URL ||
-                ""}/invest/remove-liquidity/${pool.dexAddress}`,
+              totalShares: totalShares.toFixed(),
+              totalSharesToDisplay: sharesFromNat(totalShares).toFixed(),
+              voteShares: voteShares && voteShares.toFixed(),
+              vetoShares: vetoShares && vetoShares.toFixed(),
+              me,
             });
           }
         })
       );
     } else {
-      store.commit("setV0Pools", []);
+      store.commit("setPoolsToMigrate", []);
     }
   } catch (_err) {}
 }
-// loadV0Pools();
+loadPoolsToMigrate();
 
-// store.subscribe(mutation => {
-//   if (mutation.type === "account") {
-//     loadV0Pools();
-//   }
-// });
+store.subscribe(mutation => {
+  if (mutation.type === "account") {
+    loadPoolsToMigrate();
+  }
+});
 
 loadTokens();
 router.onReady((route: Route) => {

@@ -185,7 +185,8 @@ export default class AddLiquidity extends Vue {
   }
 
   get noDecimalsToken() {
-    return this.selectedToken ? this.selectedToken.decimals === 0 : false;
+    // return this.selectedToken ? this.selectedToken.decimals === 0 : false;
+    return false;
   }
 
   get defaultAddLiqStatus() {
