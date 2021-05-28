@@ -268,54 +268,27 @@ export const TOKEN_WHITELIST: WhitelistedToken[] = [
     type: "fa1.2",
     contractAddress: "KT198WVepFnjQtx9HUhuKc2x8gUt9z2fvyv6",
   },
-  // Token2Token
+  // Old
+  {
+    network: Network.Florence,
+    type: "fa1.2",
+    contractAddress: "KT1FXDTQb1o7Q7HecuxaWQ18XyHTsRrzuaZs",
+  },
+  {
+    network: Network.Florence,
+    type: "fa1.2",
+    contractAddress: "KT1CMbwrQodEYFpdJmk8pzN8SzieupG6ZrZE",
+  },
   {
     network: Network.Florence,
     type: "fa2",
-    contractAddress: "KT1L7udNhU9mD85sSrME6mHmoqRGu3JtkQVJ",
+    contractAddress: "KT1VCczKAoRQJKco7NiSaB93PMkYCbL2z1K7",
     fa2TokenId: 0,
   },
   {
     network: Network.Florence,
     type: "fa2",
-    contractAddress: "KT1Pdj5m49kFsX6pQqSc1Ze1nNVrqkFH1Qmc",
+    contractAddress: "KT1CdFLoqESYe3qBCgM7LZUVmqYZFEabzwyS",
     fa2TokenId: 0,
-  },
-  {
-    network: Network.Florence,
-    type: "fa1.2",
-    contractAddress: "KT1JoqpEcpiYkv5bt3b4SoZLTWZ2mhKWtC5h",
-  },
-  {
-    network: Network.Florence,
-    type: "fa1.2",
-    contractAddress: "KT1Xgw9dCKbsHeRXdoQ8YwjDHzyLbwddtRVM",
-  },
-
-  /**
-   * Edonet
-   */
-
-  {
-    network: Network.Edo2net,
-    type: "fa2",
-    contractAddress: "KT1RncEZB9bgYJCvqZKQCZFWhBpmfTDdcaeN",
-    fa2TokenId: 0,
-  },
-  {
-    network: Network.Edo2net,
-    type: "fa2",
-    contractAddress: "KT1KLj7ctxde78ksTkz9VBvu6UaowTE8UCiX",
-    fa2TokenId: 0,
-  },
-  {
-    network: Network.Edo2net,
-    type: "fa1.2",
-    contractAddress: "KT1WXUmY2kxVZwAJe3mrXCMmDZFTCYvpvLzz",
-  },
-  {
-    network: Network.Edo2net,
-    type: "fa1.2",
-    contractAddress: "KT1QdiZFqQhnZs4B2inMekSrqCrEVtbPfuVV",
   },
 ];
