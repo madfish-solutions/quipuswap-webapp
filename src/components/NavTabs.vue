@@ -7,12 +7,20 @@
       <router-link class="nav-item" active-class="active" to="/send"
         ><span>Send</span></router-link
       >
-      <router-link class="nav-item" active-class="active" to="/invest"
-        ><span>Invest</span></router-link
-      >
-      <router-link class="nav-item" active-class="active" to="/governance"
-        ><span>Govern</span></router-link
-      >
+      <router-link class="nav-item" active-class="active" to="/invest">
+        <span>Invest</span>
+        <Tooltip
+          position="corner"
+          content="Become a Liquidity provider and earn trading fees (0.3% from each swap) + baking rewards from staking your XTZ.  Learn more about the Investment tab from <a href='https://madfish.crunch.help/quipu-swap/i-have-added-liquidity-to-quipu-swap-how-much-will-i-earn-what-is-the-apy-of-your-dex' target='_blank' rel='nofollow noopener'>this article</a>."
+        />
+      </router-link>
+      <router-link class="nav-item" active-class="active" to="/governance">
+        <span>Govern</span>
+        <Tooltip
+          position="corner"
+          content="Take part in your Liquidity Pool governance via voting for a Baker. Read what baking and delegation in Tezos is <a href='https://madfish.crunch.help/quipu-swap/what-is-baking-and-how-do-i-bake-on-quipu-swap' target='_blank' rel='nofollow noopener'>here</a>.<br/><br/>NB: As a Quipu pool shareholder, you will receive a baking reward anyway and you don't have to use your shares to vote. But you can do so if you want to actively participate in Baker's choice."
+        />
+      </router-link>
     </div>
 
     <div v-if="infoBannerDisplayed" class="relative flex items-center py-4 pl-4 pr-8 mt-6 mb-4 text-gray-800 rounded bg-accent">
@@ -60,6 +68,7 @@
 <script lang="ts">
 import store from "@/store";
 import { Vue, Component } from "vue-property-decorator";
+import Tooltip from "@/components/Tooltip.vue";
 
 const INFO_BANNER_LS_KEY = "info-banner";
 
@@ -72,7 +81,9 @@ function getInfoBannerDisplayed() {
   }
 }
 
-@Component
+@Component({
+  components: { Tooltip },
+})
 export default class NavTabs extends Vue {
   infoBannerDisplayed = getInfoBannerDisplayed();
 
@@ -117,6 +128,7 @@ export default class NavTabs extends Vue {
 .nav-item {
   @apply h-full w-1/3 flex items-center justify-center bg-transparent rounded-3px;
   transition: all ease 0.35s;
+  position: relative;
 }
 
 .nav-item span {

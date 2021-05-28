@@ -8,6 +8,11 @@
       <div class="py-6 flex-1 flex flex-col justify-start">
         <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">
           {{ label }}
+          <Tooltip
+            parentclasses="label-tooltip"
+            v-if="tooltipContent"
+            :content="tooltipContent"
+          />
         </div>
         <input
           :class="
@@ -29,7 +34,12 @@
         <div class="label sm:text-sm font-light w-full">
           <template v-if="subLabelName">{{ subLabelName }}</template>
           <template v-if="subLabelValue">
-            <button class="underline focus:outline-none" @click="handleSubLabelValueClick">{{ subLabelValue }}</button>
+            <button
+              class="underline focus:outline-none"
+              @click="handleSubLabelValueClick"
+            >
+              {{ subLabelValue }}
+            </button>
           </template>
         </div>
       </div>
@@ -61,9 +71,9 @@
           <div
             v-if="
               !onlyTezos &&
-              selectedToken &&
-              selectedToken.type === 'token' &&
-              !isLoading
+                selectedToken &&
+                selectedToken.type === 'token' &&
+                !isLoading
             "
             class="absolute w-full flex justify-center"
             style="top: 100%"
@@ -90,7 +100,10 @@
           />
         </div>
 
-        <div v-if="tokenIdDisplayed" class="w-40 px-3 xs:px-6 py-3 text-sm border-b border-l border-gray-800">
+        <div
+          v-if="tokenIdDisplayed"
+          class="w-40 px-3 xs:px-6 py-3 text-sm border-b border-l border-gray-800"
+        >
           <input
             type="number"
             v-model="tokenId"
@@ -123,6 +136,7 @@
 import { Vue, Component, Prop, Ref, Watch } from "vue-property-decorator";
 import TokenItem from "@/components/Form/TokenItem.vue";
 import Loader from "@/components/Loader.vue";
+import Tooltip from "@/components/Tooltip.vue";
 
 import store, { loadCustomTokenIfExist } from "@/store";
 import {
@@ -131,18 +145,19 @@ import {
   getContract,
   isFA2,
   toAssetSlug,
-  sanitizeImgUrl
+  sanitizeImgUrl,
 } from "@/core";
 import { XTZ_TOKEN } from "@/core/defaults";
 import BigNumber from "bignumber.js";
 
 @Component({
-  components: { TokenItem, Loader },
+  components: { TokenItem, Loader, Tooltip },
 })
 export default class FormField extends Vue {
   @Prop() label?: string;
   @Prop() subLabelName?: string;
   @Prop() subLabelValue?: string;
+  @Prop() tooltipContent?: string;
   @Prop({ default: false }) isLoading?: boolean;
   @Prop({ default: true }) withSelect?: boolean;
   @Prop({ default: true }) showSearch?: boolean;
@@ -184,7 +199,8 @@ export default class FormField extends Vue {
     if (isAddressValid(term)) {
       const ln = term.length;
       return [term.slice(0, 7), "...", term.slice(ln - 4, ln)].join("");
-    } else return term;
+    }
+    return term;
   }
 
   @Watch("searchValue")
@@ -209,7 +225,7 @@ export default class FormField extends Vue {
 
   handleSubLabelValueClick() {
     if (typeof this.subLabelValue === "string") {
-      (this.$listeners.input as any)({ target: { value: this.subLabelValue } })
+      (this.$listeners.input as any)({ target: { value: this.subLabelValue } });
     }
   }
 
@@ -234,10 +250,12 @@ export default class FormField extends Vue {
   async addTokenToList(contractAddress: string, tokenId?: BigNumber) {
     const fa2TokenId = tokenId ? tokenId.toNumber() : undefined;
 
-    if (store.state.tokens.some((t) =>
-      fa2TokenId === undefined
-        ? (t.id === this.searchValue)
-        : (t.id === this.searchValue && t.fa2TokenId === fa2TokenId))
+    if (
+      store.state.tokens.some(t =>
+        fa2TokenId === undefined
+          ? t.id === this.searchValue
+          : t.id === this.searchValue && t.fa2TokenId === fa2TokenId
+      )
     ) {
       return;
     }
@@ -248,17 +266,17 @@ export default class FormField extends Vue {
   }
 
   get filteredTokens(): QSAsset[] {
-    return [...(this.withTezos ? [XTZ_TOKEN] : []), ...store.state.tokens].filter(
-      (t: QSAsset) => {
-        const base = t.name.toLowerCase().includes(this.searchValue.toLowerCase()) ||
-          t.symbol.toLowerCase().includes(this.searchValue.toLowerCase()) ||
-          t.id.includes(this.searchValue);
+    return [
+      ...(this.withTezos ? [XTZ_TOKEN] : []),
+      ...store.state.tokens,
+    ].filter((t: QSAsset) => {
+      const base =
+        t.name.toLowerCase().includes(this.searchValue.toLowerCase()) ||
+        t.symbol.toLowerCase().includes(this.searchValue.toLowerCase()) ||
+        t.id.includes(this.searchValue);
 
-        return this.tokenId
-          ? (base && +this.tokenId === t.fa2TokenId)
-          : base;
-      }
-    );
+      return this.tokenId ? base && +this.tokenId === t.fa2TokenId : base;
+    });
   }
 
   created() {
@@ -345,6 +363,13 @@ input {
 
 .label {
   color: #f6cc5b;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.label-tooltip {
+  padding-bottom: 3px;
 }
 
 .append {

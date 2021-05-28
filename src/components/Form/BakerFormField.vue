@@ -8,6 +8,11 @@
       <div class="flex-1 flex flex-col justify-center">
         <div class="label mb-1 xs:mb-2 sm:text-lg font-light w-full">
           {{ label }}
+          <Tooltip
+            parentclasses="label-tooltip"
+            v-if="tooltipContent"
+            :content="tooltipContent"
+          />
         </div>
         <input
           class="w-full"
@@ -105,13 +110,15 @@
 import { Vue, Component, Prop, Ref, Watch } from "vue-property-decorator";
 import { getAllKnownBakersMemoized, BBKnownBaker } from "@/baking-bad";
 import Loader from "@/components/Loader.vue";
+import Tooltip from "@/components/Tooltip.vue";
 
 @Component({
-  components: { Loader },
+  components: { Loader, Tooltip },
 })
 export default class BakerFormField extends Vue {
   @Prop({ default: null }) selectedBaker?: BBKnownBaker | null;
   @Prop() label?: string;
+  @Prop() tooltipContent?: string;
   @Prop() subLabel?: string;
   @Prop() value?: string;
   @Prop({ default: false }) isLoading?: boolean;
@@ -226,6 +233,12 @@ input {
 
 .label {
   color: #f6cc5b;
+  display: flex;
+  align-items: center;
+}
+
+.label-tooltip {
+  padding-bottom: 3px;
 }
 
 .append {
