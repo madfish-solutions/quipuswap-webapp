@@ -301,7 +301,6 @@ export default class SwapOrSend extends Vue {
         this.inputAmount,
         this.outputAmount,
         this.minimumReceived,
-        this.activeSlippagePercentage,
       ].every(a => a && +a > 0) &&
       this.activeSlippagePercentage! < 100;
     return this.send
