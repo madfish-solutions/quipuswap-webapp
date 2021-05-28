@@ -14,6 +14,7 @@
         <FormField
           placeholder="tz.."
           label="Delegated to"
+          tooltip-content="The current delegator in the pool, who earns baking rewards and distributes them among liquidity providers."
           :withSelect="false"
           v-model="nextCandidate"
           :isLoading="isLoading"
@@ -27,6 +28,7 @@
         <FormField
           placeholder="tz.."
           label="Second candidate"
+          tooltip-content="Baker, who got the most votes after the current delegate."
           :withSelect="false"
           v-model="currentCandidate"
           :isLoading="isLoading"
@@ -75,6 +77,7 @@
         <FormField
           placeholder="tz1v7h3s..."
           label="Voter"
+          tooltip-content="Your XTZ wallet address"
           :withSelect="false"
           v-model="voter"
           v-on:input="voter = $event.target.value"
@@ -88,6 +91,7 @@
 
         <BakerFormField
           label="Baker"
+          tooltip-content="Add a bakers’ address or choose a baker from the list"
           placeholder="tz1v7h3s..."
           v-model="bakerAddress"
           v-on:input="bakerAddress = $event.target.value"
@@ -104,6 +108,7 @@
         <FormField
           placeholder="0"
           label="Shares to vote"
+          tooltip-content="The number of your Quipu shares (Liquidity Shear Pool Tokens) that you can use in voting. Attention! After voting your shares will be locked in the smart-contract, to unlock them you need to exit from voting."
           :withSelect="false"
           :withTezos="false"
           :subLabelName="availableSharesToVote ? 'Your shares: ' : undefined"

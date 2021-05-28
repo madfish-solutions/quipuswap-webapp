@@ -10,6 +10,7 @@ import VoteBaker from "@/views/VoteBaker.vue";
 import DelegateVote from "@/views/DelegateVote.vue";
 import Veto from "@/views/Veto.vue";
 import Rewards from "@/views/Rewards.vue";
+import Disclaimer from "@/views/Disclaimer.vue";
 
 Vue.use(VueRouter);
 
@@ -17,6 +18,7 @@ const routes: RouteConfig[] = [
   { path: "/", redirect: "/swap" },
   { path: "/swap", name: "Swap", component: Swap },
   { path: "/send", name: "Send", component: Send },
+  { path: "/disclaimer", name: "Disclaimer", component: Disclaimer },
   { path: "/invest", redirect: "/invest/add-liquidity" },
   {
     path: "/invest/add-liquidity/:token?",

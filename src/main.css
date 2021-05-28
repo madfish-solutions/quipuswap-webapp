@@ -41,3 +41,31 @@
     transform: rotate(360deg);
   }
 }
+
+.tooltip {
+  display: block !important;
+  max-width: 400px;
+  font-size: 14px;
+  z-index: 9999;
+}
+.tooltip .tooltip-inner {
+  background-color: rgba(246, 204, 91, 1);
+  padding: 8px 12px;
+  color: #2d3748;
+  border-radius: 5px;
+  line-height: 1.4;
+}
+.tooltip .tooltip-inner a {
+  color: #5b61f6;
+  text-decoration: underline;
+}
+.tooltip[aria-hidden="true"] {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.15s, visibility 0.15s;
+}
+.tooltip[aria-hidden="false"] {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 0.15s;
+}

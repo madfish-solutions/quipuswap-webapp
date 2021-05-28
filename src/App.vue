@@ -156,6 +156,10 @@
         <a href="https://docs.quipuswap.com" target="_blank" rel="noopener noreferrer" class="px-4">
           Docs
         </a>
+        |
+        <router-link class="px-4" to="/disclaimer">
+          Disclaimer
+        </router-link>
       </div>
       <span class="text-sm font-light text-white">
         Made with
