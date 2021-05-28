@@ -42,7 +42,7 @@
       <span class="text-base xs:text-xl">Veto</span>
       <Tooltip
         position="corner"
-        content="Choose a Baker who will be a Delegate in your Liquidity pool. Baker, who receives the majority of Liquidity Providers’ votes, becomes a delegate. By voting, your Quipu LP shares will be locked in the smart contract, to unlock them you need to exit from voting."
+        content="Ban a Baker from becoming a Delegate. A baker who receives ⅓  Liquidity Providers' votes in the veto section will be banned for 3 months and cannot receive votes during this period. By sending a Veto, your LP shares will be locked in the smart contract, to unlock them you need to exit from veto."
       />
     </router-link>
 
