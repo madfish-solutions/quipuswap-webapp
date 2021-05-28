@@ -35,7 +35,7 @@
           <template v-if="subLabelName">{{ subLabelName }}</template>
           <template v-if="subLabelValue">
             <button
-              class="underline focus:outline-none"
+              class="ml-1 underline focus:outline-none"
               @click="handleSubLabelValueClick"
             >
               {{ subLabelValue }}

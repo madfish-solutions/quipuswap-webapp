@@ -30,7 +30,13 @@
       />
 
       <p class="ml-3 text-sm">
-        Please, migrate your liquidity from QuipuSwap v1 to QuipuSwap v1.2 contracts. This upgrade is required and ensures correctness of the baking rewards and adds improvements to the voting system.
+        Attention! QuipuSwap Factory contracts have been upgraded to properly handle pools with low number of decimals.
+All the old pools are going to stay on the old contracts, while all the newly created pools will be managed using the new contracts.
+
+      <template v-if="poolsToMigrate.length > 0">
+        <br />
+        It seems you had liquidity in the affected pools. Please, withdraw it using the interface below.
+      </template>
       </p>
 
       <!-- <button class="absolute top-0 right-0 p-2 focus:outline-none" @click="handleCloseInfoBanner">
@@ -41,34 +47,35 @@
       </button> -->
     </div>
 
-    <a
-      v-for="pool in v1_0pools"
+    <button
+      v-for="pool in poolsToMigrate"
       :key="pool.dexAddress"
-      :href="pool.link"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="flex items-center px-4 py-2 my-2 text-sm text-white rounded bg-darkblue hover:bg-gray-800"
+      class="w-full flex items-center px-4 py-2 my-2 text-sm text-white rounded bg-darkblue hover:bg-gray-800"
+      @click="() => migratePool(pool)"
     >
       <img class="w-5 h-5 mr-1" src="@/assets/xtz.png" />
       <div class="mr-1 opacity-75">+</div>
       <img class="w-5 h-5 mr-3" :src="pool.underlineTokenMetadata.thumbnailUri" />
       <span class="mr-3">XTZ / {{ pool.underlineTokenMetadata.symbol }}</span>
-      <span><span class="opacity-75">Shares:</span> <span class="font-semibold">{{ pool.balance }}</span></span>
+      <span><span class="opacity-75">Shares:</span> <span class="font-semibold">{{ pool.totalSharesToDisplay }}</span></span>
       <div class="flex-1" />
       <div
         class="flex items-center font-medium text-accent group-hover:underline"
       >
-        Migrate
+        Remove Liqudity
         <img class="w-3 h-3 ml-1" src="@/assets/arrow-right-top.svg" />
       </div>
-    </a>
+    </button>
   </div>
 </template>
 
 <script lang="ts">
-import store from "@/store";
+import store, { loadPoolsToMigrate, useWallet } from "@/store";
 import { Vue, Component } from "vue-property-decorator";
 import Tooltip from "@/components/Tooltip.vue";
+import BigNumber from "bignumber.js";
+import { getDexStorage } from "@/core";
+import { notifyConfirm } from "@/toast";
 
 const INFO_BANNER_LS_KEY = "info-banner";
 
@@ -86,9 +93,10 @@ function getInfoBannerDisplayed() {
 })
 export default class NavTabs extends Vue {
   infoBannerDisplayed = getInfoBannerDisplayed();
+  migrating = false;
 
-  get v1_0pools() {
-    return store.state.v0Pools;
+  get poolsToMigrate() {
+    return store.state.poolsToMigrate;
   }
 
   updateInfoBanner() {
@@ -114,6 +122,86 @@ export default class NavTabs extends Vue {
       }
     })();
   }
+
+  async migratePool(pool: any) {
+    if (this.migrating) return;
+    this.migrating = true;
+
+    try {
+      const tezos = await useWallet();
+
+      const { dexAddress, totalShares, voteShares, vetoShares, me } = pool;
+
+      const dexStorage = await getDexStorage(dexAddress);
+
+      const inTezos = new BigNumber(totalShares)
+      .times(dexStorage.tezPool)
+      .idiv(dexStorage.totalSupply);
+      const inToken = new BigNumber(totalShares)
+        .times(dexStorage.tokenPool)
+        .idiv(dexStorage.totalSupply);
+
+      const slippage = new BigNumber(1).div(100);
+      const minTezos = withSlippage(inTezos, slippage);
+      const minToken = withSlippage(inToken, slippage);
+
+      const dexContract = await tezos.wallet.at(dexAddress);
+
+      let batch = tezos.wallet.batch([]);
+
+      if (voteShares && new BigNumber(voteShares).isGreaterThan(0)) {
+        batch = batch
+          .withTransfer(
+            dexContract.methods
+              .use("vote", "tz1aRoaRhSpRYvFdyvgWLL6TGyRoGF51wDjM", 0, me)
+              .toTransferParams()
+          );
+      }
+
+      if (vetoShares && new BigNumber(vetoShares).isGreaterThan(0)) {
+        batch = batch
+          .withTransfer(
+            dexContract.methods.use("veto", 0, me).toTransferParams()
+          );
+      }
+
+      batch = batch
+        .withTransfer(
+          dexContract.methods
+            .use(
+              "divestLiquidity",
+              minTezos.toFixed(),
+              minToken.toFixed(),
+              totalShares
+            ).toTransferParams()
+        )
+
+      const operation = await batch.send();
+
+      notifyConfirm(
+        operation.confirmation()
+          .then(() => loadPoolsToMigrate())
+      );
+    } catch (err) {
+      console.error(err);
+      const msg = err.message;
+      alert(
+        msg && msg.length < 30
+          ? msg.startsWith("Dex/")
+            ? msg.replace("Dex/", "")
+            : msg
+          : "Something went wrong"
+      )
+    }
+
+    this.migrating = false;
+  }
+}
+
+function withSlippage(val: BigNumber.Value, tolerance: BigNumber.Value) {
+  return new BigNumber(val)
+    .times(new BigNumber(1).minus(tolerance))
+    .integerValue(BigNumber.ROUND_DOWN);
 }
 </script>
 

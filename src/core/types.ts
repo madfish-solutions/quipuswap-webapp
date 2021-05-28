@@ -33,6 +33,8 @@ export interface QSNetwork {
   rpcBaseURL: string;
   fa1_2FactoryContract: string | null;
   fa2FactoryContract: string | null;
+  fa1_2OldFactoryContract: string | null;
+  fa2OldFactoryContract: string | null;
   description: string;
   color: string;
   disabled: boolean;

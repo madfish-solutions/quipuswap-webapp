@@ -7,18 +7,20 @@ export const FA1_2_FACTORY_CONTRACT_FLORENCENET =
   process.env.VUE_APP_FA1_2_FACTORY_CONTRACT_FLORENCENET || null;
 export const FA2_FACTORY_CONTRACT_FLORENCENET =
   process.env.VUE_APP_FA2_FACTORY_CONTRACT_FLORENCENET || null;
-
-// Edonet
-export const FA1_2_FACTORY_CONTRACT_EDONET =
-  process.env.VUE_APP_FA1_2_FACTORY_CONTRACT_EDONET || null;
-export const FA2_FACTORY_CONTRACT_EDONET =
-  process.env.VUE_APP_FA2_FACTORY_CONTRACT_EDONET || null;
+export const FA1_2_OLD_FACTORY_CONTRACT_FLORENCENET =
+  process.env.VUE_APP_FA1_2_OLD_FACTORY_CONTRACT_FLORENCENET || null;
+export const FA2_OLD_FACTORY_CONTRACT_FLORENCENET =
+  process.env.VUE_APP_FA2_OLD_FACTORY_CONTRACT_FLORENCENET || null;
 
 // Mainnet
 export const FA1_2_FACTORY_CONTRACT_MAINNET =
   process.env.VUE_APP_FA1_2_FACTORY_CONTRACT_MAINNET || null;
 export const FA2_FACTORY_CONTRACT_MAINNET =
   process.env.VUE_APP_FA2_FACTORY_CONTRACT_MAINNET || null;
+export const FA1_2_OLD_FACTORY_CONTRACT_MAINNET =
+  process.env.VUE_APP_FA1_2_OLD_FACTORY_CONTRACT_MAINNET || null;
+export const FA2_OLD_FACTORY_CONTRACT_MAINNET =
+  process.env.VUE_APP_FA2_OLD_FACTORY_CONTRACT_MAINNET || null;
 
 export const VOTING_PERIOD = parseInt(process.env.VUE_APP_VOTING_PERIOD!);
 export const FEE_RATE = parseInt(process.env.VUE_APP_FEE_RATE!);
@@ -40,21 +42,10 @@ export const FLORENCENET_NETWORK: QSNetwork = {
   rpcBaseURL: "https://testnet-tezos.giganode.io",
   fa1_2FactoryContract: FA1_2_FACTORY_CONTRACT_FLORENCENET,
   fa2FactoryContract: FA2_FACTORY_CONTRACT_FLORENCENET,
+  fa1_2OldFactoryContract: FA1_2_OLD_FACTORY_CONTRACT_FLORENCENET,
+  fa2OldFactoryContract: FA2_OLD_FACTORY_CONTRACT_FLORENCENET,
   description: "Florence testnet",
   color: "#0f4c81",
-  disabled: false,
-};
-
-export const EDONET_NETWORK: QSNetwork = {
-  id: "edo2net",
-  connectType: "default",
-  name: "Edonet Testnet",
-  type: "test",
-  rpcBaseURL: "https://edonet.smartpy.io/",
-  fa1_2FactoryContract: FA1_2_FACTORY_CONTRACT_EDONET,
-  fa2FactoryContract: FA2_FACTORY_CONTRACT_EDONET,
-  description: "Edo testnet",
-  color: "#0f8124",
   disabled: false,
 };
 
@@ -66,16 +57,14 @@ export const MAINNET_NETWORK: QSNetwork = {
   rpcBaseURL: "https://mainnet-node.madfish.solutions/",
   fa1_2FactoryContract: FA1_2_FACTORY_CONTRACT_MAINNET,
   fa2FactoryContract: FA2_FACTORY_CONTRACT_MAINNET,
+  fa1_2OldFactoryContract: FA1_2_OLD_FACTORY_CONTRACT_MAINNET,
+  fa2OldFactoryContract: FA2_OLD_FACTORY_CONTRACT_MAINNET,
   description: "Tezos mainnet",
   color: "#83b300",
   disabled: false,
 };
 
-export const ALL_NETWORKS = [
-  MAINNET_NETWORK,
-  EDONET_NETWORK,
-  FLORENCENET_NETWORK,
-];
+export const ALL_NETWORKS = [MAINNET_NETWORK, FLORENCENET_NETWORK];
 export const DEFAULT_NETWORK = FLORENCENET_NETWORK;
 
 export const XTZ_TOKEN: QSAsset = {
