@@ -58,7 +58,8 @@ import {
   getDexShares,
   getContract,
   toAssetSlug,
-  findTezDex
+  findTezDex,
+  confirmOperation
 } from "@/core";
 import NavTabs from "@/components/NavTabs.vue";
 import NavGovernance from "@/components/NavGovernance.vue";
@@ -203,8 +204,8 @@ export default class Rewards extends Vue {
         .send();
 
       notifyConfirm(
-        operation.confirmation()
-          .then(() => this.refresh())
+        confirmOperation(tezos, operation.opHash)
+          .finally(() => this.refresh())
       );
     } catch (err) {
       console.error(err);
