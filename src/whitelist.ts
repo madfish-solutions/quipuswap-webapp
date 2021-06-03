@@ -252,6 +252,28 @@ export const TOKEN_WHITELIST: WhitelistedToken[] = [
     type: "fa1.2",
     contractAddress: "KT1GRSvLoikDsXujKgZPsGLX8k8VvR2Tq95b",
   },
+  {
+    network: Network.Main,
+    type: "fa1.2",
+    contractAddress: "KT1S6t5PrHXnozytDU3vYdajmsenoBNYY8WJ",
+    metadata: {
+      decimals: 6,
+      symbol: "XTZGold",
+      name: "OroPocket Gold",
+      thumbnailUri: "https://oropocket.com/unifarm/assets/icons/oro-gold.png",
+    },
+  },
+  {
+    network: Network.Main,
+    type: "fa1.2",
+    contractAddress: "KT1EqhKGcu9nztF5p9qa4c3cYVqVewQrJpi2",
+    metadata: {
+      decimals: 6,
+      symbol: "XTZSilver",
+      name: "OroPocket Silver",
+      thumbnailUri: "https://oropocket.com/unifarm/assets/icons/oro-silver.png",
+    },
+  },
 
   /**
    * Florence
