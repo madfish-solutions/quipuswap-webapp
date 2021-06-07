@@ -89,7 +89,7 @@ export const TOKEN_WHITELIST: WhitelistedToken[] = [
       decimals: 6,
       symbol: "USDtz",
       name: "USDtez",
-      thumbnailUri: "https://usdtz.com/lightlogo10USDtz.png",
+      thumbnailUri: "https://quipuswap.com/tokens/usdtz.png",
     },
   },
   {
@@ -100,7 +100,7 @@ export const TOKEN_WHITELIST: WhitelistedToken[] = [
       decimals: 18,
       symbol: "ETHtz",
       name: "ETHtez",
-      thumbnailUri: "https://ethtz.io/ETHtz_purple.png",
+      thumbnailUri: "https://quipuswap.com/tokens/ethtz.png",
     },
   },
   {
