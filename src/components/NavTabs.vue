@@ -74,7 +74,7 @@ import store, { loadPoolsToMigrate, useWallet } from "@/store";
 import { Vue, Component } from "vue-property-decorator";
 import Tooltip from "@/components/Tooltip.vue";
 import BigNumber from "bignumber.js";
-import { getDexStorage } from "@/core";
+import { confirmOperation, getDexStorage } from "@/core";
 import { notifyConfirm } from "@/toast";
 
 const INFO_BANNER_LS_KEY = "info-banner";
@@ -179,8 +179,8 @@ export default class NavTabs extends Vue {
       const operation = await batch.send();
 
       notifyConfirm(
-        operation.confirmation()
-          .then(() => loadPoolsToMigrate())
+        confirmOperation(tezos, operation.opHash)
+          .finally(() => loadPoolsToMigrate())
       );
     } catch (err) {
       console.error(err);

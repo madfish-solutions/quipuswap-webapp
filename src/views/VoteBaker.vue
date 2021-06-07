@@ -173,6 +173,7 @@ import {
   sharesToNat,
   toAssetSlug,
   findTezDex,
+  confirmOperation,
 } from "@/core";
 import NavTabs from "@/components/NavTabs.vue";
 import NavGovernance from "@/components/NavGovernance.vue";
@@ -183,7 +184,7 @@ import BakerFormField from "@/components/Form/BakerFormField.vue";
 import Loader from "@/components/Loader.vue";
 import BigNumber from "bignumber.js";
 import { OpKind } from "@taquito/taquito";
-import { notifyConfirm } from "../toast";
+import { notifyConfirm, notifyError } from "../toast";
 
 @Component({
   components: {
@@ -352,11 +353,12 @@ export default class VoteBaker extends Vue {
       const operation = await batch.send();
 
       notifyConfirm(
-        operation.confirmation()
-          .then(() => this.refresh())
+        confirmOperation(tezos, operation.opHash)
+          .finally(() => this.refresh())
       );
     } catch (err) {
       console.error(err);
+      notifyError(err);
       const msg = err.message;
       const tmp =
         msg && msg.length < 30
@@ -397,11 +399,12 @@ export default class VoteBaker extends Vue {
       const operation = await batch.send();
 
       notifyConfirm(
-        operation.confirmation()
-          .then(() => this.refresh())
+        confirmOperation(tezos, operation.opHash)
+          .finally(() => this.refresh())
       );
     } catch (err) {
       console.error(err);
+      notifyError(err);
       const msg = err.message;
       this.exitStatus =
         msg && msg.length < 30

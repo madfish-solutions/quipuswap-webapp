@@ -165,9 +165,10 @@ import {
   sharesToNat,
   toAssetSlug,
   findTezDex,
+  confirmOperation,
 } from "@/core";
 import { XTZ_TOKEN } from "@/core/defaults";
-import { notifyConfirm } from "../toast";
+import { notifyConfirm, notifyError } from "../toast";
 
 type InTokens = {
   tezos: string;
@@ -436,11 +437,12 @@ export default class RemoveLiquidity extends Vue {
         .send();
 
       notifyConfirm(
-        operation.confirmation()
-          .then(() => this.refresh())
+        confirmOperation(tezos, operation.opHash)
+          .finally(() => this.refresh())
       );
     } catch (err) {
       console.error(err);
+      notifyError(err);
       const msg = err.message;
       this.remLiqStatus =
         msg && msg.length < 30
