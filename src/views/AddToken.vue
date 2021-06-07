@@ -165,7 +165,7 @@ import {
   confirmOperation,
 } from "@/core";
 import { XTZ_TOKEN } from "@/core/defaults";
-import { notifyConfirm } from "../toast";
+import { notifyConfirm, notifyError } from "../toast";
 
 type PoolMeta = {
   tezFull: string;
@@ -496,6 +496,7 @@ export default class AddToken extends Vue {
       );
     } catch (err) {
       console.error(err);
+      notifyError(err);
       const msg = err.message;
       this.addTokenStatus =
         msg && msg.length < 30

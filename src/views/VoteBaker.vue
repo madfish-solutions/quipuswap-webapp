@@ -184,7 +184,7 @@ import BakerFormField from "@/components/Form/BakerFormField.vue";
 import Loader from "@/components/Loader.vue";
 import BigNumber from "bignumber.js";
 import { OpKind } from "@taquito/taquito";
-import { notifyConfirm } from "../toast";
+import { notifyConfirm, notifyError } from "../toast";
 
 @Component({
   components: {
@@ -358,6 +358,7 @@ export default class VoteBaker extends Vue {
       );
     } catch (err) {
       console.error(err);
+      notifyError(err);
       const msg = err.message;
       const tmp =
         msg && msg.length < 30
@@ -403,6 +404,7 @@ export default class VoteBaker extends Vue {
       );
     } catch (err) {
       console.error(err);
+      notifyError(err);
       const msg = err.message;
       this.exitStatus =
         msg && msg.length < 30

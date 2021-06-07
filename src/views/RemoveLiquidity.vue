@@ -168,7 +168,7 @@ import {
   confirmOperation,
 } from "@/core";
 import { XTZ_TOKEN } from "@/core/defaults";
-import { notifyConfirm } from "../toast";
+import { notifyConfirm, notifyError } from "../toast";
 
 type InTokens = {
   tezos: string;
@@ -442,6 +442,7 @@ export default class RemoveLiquidity extends Vue {
       );
     } catch (err) {
       console.error(err);
+      notifyError(err);
       const msg = err.message;
       this.remLiqStatus =
         msg && msg.length < 30

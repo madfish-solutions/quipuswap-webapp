@@ -68,7 +68,7 @@ import SubmitBtn from "@/components/SubmitBtn.vue";
 import Loader from "@/components/Loader.vue";
 import GovernancePairSelect from "@/components/GovernancePairSelect.vue";
 import BigNumber from "bignumber.js";
-import { notifyConfirm } from "../toast";
+import { notifyConfirm, notifyError } from "../toast";
 
 @Component({
   components: {
@@ -209,6 +209,7 @@ export default class Rewards extends Vue {
       );
     } catch (err) {
       console.error(err);
+      notifyError(err);
       const msg = err.message;
       this.withdrawStatus =
         msg && msg.length < 30

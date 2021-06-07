@@ -141,7 +141,7 @@ import {
 } from "@/core";
 import { XTZ_TOKEN } from "@/core/defaults";
 import { OpKind } from "@taquito/taquito";
-import { notifyConfirm } from "../toast";
+import { notifyConfirm, notifyError } from "../toast";
 
 type PoolMeta = {
   tezFull: string;
@@ -519,6 +519,7 @@ export default class AddLiquidity extends Vue {
       );
     } catch (err) {
       console.error(err);
+      notifyError(err);
       const msg = err.message;
       this.addLiqStatus =
         msg && msg.length < 30

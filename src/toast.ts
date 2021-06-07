@@ -33,3 +33,10 @@ export async function notifyConfirm<T>(promise: Promise<T>) {
     });
   }
 }
+
+export function notifyError(err: any) {
+  Vue.$toast.error(err.message, {
+    hideProgressBar: true,
+    timeout: 3_000,
+  });
+}

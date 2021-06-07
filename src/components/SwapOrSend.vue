@@ -177,7 +177,7 @@ import {
   findTezDex,
   confirmOperation,
 } from "@/core";
-import { notifyConfirm } from "../toast";
+import { notifyConfirm, notifyError } from "../toast";
 
 @Component({
   components: {
@@ -838,6 +838,8 @@ export default class SwapOrSend extends Vue {
       );
     } catch (err) {
       console.error(err);
+      notifyError(err);
+
       const msg = err.message;
       this.swapStatus =
         msg && msg.length < 30
