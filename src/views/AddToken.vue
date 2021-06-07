@@ -162,9 +162,10 @@ import {
   QSTokenType,
   deapproveFA2,
   isUnsafeAllowanceChangeError,
+  confirmOperation,
 } from "@/core";
 import { XTZ_TOKEN } from "@/core/defaults";
-import { notifyConfirm } from "../toast";
+import { notifyConfirm, notifyError } from "../toast";
 
 type PoolMeta = {
   tezFull: string;
@@ -490,11 +491,12 @@ export default class AddToken extends Vue {
       const operation = await batch.send();
 
       notifyConfirm(
-        operation.confirmation()
-          .then(() => this.refresh())
+        confirmOperation(tezos, operation.opHash)
+          .finally(() => this.refresh())
       );
     } catch (err) {
       console.error(err);
+      notifyError(err);
       const msg = err.message;
       this.addTokenStatus =
         msg && msg.length < 30
