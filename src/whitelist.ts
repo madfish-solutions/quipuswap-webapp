@@ -302,4 +302,16 @@ export const TOKEN_WHITELIST: WhitelistedToken[] = [
     contractAddress: "KT1CdFLoqESYe3qBCgM7LZUVmqYZFEabzwyS",
     fa2TokenId: 0,
   },
+  {
+    network: Network.Main,
+    type: "fa2",
+    contractAddress: "KT1JJUWAb6WHoKpzT2Ga5Y4rgMAkeptKHqQ8",
+    fa2TokenId: 0,
+    metadata: {
+      decimals: 18,
+      symbol: "MOZ",
+      name: "Mozik",
+      thumbnailUri: "https://cloudflare-ipfs.com/ipfs/QmTYMWr7NC5a35WMTx6FutDKFysd4XiuJc86gb8UJnCqLU",
+    },
+  }
 ];
