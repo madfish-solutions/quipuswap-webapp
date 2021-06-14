@@ -290,9 +290,6 @@ export const OLD_WHITELIST: Record<string, OldWhitelisted[]> = {
       tokenId: 0,
     },
     {
-      contract: "KT1EqhKGcu9nztF5p9qa4c3cYVqVewQrJpi2",
-    },
-    {
       contract: "KT1ELJHUaJsDk9cvXcKESMKW9sXFNrRLohxG",
       tokenId: 0,
     },
