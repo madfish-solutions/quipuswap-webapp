@@ -51,7 +51,7 @@ export const FLORENCENET_NETWORK: QSNetwork = {
 
 export const MAINNET_NETWORK: QSNetwork = {
   id: "mainnet",
-  connectType: "custom",
+  connectType: "default",
   name: "Tezos Mainnet",
   type: "main",
   rpcBaseURL: "https://mainnet-node.madfish.solutions/",
