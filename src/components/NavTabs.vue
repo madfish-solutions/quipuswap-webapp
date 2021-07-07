@@ -21,6 +21,9 @@
           content="Take part in your Liquidity Pool governance via voting for a Baker. Read what baking and delegation in Tezos is <a href='https://madfish.crunch.help/quipu-swap/what-is-baking-and-how-do-i-bake-on-quipu-swap' target='_blank' rel='nofollow noopener'>here</a>.<br/><br/>NB: As a Quipu pool shareholder, you will receive a baking reward anyway and you don't have to use your shares to vote. But you can do so if you want to actively participate in Baker's choice."
         />
       </router-link>
+      <a class="nav-item" href="https://analytics.quipuswap.com/">
+        <span>Stats</span>
+      </a>
     </div>
 
     <div v-if="infoBannerDisplayed" class="relative flex items-center py-4 pl-4 pr-8 mt-6 mb-4 text-gray-800 rounded bg-accent">
@@ -50,7 +53,7 @@ All the old pools are going to stay on the old contracts, while all the newly cr
     <button
       v-for="pool in poolsToMigrate"
       :key="pool.dexAddress"
-      class="w-full flex items-center px-4 py-2 my-2 text-sm text-white rounded bg-darkblue hover:bg-gray-800"
+      class="flex items-center w-full px-4 py-2 my-2 text-sm text-white rounded bg-darkblue hover:bg-gray-800"
       @click="() => migratePool(pool)"
     >
       <img class="w-5 h-5 mr-1" src="@/assets/xtz.png" />
