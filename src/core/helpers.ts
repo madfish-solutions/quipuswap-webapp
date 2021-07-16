@@ -22,9 +22,11 @@ export function toValidAmount(amount?: BigNumber) {
 export function isUnsafeAllowanceChangeError(err: any) {
   try {
     if (
-      ["UnsafeAllowanceChange", "FA1.2_UnsafeAllowanceChange"].includes(
-        err?.message
-      )
+      [
+        "UnsafeAllowanceChange",
+        "FA1.2_UnsafeAllowanceChange",
+        "UNSAFE_ALLOWANCE_CHANGE",
+      ].includes(err?.message)
     ) {
       return true;
     }
