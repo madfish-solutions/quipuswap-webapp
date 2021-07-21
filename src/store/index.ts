@@ -188,6 +188,12 @@ export function addCustomToken(token: QSAsset) {
 const beaconWallet = new BeaconWallet({
   name: "Quipuswap",
   iconUrl: LOGO_URL,
+  preferredNetwork: (() => {
+    const net = getNetwork();
+    if (!(net.connectType === "custom" && net.type === "test")) {
+      return toBeaconNetworkType(net.id);
+    }
+  })(),
 });
 
 export async function useWallet(
@@ -271,7 +277,6 @@ async function useWalletBeacon(forcePermission: boolean) {
       await beaconWallet.clearActiveAccount();
     }
     await beaconWallet.requestPermissions({
-      // network: { type: toBeaconNetworkType(net.id) },
       network:
         net.connectType === "custom" && net.type === "test"
           ? {
@@ -279,7 +284,7 @@ async function useWalletBeacon(forcePermission: boolean) {
               name: net.name,
               rpcUrl: net.rpcBaseURL,
             }
-          : { type: toBeaconNetworkType(net.id) },
+          : undefined,
     });
   }
 
