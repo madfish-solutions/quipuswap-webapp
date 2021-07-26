@@ -284,7 +284,9 @@ async function useWalletBeacon(forcePermission: boolean) {
               name: net.name,
               rpcUrl: net.rpcBaseURL,
             }
-          : undefined,
+          : {
+              type: toBeaconNetworkType(net.id),
+            },
     });
   }
 
