@@ -160,6 +160,10 @@
         <router-link class="px-4" to="/disclaimer">
           Disclaimer
         </router-link>
+        |
+        <a href="https://story.madfish.solutions/madfish-subscription-form" target="_blank" rel="noopener noreferrer" class="px-4">
+          Subscribe
+        </a>
       </div>
       <span class="text-sm font-light text-white">
         Made with
