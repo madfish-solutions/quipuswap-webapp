@@ -37,7 +37,7 @@ function signatureAssertionFactory(name: string, args: string[]) {
     const receivedArgs = receivedSignature.slice(1);
     assert(receivedArgs.length === args.length);
     receivedArgs.forEach((receivedArg, index) =>
-      assert(receivedArg === args[index])
+      assert(receivedArg === args[index] || args[index] in receivedArg)
     );
   };
 }
