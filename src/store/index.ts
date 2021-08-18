@@ -185,6 +185,31 @@ export function addCustomToken(token: QSAsset) {
   store.commit("addToken", token);
 }
 
+function removeBrokenTokens(addresses: string[]) {
+  try {
+    const net = getNetwork();
+    const brokenTokensRemoved =
+      localStorage.getItem(`broken_tokens_removed_${net.id}`) === "true";
+
+    if (!brokenTokensRemoved) {
+      const cachedStr = localStorage.getItem(`custom_tokens_v1.2_${net.id}`);
+      if (cachedStr) {
+        const cached = JSON.parse(cachedStr);
+        localStorage.setItem(
+          `custom_tokens_v1.2_${net.id}`,
+          JSON.stringify(
+            cached.filter((t: QSAsset) => !addresses.includes(t.id))
+          )
+        );
+      }
+
+      localStorage.setItem(`broken_tokens_removed_${net.id}`, "true");
+    }
+  } catch {}
+}
+
+removeBrokenTokens(["KT1ErKVqEhG9jxXgUG2KGLW3bNM7zXHX8SDF"]);
+
 const beaconWallet = new BeaconWallet({
   name: "Quipuswap",
   iconUrl: LOGO_URL,
