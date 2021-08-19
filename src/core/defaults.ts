@@ -2,6 +2,16 @@ import { QSAsset, QSTokenType, QSNetwork } from "@/core/types";
 
 export { TOKEN_WHITELIST } from "../whitelist";
 
+// Granadanet
+export const FA1_2_FACTORY_CONTRACT_GRANADANET =
+  process.env.VUE_APP_FA1_2_FACTORY_CONTRACT_GRANADANET || null;
+export const FA2_FACTORY_CONTRACT_GRANADANET =
+  process.env.VUE_APP_FA2_FACTORY_CONTRACT_GRANADANET || null;
+export const FA1_2_OLD_FACTORY_CONTRACT_GRANADANET =
+  process.env.VUE_APP_FA1_2_OLD_FACTORY_CONTRACT_GRANADANET || null;
+export const FA2_OLD_FACTORY_CONTRACT_GRANADANET =
+  process.env.VUE_APP_FA2_OLD_FACTORY_CONTRACT_GRANADANET || null;
+
 // Florencenet
 export const FA1_2_FACTORY_CONTRACT_FLORENCENET =
   process.env.VUE_APP_FA1_2_FACTORY_CONTRACT_FLORENCENET || null;
@@ -34,6 +44,21 @@ export const LP_TOKEN_DECIMALS = parseInt(
 
 export const LOGO_URL = process.env.VUE_APP_LOGO_URL;
 
+export const GRANADANET_NETWORK: QSNetwork = {
+  id: "granadanet",
+  connectType: "default",
+  name: "Granada Testnet",
+  type: "test",
+  rpcBaseURL: "https://granadanet.smartpy.io",
+  fa1_2FactoryContract: FA1_2_FACTORY_CONTRACT_GRANADANET,
+  fa2FactoryContract: FA2_FACTORY_CONTRACT_GRANADANET,
+  fa1_2OldFactoryContract: FA1_2_OLD_FACTORY_CONTRACT_GRANADANET,
+  fa2OldFactoryContract: FA2_OLD_FACTORY_CONTRACT_GRANADANET,
+  description: "Granada testnet",
+  color: "#0f4c81",
+  disabled: false,
+};
+
 export const FLORENCENET_NETWORK: QSNetwork = {
   id: "florencenet",
   connectType: "default",
@@ -64,7 +89,11 @@ export const MAINNET_NETWORK: QSNetwork = {
   disabled: false,
 };
 
-export const ALL_NETWORKS = [MAINNET_NETWORK, FLORENCENET_NETWORK];
+export const ALL_NETWORKS = [
+  MAINNET_NETWORK,
+  FLORENCENET_NETWORK,
+  GRANADANET_NETWORK,
+];
 export const DEFAULT_NETWORK = FLORENCENET_NETWORK;
 
 export const XTZ_TOKEN: QSAsset = {
