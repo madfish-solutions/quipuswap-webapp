@@ -22,6 +22,7 @@ export enum QSTokenType {
 export interface QSNetwork {
   id:
     | "mainnet"
+    | "granadanet"
     | "florencenet"
     | "edo2net"
     | "edonet"

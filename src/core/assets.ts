@@ -15,10 +15,13 @@ import {
 } from "./defaults";
 
 const network = getNetwork();
-const lambdaView =
-  network.id === "florencenet"
-    ? "KT1BbTmNHmJp2NnQyw5qsAExEYmYuUpR2HdX"
-    : undefined;
+const lambdaView = (() => {
+  if (network.id === "florencenet")
+    return "KT1BbTmNHmJp2NnQyw5qsAExEYmYuUpR2HdX";
+
+  if (network.id === "granadanet")
+    return "KT1VhtTGAyh7AVVwyH2ExNhaXvQq2rAJ6DNs";
+})();
 
 export async function getBalance(
   accountPkh: string,
