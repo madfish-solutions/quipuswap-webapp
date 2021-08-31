@@ -274,6 +274,12 @@ export const TOKEN_WHITELIST: WhitelistedToken[] = [
     network: Network.Main,
     type: "fa1.2",
     contractAddress: "KT1TwzD6zV3WeJ39ukuqxcfK2fJCnhvrdN1X",
+    metadata: {
+      decimals: 3,
+      symbol: "SMAK",
+      name: "SmartLink",
+      thumbnailUri: "https://quipuswap.com/tokens/smak.png",
+    },
   },
   {
     network: Network.Main,
