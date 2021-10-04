@@ -328,6 +328,18 @@ export const TOKEN_WHITELIST: WhitelistedToken[] = [
     fa2TokenId: 0,
     contractAddress: "KT1XTxpQvo7oRCqp85LikEZgAZ22uDxhbWJv",
   },
+  {
+    network: Network.Main,
+    type: "fa2",
+    fa2TokenId: 0,
+    contractAddress: "KT1WapdVeFqhCfqwdHWwTzSTX7yXoHgiPRPU",
+  },
+  {
+    network: Network.Main,
+    type: "fa2",
+    fa2TokenId: 0,
+    contractAddress: "KT1QgAtLPu3SNq9c6DPLanwL5bvfX3rgh2CS",
+  },
 
   /**
    * Florence
