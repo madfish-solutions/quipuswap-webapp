@@ -58,5 +58,8 @@
     "typescript": "~4",
     "vue-cli-plugin-tailwind": "^1.2.0",
     "vue-template-compiler": "^2.6.11"
+  },
+  "resolutions": {
+    "@airgap/beacon-sdk": "2.3.7"
   }
 }
