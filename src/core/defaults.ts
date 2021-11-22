@@ -2,6 +2,16 @@ import { QSAsset, QSTokenType, QSNetwork } from "@/core/types";
 
 export { TOKEN_WHITELIST } from "../whitelist";
 
+// Hangzhounet
+export const FA1_2_FACTORY_CONTRACT_HANGZHOUNET =
+  process.env.VUE_APP_FA1_2_FACTORY_CONTRACT_HANGZHOUNET || null;
+export const FA2_FACTORY_CONTRACT_HANGZHOUNET =
+  process.env.VUE_APP_FA2_FACTORY_CONTRACT_HANGZHOUNET || null;
+export const FA1_2_OLD_FACTORY_CONTRACT_HANGZHOUNET =
+  process.env.VUE_APP_FA1_2_OLD_FACTORY_CONTRACT_HANGZHOUNET || null;
+export const FA2_OLD_FACTORY_CONTRACT_HANGZHOUNET =
+  process.env.VUE_APP_FA2_OLD_FACTORY_CONTRACT_HANGZHOUNET || null;
+
 // Granadanet
 export const FA1_2_FACTORY_CONTRACT_GRANADANET =
   process.env.VUE_APP_FA1_2_FACTORY_CONTRACT_GRANADANET || null;
@@ -43,6 +53,21 @@ export const LP_TOKEN_DECIMALS = parseInt(
 );
 
 export const LOGO_URL = process.env.VUE_APP_LOGO_URL;
+
+export const HANGZHOUNET_NETWORK: QSNetwork = {
+  id: "hangzhounet",
+  connectType: "default",
+  name: "Hangzhou Testnet",
+  type: "test",
+  rpcBaseURL: "https://hangzhounet.smartpy.io",
+  fa1_2FactoryContract: FA1_2_FACTORY_CONTRACT_HANGZHOUNET,
+  fa2FactoryContract: FA2_FACTORY_CONTRACT_HANGZHOUNET,
+  fa1_2OldFactoryContract: FA1_2_OLD_FACTORY_CONTRACT_HANGZHOUNET,
+  fa2OldFactoryContract: FA2_OLD_FACTORY_CONTRACT_HANGZHOUNET,
+  description: "Hangzhou testnet",
+  color: "#0f4c81",
+  disabled: false,
+};
 
 export const GRANADANET_NETWORK: QSNetwork = {
   id: "granadanet",
@@ -93,6 +118,7 @@ export const ALL_NETWORKS = [
   MAINNET_NETWORK,
   FLORENCENET_NETWORK,
   GRANADANET_NETWORK,
+  HANGZHOUNET_NETWORK,
 ];
 export const DEFAULT_NETWORK = FLORENCENET_NETWORK;
 
