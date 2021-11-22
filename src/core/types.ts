@@ -23,6 +23,7 @@ export interface QSNetwork {
   id:
     | "mainnet"
     | "granadanet"
+    | "hangzhounet"
     | "florencenet"
     | "edo2net"
     | "edonet"
