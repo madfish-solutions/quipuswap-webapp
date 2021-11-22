@@ -21,6 +21,9 @@ const lambdaView = (() => {
 
   if (network.id === "granadanet")
     return "KT1VhtTGAyh7AVVwyH2ExNhaXvQq2rAJ6DNs";
+
+  if (network.id === "hangzhounet")
+    return "KT19ewhnhaCcCuoF1Ly2pxXAFRiF3UtgaY9U";
 })();
 
 export async function getBalance(
