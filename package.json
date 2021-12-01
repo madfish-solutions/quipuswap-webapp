@@ -60,6 +60,6 @@
     "vue-template-compiler": "^2.6.11"
   },
   "resolutions": {
-    "@airgap/beacon-sdk": "2.3.7"
+    "@airgap/beacon-sdk": "2.3.8"
   }
 }
