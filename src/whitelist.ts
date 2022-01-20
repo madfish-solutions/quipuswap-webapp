@@ -403,6 +403,18 @@ export const TOKEN_WHITELIST: WhitelistedToken[] = [
     fa2TokenId: 1,
     contractAddress: "KT19ovJhcsUn4YU8Q5L3BGovKSixfbWcecEA",
   },
+  {
+    network: Network.Main,
+    type: "fa2",
+    fa2TokenId: 0,
+    contractAddress: "KT1C9X9s5rpVJGxwVuHEVBLYEdAQ1Qw8QDjH",
+    metadata: {
+      decimals: 6,
+      symbol: "TezDAO",
+      name: "TezDAO",
+      thumbnailUri: "https://tezdao.org/assets/TezDAO-icon.png",
+    },
+  },
 
   /**
    * Florence
