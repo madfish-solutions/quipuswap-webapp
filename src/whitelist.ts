@@ -301,6 +301,18 @@ export const TOKEN_WHITELIST: WhitelistedToken[] = [
   {
     network: Network.Main,
     type: "fa2",
+    fa2TokenId: 2,
+    contractAddress: "KT1XRPEPXbZK25r3Htzp2o1x7xdMMmfocKNW",
+    metadata: {
+      symbol: "uBTC",
+      name: "youves uBTC",
+      decimals: 12,
+      thumbnailUri: "ipfs://Qmbev41h4axBqVzxsXP2NSaAF996bJjJBPb8FFZVqTvJTY",
+    },
+  },
+  {
+    network: Network.Main,
+    type: "fa2",
     fa2TokenId: 0,
     contractAddress: "KT1GUNKmkrgtMQjJp3XxcmCj6HZBhkUmMbge",
   },
@@ -402,6 +414,12 @@ export const TOKEN_WHITELIST: WhitelistedToken[] = [
     type: "fa2",
     fa2TokenId: 1,
     contractAddress: "KT19ovJhcsUn4YU8Q5L3BGovKSixfbWcecEA",
+  },
+  {
+    network: Network.Main,
+    type: "fa2",
+    fa2TokenId: 0,
+    contractAddress: "KT1KRvNVubq64ttPbQarxec5XdS6ZQU4DVD2",
   },
 
   /**
